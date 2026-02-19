@@ -1,0 +1,11 @@
+﻿{
+  "build": {
+    "outputDirectory": "."
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ]
+}
