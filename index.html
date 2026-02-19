@@ -17,17 +17,18 @@
                     </div>
             </div>
             <div class="header-right">
-                <button class="icon-btn" id="historyBtn" title="历史记录">📜</button>
+                <button class="icon-btn" id="memoryBtn" title="长期记忆">🧠</button>
                 <button class="icon-btn" id="settingsBtn" title="设置">⚙️</button>
             </div>
         </header>
 
         <main class="chat-container" id="chatContainer">
             <div class="messages" id="messages">
-                <div class="message ai">
+                <div class="message ai" data-message-id="1">
                     <div class="bubble">
                         <span class="text">你好呀！今天过得怎么样？有什么想和我聊聊的吗？😊</span>
                         <button class="tts-btn" title="朗读">🔊</button>
+                        <span class="memory-indicator" title="重要记忆">⭐</span>
                     </div>
                     <div class="time">刚刚</div>
                 </div>
@@ -128,24 +129,121 @@
         </div>
     </div>
 
-    <div class="modal" id="historyModal">
-        <div class="modal-content">
+    <div class="modal" id="memoryModal">
+        <div class="modal-content memory-modal">
             <div class="modal-header">
-                <h2>历史记录</h2>
-                <button class="close-btn" id="closeHistory">&times;</button>
+                <h2>长期记忆</h2>
+                <button class="close-btn" id="closeMemory">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="搜索对话...">
+                <div class="memory-tabs">
+                    <button class="tab-btn active" data-tab="timeline">时间轴</button>
+                    <button class="tab-btn" data-tab="important">重要记忆</button>
+                    <button class="tab-btn" data-tab="profile">用户档案</button>
+                    <button class="tab-btn" data-tab="add">添加记忆</button>
                 </div>
-                <div class="history-list" id="historyList">
-                    <p class="empty-tip">暂无历史记录</p>
+                <div class="tab-content active" id="timelineTab">
+                    <div class="memory-timeline" id="memoryTimeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-time">今天</div>
+                                <div class="memory-card">
+                                    <div class="memory-header">
+                                        <span class="memory-title">初次见面</span>
+                                        <span class="memory-indicator">⭐</span>
+                                    </div>
+                                    <div class="memory-body">
+                                        <p>你好呀！今天过得怎么样？有什么想和我聊聊的吗？😊</p>
+                                    </div>
+                                    <div class="memory-footer">
+                                        <button class="edit-btn">编辑</button>
+                                        <button class="delete-btn">删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="history-actions">
-                    <button class="danger-btn" id="clearHistory">清空所有记录</button>
+                <div class="tab-content" id="importantTab">
+                    <div class="important-memories" id="importantMemories">
+                        <div class="memory-card">
+                            <div class="memory-header">
+                                <span class="memory-title">重要记忆</span>
+                                <span class="memory-indicator">⭐</span>
+                            </div>
+                            <div class="memory-body">
+                                <p>这是一条重要的记忆内容，会被优先存储和检索。</p>
+                            </div>
+                            <div class="memory-footer">
+                                <button class="edit-btn">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="profileTab">
+                    <div class="user-profile" id="userProfile">
+                        <div class="profile-card">
+                            <div class="profile-header">
+                                <h3>用户档案</h3>
+                                <button class="edit-profile-btn">编辑</button>
+                            </div>
+                            <div class="profile-body">
+                                <div class="profile-item">
+                                    <label>姓名</label>
+                                    <span>亲爱的</span>
+                                </div>
+                                <div class="profile-item">
+                                    <label>生日</label>
+                                    <span>未设置</span>
+                                </div>
+                                <div class="profile-item">
+                                    <label>职业</label>
+                                    <span>未设置</span>
+                                </div>
+                                <div class="profile-item">
+                                    <label>爱好</label>
+                                    <span>未设置</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="addTab">
+                    <div class="add-memory-form">
+                        <h3>添加新记忆</h3>
+                        <div class="form-group">
+                            <label>记忆标题</label>
+                            <input type="text" id="memoryTitle" placeholder="输入记忆标题">
+                        </div>
+                        <div class="form-group">
+                            <label>记忆内容</label>
+                            <textarea id="memoryContent" placeholder="输入记忆内容" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>记忆分类</label>
+                            <select id="memoryCategory">
+                                <option value="personal">个人信息</option>
+                                <option value="preference">偏好</option>
+                                <option value="event">重要事件</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <button class="save-btn" id="saveMemory">保存记忆</button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="long-press-menu" id="longPressMenu">
+        <ul>
+            <li data-action="add-to-memory">添加到永久记忆</li>
+            <li data-action="view-details">查看详情</li>
+            <li data-action="copy">复制内容</li>
+            <li data-action="delete">删除消息</li>
+        </ul>
     </div>
 
     <script src="js/memory.js"></script>

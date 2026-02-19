@@ -6,6 +6,7 @@ const App = {
         this.loadMessages();
         this.bindEvents();
         this.setupScrollEffects();
+        this.initMemoryReview();
     },
 
     loadSettings: function() {
@@ -37,11 +38,8 @@ const App = {
         const sendBtn = document.getElementById('sendBtn');
         const messageInput = document.getElementById('messageInput');
         const settingsBtn = document.getElementById('settingsBtn');
-        const historyBtn = document.getElementById('historyBtn');
         const closeSettings = document.getElementById('closeSettings');
-        const closeHistory = document.getElementById('closeHistory');
         const saveSettings = document.getElementById('saveSettings');
-        const clearHistory = document.getElementById('clearHistory');
         const themeSelect = document.getElementById('themeSelect');
         const ttsRate = document.getElementById('ttsRate');
 
@@ -63,29 +61,11 @@ const App = {
             UI.showModal('settingsModal');
         });
 
-        historyBtn.addEventListener('click', () => {
-            this.showHistory();
-            UI.showModal('historyModal');
-        });
-
         closeSettings.addEventListener('click', () => {
             UI.hideModal('settingsModal');
         });
 
-        closeHistory.addEventListener('click', () => {
-            UI.hideModal('historyModal');
-        });
-
         saveSettings.addEventListener('click', () => this.saveSettings());
-
-        clearHistory.addEventListener('click', () => {
-            if (confirm('确定要清空所有聊天记录吗？此操作不可恢复。')) {
-                Memory.clearMessages();
-                UI.renderMessages([]);
-                this.showHistory();
-                UI.showToast('聊天记录已清空', 'success');
-            }
-        });
 
         themeSelect.addEventListener('change', (e) => {
             UI.applyTheme(e.target.value);
@@ -101,15 +81,8 @@ const App = {
             }
         });
 
-        document.getElementById('historyModal').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                UI.hideModal('historyModal');
-            }
-        });
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            this.searchHistory(e.target.value);
-        });
+        // 初始化UI事件监听器
+        UI.initEventListeners();
     },
 
     setupScrollEffects: function() {
@@ -123,6 +96,44 @@ const App = {
                 header.classList.remove('scrolled');
             }
         });
+    },
+
+    // 初始化记忆复习机制
+    initMemoryReview: function() {
+        // 检查是否需要复习
+        this.checkMemoryReview();
+        
+        // 每小时检查一次
+        setInterval(() => this.checkMemoryReview(), 60 * 60 * 1000);
+    },
+
+    // 检查记忆复习
+    checkMemoryReview: function() {
+        const lastReview = localStorage.getItem('last_memory_review');
+        const now = new Date();
+        
+        // 如果今天还没有复习，或者已经过了一天
+        if (!lastReview || new Date(lastReview).toDateString() !== now.toDateString()) {
+            this.performMemoryReview();
+            localStorage.setItem('last_memory_review', now.toISOString());
+        }
+    },
+
+    // 执行记忆复习
+    performMemoryReview: function() {
+        const messagesForReview = Memory.getMessagesForReview();
+        if (messagesForReview.length > 0) {
+            // 在控制台记录复习内容
+            console.log('📝 开始记忆复习:', messagesForReview);
+            
+            // 复习每条记忆
+            messagesForReview.forEach(msg => {
+                Memory.reviewMessage(msg.id);
+            });
+            
+            // 可以在这里添加主动对话，提及复习的内容
+            // 例如：根据复习的记忆内容，生成一个相关的问题或话题
+        }
     },
 
     sendMessage: async function() {

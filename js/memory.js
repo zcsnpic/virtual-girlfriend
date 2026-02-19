@@ -112,7 +112,10 @@ const Memory = {
             role: message.role,
             content: message.content,
             timestamp: new Date().toISOString(),
-            recalled: false
+            recalled: false,
+            important: message.important || false,
+            reviewCount: 0,
+            lastReviewed: null
         };
         data.messages.push(newMessage);
         this.save(data);
@@ -152,6 +155,64 @@ const Memory = {
         data.messages = [];
         data.recalledMessages = [];
         this.save(data);
+    },
+
+    markAsImportant: function(messageId) {
+        const data = this.load();
+        const message = data.messages.find(m => m.id == messageId);
+        if (message) {
+            message.important = true;
+            this.save(data);
+            return true;
+        }
+        return false;
+    },
+
+    getImportantMessages: function(limit) {
+        const data = this.load();
+        const importantMessages = data.messages.filter(m => m.important).sort((a, b) => {
+            // 优先按reviewCount排序，然后按时间排序
+            if (b.reviewCount !== a.reviewCount) {
+                return b.reviewCount - a.reviewCount;
+            }
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        });
+        if (limit) {
+            return importantMessages.slice(0, limit);
+        }
+        return importantMessages;
+    },
+
+    getMessagesForReview: function(limit = 3) {
+        const data = this.load();
+        const now = new Date();
+        const messagesForReview = data.messages.filter(m => {
+            if (!m.important) return false;
+            if (!m.lastReviewed) return true;
+            const lastReviewed = new Date(m.lastReviewed);
+            const daysSinceReview = (now - lastReviewed) / (1000 * 60 * 60 * 24);
+            // 1天内已复习过的不重复复习
+            return daysSinceReview >= 1;
+        }).sort((a, b) => {
+            // 优先复习reviewCount少的，然后是时间早的
+            if (a.reviewCount !== b.reviewCount) {
+                return a.reviewCount - b.reviewCount;
+            }
+            return new Date(a.timestamp) - new Date(b.timestamp);
+        });
+        return messagesForReview.slice(0, limit);
+    },
+
+    reviewMessage: function(messageId) {
+        const data = this.load();
+        const message = data.messages.find(m => m.id == messageId);
+        if (message) {
+            message.reviewCount += 1;
+            message.lastReviewed = new Date().toISOString();
+            this.save(data);
+            return true;
+        }
+        return false;
     },
 
     searchMessages: function(keyword) {
@@ -201,9 +262,6 @@ const Memory = {
         if (userInfo.hobbies && userInfo.hobbies.length > 0) {
             context += `用户的爱好：${userInfo.hobbies.join('、')}\n`;
         }
-        if (userInfo.favoriteFood && userInfo.favoriteFood.length > 0) {
-            context += `用户喜欢的食物：${userInfo.favoriteFood.join('、')}\n`;
-        }
 
         if (habits.wakeUpTime) {
             context += `用户通常${habits.wakeUpTime}起床\n`;
@@ -219,7 +277,25 @@ const Memory = {
             context += `重要事件：${relationship.milestones.join('、')}\n`;
         }
 
-        context += `\n请始终保持角色扮演，用符合你性格和风格的方式回复。要关心用户，记住用户说过的话。`;
+        // 添加重要记忆
+        const importantMessages = this.getImportantMessages(5);
+        if (importantMessages.length > 0) {
+            context += `\n重要记忆：\n`;
+            importantMessages.forEach((msg, index) => {
+                context += `${index + 1}. ${msg.content}\n`;
+            });
+        }
+
+        // 添加需要复习的记忆
+        const messagesForReview = this.getMessagesForReview(2);
+        if (messagesForReview.length > 0) {
+            context += `\n最近需要回忆的事情：\n`;
+            messagesForReview.forEach((msg, index) => {
+                context += `${index + 1}. ${msg.content}\n`;
+            });
+        }
+
+        context += `\n请始终保持角色扮演，用符合你性格和风格的方式回复。要关心用户，记住用户说过的话。在合适的时机主动提及过去的共同话题，让对话更自然。`;
 
         return context;
     },

@@ -13,11 +13,33 @@ const API = {
             content: userMessage
         });
 
+        // 标记用户消息为重要（如果包含个人信息或重要事件）
+        const importantKeywords = ['名字', '生日', '职业', '爱好', '喜欢', '讨厌', '重要', '纪念日', '生日'];
+        const isImportant = importantKeywords.some(keyword => 
+            userMessage.toLowerCase().includes(keyword)
+        );
+
+        if (isImportant) {
+            const messages = Memory.getMessages();
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage && lastMessage.role === 'user') {
+                Memory.markAsImportant(lastMessage.id);
+            }
+        }
+
         const systemPrompt = Memory.buildMemoryContext();
         const recentMessages = Memory.getRecentContext(10);
 
+        // 获取重要记忆
+        const importantMessages = Memory.getImportantMessages(5);
+        const importantContext = importantMessages.map(m => ({
+            role: m.role,
+            content: m.content
+        }));
+
         const messages = [
             { role: 'system', content: systemPrompt },
+            ...importantContext,
             ...recentMessages
         ];
 
