@@ -1,0 +1,22 @@
+{
+  "name": "virtual-girlfriend",
+  "version": "1.0.0",
+  "description": "虚拟女友应用",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"Build completed\"",
+    "cap": "npx cap"
+  },
+  "keywords": ["virtual-girlfriend", "ai", "chat"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.0",
+    "@capacitor/core": "^6.1.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.0"
+  }
+}

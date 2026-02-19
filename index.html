@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小雪</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="header-left">
+                <div class="avatar">💕</div>
+                <div class="header-info">
+                        <div class="name" id="charName">小雪</div>
+                        <div class="status">在线</div>
+                    </div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" id="historyBtn" title="历史记录">📜</button>
+                <button class="icon-btn" id="settingsBtn" title="设置">⚙️</button>
+            </div>
+        </header>
+
+        <main class="chat-container" id="chatContainer">
+            <div class="messages" id="messages">
+                <div class="message ai">
+                    <div class="bubble">
+                        <span class="text">你好呀！今天过得怎么样？有什么想和我聊聊的吗？😊</span>
+                        <button class="tts-btn" title="朗读">🔊</button>
+                    </div>
+                    <div class="time">刚刚</div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="input-area">
+            <div class="input-wrapper">
+                <textarea id="messageInput" placeholder="输入消息..." rows="1"></textarea>
+                <button class="send-btn" id="sendBtn">发送</button>
+            </div>
+        </footer>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>设置</h2>
+                <button class="close-btn" id="closeSettings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>API 设置</h3>
+                    <div class="form-group">
+                        <label>DeepSeek API 密钥</label>
+                        <input type="password" id="apiKey" placeholder="sk-xxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>模型选择</label>
+                        <select id="modelSelect">
+                            <option value="deepseek-chat">DeepSeek-V3 (推荐)</option>
+                            <option value="deepseek-reasoner">DeepSeek-R1 (深度思考)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>角色设置</h3>
+                    <div class="form-group">
+                        <label>她的名字</label>
+                        <input type="text" id="charNameInput" placeholder="小雪">
+                    </div>
+                    <div class="form-group">
+                        <label>性格类型</label>
+                        <select id="personalitySelect">
+                            <option value="gentle">温柔体贴</option>
+                            <option value="lively">活泼开朗</option>
+                            <option value="mature">成熟稳重</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>说话风格</label>
+                        <select id="styleSelect">
+                            <option value="sweet">甜美可爱</option>
+                            <option value="elegant">优雅知性</option>
+                            <option value="playful">俏皮幽默</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>她怎么称呼你</label>
+                        <input type="text" id="userNameInput" placeholder="亲爱的">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>外观设置</h3>
+                    <div class="form-group">
+                        <label>主题</label>
+                        <select id="themeSelect">
+                            <option value="blue">蓝色（默认）</option>
+                            <option value="pink">粉色</option>
+                            <option value="green">绿色</option>
+                            <option value="dark">深色模式</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>语音设置</h3>
+                    <div class="form-group">
+                        <label>语音开关</label>
+                        <label class="switch">
+                            <input type="checkbox" id="ttsEnabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>语速</label>
+                        <input type="range" id="ttsRate" min="0.5" max="2" step="0.1" value="1">
+                        <span id="ttsRateValue">1.0x</span>
+                    </div>
+                </div>
+
+                <button class="save-btn" id="saveSettings">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>历史记录</h2>
+                <button class="close-btn" id="closeHistory">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="搜索对话...">
+                </div>
+                <div class="history-list" id="historyList">
+                    <p class="empty-tip">暂无历史记录</p>
+                </div>
+                <div class="history-actions">
+                    <button class="danger-btn" id="clearHistory">清空所有记录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/memory.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/tts.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

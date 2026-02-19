@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>虚拟女友 - 现代简约风 UI 原型</title>
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-light: #EEF2FF;
+            --primary-dark: #4F46E5;
+            --bg: #FAFAFA;
+            --card: #FFFFFF;
+            --text: #1F2937;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            --border: #E5E7EB;
+            --user-bubble: #6366F1;
+            --ai-bubble: #F3F4F6;
+            --online: #10B981;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--card);
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header {
+            padding: 16px 20px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background: var(--ai-bubble);
+            color: var(--text);
+        }
+
+        .icon-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .profile-section {
+            padding: 36px 20px;
+            text-align: center;
+            background: var(--card);
+        }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar svg {
+            width: 52px;
+            height: 52px;
+            fill: rgba(255, 255, 255, 0.95);
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            width: 22px;
+            height: 22px;
+            background: var(--online);
+            border-radius: 50%;
+            border: 3px solid var(--card);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-tag {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            margin-bottom: 10px;
+        }
+
+        .profile-status {
+            font-size: 13px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 5px;
+            height: 5px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 20px;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg);
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 78%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.55;
+            position: relative;
+        }
+
+        .message.user .bubble {
+            background: var(--user-bubble);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.ai .bubble {
+            background: var(--ai-bubble);
+            color: var(--text);
+            border-bottom-left-radius: 6px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 6px;
+            padding: 0 4px;
+        }
+
+        .input-section {
+            padding: 12px 16px;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--ai-bubble);
+            border-radius: 28px;
+            padding: 6px;
+        }
+
+        .input-field {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 16px;
+            font-size: 15px;
+            color: var(--text);
+            outline: none;
+        }
+
+        .input-field::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .voice-btn {
+            width: 42px;
+            height: 42px;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .voice-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .send-btn {
+            width: 42px;
+            height: 42px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            fill: none;
+            margin-left: 2px;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 14px;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--ai-bubble);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item:not(.active) {
+            color: var(--text-tertiary);
+        }
+
+        .nav-item svg {
+            width: 26px;
+            height: 26px;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            fill: none;
+        }
+
+        .nav-item.active svg {
+            stroke: var(--primary);
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            padding: 14px 16px;
+            overflow-x: auto;
+            background: var(--card);
+        }
+
+        .quick-actions::-webkit-scrollbar {
+            display: none;
+        }
+
+        .quick-btn {
+            flex-shrink: 0;
+            padding: 10px 18px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .quick-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .demo-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        @media (max-width: 480px) {
+            .app {
+                max-width: 100%;
+            }
+            
+            .demo-indicator {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-indicator">UI 原型预览</div>
+    
+    <div class="app">
+        <header class="header">
+            <button class="icon-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+            <button class="icon-btn">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="5" r="1.5"/>
+                    <circle cx="12" cy="12" r="1.5"/>
+                    <circle cx="12" cy="19" r="1.5"/>
+                </svg>
+            </button>
+        </header>
+
+        <section class="profile-section">
+            <div class="avatar-container">
+                <div class="avatar">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+                    </svg>
+                </div>
+                <div class="status-dot"></div>
+            </div>
+            <h1 class="profile-name">小雪</h1>
+            <p class="profile-tag">你的虚拟女友</p>
+            <p class="profile-status">
+                在线中
+                <span class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </p>
+        </section>
+
+        <div class="divider"></div>
+
+        <main class="chat-container">
+            <div class="messages">
+                <div class="message ai">
+                    <div class="bubble">你好呀！今天心情怎么样？</div>
+                    <span class="message-time">10:30</span>
+                </div>
+
+                <div class="message user">
+                    <div class="bubble">我今天很开心！</div>
+                    <span class="message-time">10:31</span>
+                </div>
+
+                <div class="message ai">
+                    <div class="bubble">太好啦！发生什么好事了吗？快和我分享一下~</div>
+                    <span class="message-time">10:31</span>
+                </div>
+
+                <div class="message user">
+                    <div class="bubble">刚刚完成了一个很重要的项目</div>
+                    <span class="message-time">10:32</span>
+                </div>
+
+                <div class="message ai">
+                    <div class="bubble">哇！太棒了！你真的很厉害呢！辛苦了这么久终于完成了，今晚要不要好好犒劳一下自己？</div>
+                    <span class="message-time">10:32</span>
+                </div>
+            </div>
+        </main>
+
+        <div class="quick-actions">
+            <button class="quick-btn">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                早安
+            </button>
+            <button class="quick-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                晚安
+            </button>
+            <button class="quick-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                想你了
+            </button>
+            <button class="quick-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/>
+                    <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/>
+                    <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/>
+                </svg>
+                抱抱
+            </button>
+            <button class="quick-btn">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                    <line x1="9" y1="9" x2="9.01" y2="9"/>
+                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                </svg>
+                讲个笑话
+            </button>
+        </div>
+
+        <section class="input-section">
+            <div class="input-container">
+                <input type="text" class="input-field" placeholder="说点什么...">
+                <button class="voice-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </button>
+                <button class="send-btn">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <nav class="bottom-nav">
+            <button class="nav-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span class="nav-label">首页</span>
+            </button>
+            <button class="nav-item active">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span class="nav-label">聊天</span>
+            </button>
+            <button class="nav-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="nav-label">我的</span>
+            </button>
+            <button class="nav-item">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span class="nav-label">设置</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        document.querySelectorAll('.quick-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = document.querySelector('.input-field');
+                const text = this.textContent.trim();
+                input.value = text;
+                input.focus();
+            });
+        });
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        document.querySelector('.send-btn').addEventListener('click', function() {
+            const input = document.querySelector('.input-field');
+            if (input.value.trim()) {
+                const messages = document.querySelector('.messages');
+                const now = new Date();
+                const time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+                
+                const msg = document.createElement('div');
+                msg.className = 'message user';
+                msg.innerHTML = `
+                    <div class="bubble">${input.value}</div>
+                    <span class="message-time">${time}</span>
+                `;
+                messages.appendChild(msg);
+                
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight;
+            }
+        });
+
+        document.querySelector('.input-field').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.querySelector('.send-btn').click();
+            }
+        });
+    </script>
+</body>
+</html>

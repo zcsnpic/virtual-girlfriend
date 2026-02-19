@@ -1,0 +1,13 @@
+{
+  "appId": "com.virtualgirlfriend.app",
+  "appName": "虚拟女友",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
