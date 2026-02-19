@@ -7,6 +7,8 @@ const App = {
         this.bindEvents();
         this.setupScrollEffects();
         this.initMemoryReview();
+        // 确保设置模态框在初始化时是隐藏的
+        UI.hideModal('settingsModal');
     },
 
     loadSettings: function() {

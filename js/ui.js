@@ -337,6 +337,15 @@ const UI = {
                 // 添加当前标签页的active状态
                 this.classList.add('active');
                 document.getElementById(`${tab}Tab`).classList.add('active');
+                
+                // 加载对应标签页的内容
+                if (tab === 'timeline') {
+                    UI.loadTimelineMemory();
+                } else if (tab === 'important') {
+                    UI.loadImportantMemory();
+                } else if (tab === 'profile') {
+                    UI.loadUserProfile();
+                }
             });
         });
 
@@ -349,38 +358,344 @@ const UI = {
                 const category = document.getElementById('memoryCategory').value;
                 
                 if (title && content) {
+                    // 创建新记忆
+                    const newMessage = Memory.addMessage({
+                        role: 'assistant',
+                        content: content,
+                        important: true
+                    });
+                    
                     UI.showToast('记忆已保存', 'success');
                     // 清空表单
                     document.getElementById('memoryTitle').value = '';
                     document.getElementById('memoryContent').value = '';
+                    // 刷新记忆列表
+                    UI.loadTimelineMemory();
+                    UI.loadImportantMemory();
                 } else {
                     UI.showToast('请填写标题和内容', 'error');
                 }
             });
         }
 
-        // 编辑和删除按钮
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                UI.showToast('编辑记忆', 'info');
-            });
-        });
-
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (confirm('确定要删除这条记忆吗？')) {
-                    UI.showToast('记忆已删除', 'success');
-                }
-            });
-        });
-
         // 编辑个人档案按钮
         const editProfileBtn = document.querySelector('.edit-profile-btn');
         if (editProfileBtn) {
             editProfileBtn.addEventListener('click', function() {
-                UI.showToast('编辑个人档案', 'info');
+                UI.showEditProfileModal();
             });
         }
+    },
+    
+    // 加载时间轴记忆
+    loadTimelineMemory: function() {
+        const timeline = document.getElementById('memoryTimeline');
+        if (!timeline) return;
+        
+        // 获取所有重要记忆
+        const importantMessages = Memory.getImportantMessages();
+        
+        if (importantMessages.length === 0) {
+            timeline.innerHTML = '<div class="empty-memory">暂无重要记忆</div>';
+            return;
+        }
+        
+        // 按时间分组
+        const groupedMessages = this.groupMessagesByDate(importantMessages);
+        
+        // 生成时间轴HTML
+        let html = '';
+        Object.keys(groupedMessages).forEach(date => {
+            html += `
+                <div class="timeline-group">
+                    <div class="timeline-time">${date}</div>
+                    ${groupedMessages[date].map(msg => {
+                        return `
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="memory-card">
+                                        <div class="memory-header">
+                                            <span class="memory-title">${this.getMemoryTitle(msg.content)}</span>
+                                            <span class="memory-indicator">⭐</span>
+                                        </div>
+                                        <div class="memory-body">
+                                            <p>${msg.content}</p>
+                                        </div>
+                                        <div class="memory-footer">
+                                            <button class="edit-btn" onclick="UI.editMemory(${msg.id})">编辑</button>
+                                            <button class="delete-btn" onclick="UI.deleteMemory(${msg.id})">删除</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        });
+        
+        timeline.innerHTML = html;
+    },
+    
+    // 加载重要记忆
+    loadImportantMemory: function() {
+        const importantMemories = document.getElementById('importantMemories');
+        if (!importantMemories) return;
+        
+        // 获取所有重要记忆
+        const messages = Memory.getImportantMessages();
+        
+        if (messages.length === 0) {
+            importantMemories.innerHTML = '<div class="empty-memory">暂无重要记忆</div>';
+            return;
+        }
+        
+        // 生成重要记忆HTML
+        let html = '';
+        messages.forEach(msg => {
+            html += `
+                <div class="memory-card">
+                    <div class="memory-header">
+                        <span class="memory-title">${this.getMemoryTitle(msg.content)}</span>
+                        <span class="memory-indicator">⭐</span>
+                    </div>
+                    <div class="memory-body">
+                        <p>${msg.content}</p>
+                    </div>
+                    <div class="memory-footer">
+                        <button class="edit-btn" onclick="UI.editMemory(${msg.id})">编辑</button>
+                        <button class="delete-btn" onclick="UI.deleteMemory(${msg.id})">删除</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        importantMemories.innerHTML = html;
+    },
+    
+    // 加载用户档案
+    loadUserProfile: function() {
+        const userProfile = document.getElementById('userProfile');
+        if (!userProfile) return;
+        
+        // 获取用户信息
+        const userInfo = Memory.getUserInfo();
+        
+        // 生成用户档案HTML
+        let html = `
+            <div class="profile-card">
+                <div class="profile-header">
+                    <h3>用户档案</h3>
+                    <button class="edit-profile-btn" onclick="UI.showEditProfileModal()">编辑</button>
+                </div>
+                <div class="profile-body">
+                    <div class="profile-item">
+                        <label>姓名</label>
+                        <span>${userInfo.name || '未设置'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <label>昵称</label>
+                        <span>${userInfo.nickname || '未设置'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <label>生日</label>
+                        <span>${userInfo.birthday || '未设置'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <label>职业</label>
+                        <span>${userInfo.job || '未设置'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <label>爱好</label>
+                        <span>${userInfo.hobbies && userInfo.hobbies.length > 0 ? userInfo.hobbies.join('、') : '未设置'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <label>喜欢的食物</label>
+                        <span>${userInfo.favoriteFood && userInfo.favoriteFood.length > 0 ? userInfo.favoriteFood.join('、') : '未设置'}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        userProfile.innerHTML = html;
+    },
+    
+    // 按日期分组消息
+    groupMessagesByDate: function(messages) {
+        const grouped = {};
+        
+        messages.forEach(msg => {
+            const date = new Date(msg.timestamp);
+            const dateStr = this.formatDate(date);
+            
+            if (!grouped[dateStr]) {
+                grouped[dateStr] = [];
+            }
+            
+            grouped[dateStr].push(msg);
+        });
+        
+        // 按日期降序排序
+        const sortedKeys = Object.keys(grouped).sort((a, b) => {
+            return new Date(b) - new Date(a);
+        });
+        
+        const sortedGrouped = {};
+        sortedKeys.forEach(key => {
+            sortedGrouped[key] = grouped[key];
+        });
+        
+        return sortedGrouped;
+    },
+    
+    // 格式化日期
+    formatDate: function(date) {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (date.toDateString() === today.toDateString()) {
+            return '今天';
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            return '昨天';
+        } else {
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+    },
+    
+    // 获取记忆标题
+    getMemoryTitle: function(content) {
+        if (content.length <= 10) {
+            return content;
+        }
+        return content.substring(0, 10) + '...';
+    },
+    
+    // 编辑记忆
+    editMemory: function(messageId) {
+        const messages = Memory.getMessages();
+        const msg = messages.find(m => m.id === messageId);
+        
+        if (msg) {
+            const newContent = prompt('编辑记忆内容:', msg.content);
+            if (newContent && newContent !== msg.content) {
+                // 更新记忆内容
+                const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data'));
+                const messageIndex = data.messages.findIndex(m => m.id === messageId);
+                if (messageIndex !== -1) {
+                    data.messages[messageIndex].content = newContent;
+                    localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
+                    UI.showToast('记忆已更新', 'success');
+                    // 刷新记忆列表
+                    UI.loadTimelineMemory();
+                    UI.loadImportantMemory();
+                }
+            }
+        }
+    },
+    
+    // 删除记忆
+    deleteMemory: function(messageId) {
+        if (confirm('确定要删除这条记忆吗？')) {
+            // 删除记忆
+            const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data'));
+            const messageIndex = data.messages.findIndex(m => m.id === messageId);
+            if (messageIndex !== -1) {
+                data.messages.splice(messageIndex, 1);
+                localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
+                UI.showToast('记忆已删除', 'success');
+                // 刷新记忆列表
+                UI.loadTimelineMemory();
+                UI.loadImportantMemory();
+            }
+        }
+    },
+    
+    // 显示编辑个人档案模态框
+    showEditProfileModal: function() {
+        const userInfo = Memory.getUserInfo();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.id = 'editProfileModal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2>编辑个人档案</h2>
+                    <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>姓名</label>
+                        <input type="text" id="editName" value="${userInfo.name || ''}" placeholder="请输入姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>昵称</label>
+                        <input type="text" id="editNickname" value="${userInfo.nickname || ''}" placeholder="请输入昵称">
+                    </div>
+                    <div class="form-group">
+                        <label>生日</label>
+                        <input type="date" id="editBirthday" value="${userInfo.birthday || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>职业</label>
+                        <input type="text" id="editJob" value="${userInfo.job || ''}" placeholder="请输入职业">
+                    </div>
+                    <div class="form-group">
+                        <label>爱好（用逗号分隔）</label>
+                        <input type="text" id="editHobbies" value="${userInfo.hobbies && userInfo.hobbies.length > 0 ? userInfo.hobbies.join(', ') : ''}" placeholder="请输入爱好">
+                    </div>
+                    <div class="form-group">
+                        <label>喜欢的食物（用逗号分隔）</label>
+                        <input type="text" id="editFavoriteFood" value="${userInfo.favoriteFood && userInfo.favoriteFood.length > 0 ? userInfo.favoriteFood.join(', ') : ''}" placeholder="请输入喜欢的食物">
+                    </div>
+                    <button class="save-btn" onclick="UI.saveUserProfile()">保存</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 点击模态框外部关闭
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    },
+    
+    // 保存用户档案
+    saveUserProfile: function() {
+        const name = document.getElementById('editName').value.trim();
+        const nickname = document.getElementById('editNickname').value.trim();
+        const birthday = document.getElementById('editBirthday').value;
+        const job = document.getElementById('editJob').value.trim();
+        const hobbies = document.getElementById('editHobbies').value.trim().split(',').map(h => h.trim()).filter(h => h);
+        const favoriteFood = document.getElementById('editFavoriteFood').value.trim().split(',').map(f => f.trim()).filter(f => f);
+        
+        // 保存用户档案
+        const userInfo = {
+            name: name,
+            nickname: nickname,
+            birthday: birthday,
+            job: job,
+            hobbies: hobbies,
+            favoriteFood: favoriteFood
+        };
+        
+        Memory.saveUserInfo(userInfo);
+        UI.showToast('个人档案已保存', 'success');
+        
+        // 关闭模态框
+        document.getElementById('editProfileModal').remove();
+        
+        // 刷新用户档案
+        UI.loadUserProfile();
     },
 
     // 初始化事件监听器
