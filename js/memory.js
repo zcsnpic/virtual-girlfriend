@@ -199,7 +199,7 @@ const Memory = {
             evolutionSystem: {
                 // 演化状态
                 currentState: {
-                    version: '1.0',
+                    version: '2.01',
                     lastEvolution: new Date().toISOString(),
                     totalInteractions: 0,
                     totalStories: 0
