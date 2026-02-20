@@ -15,6 +15,7 @@
             function closeModal(modalId) {
                 document.getElementById(modalId).classList.remove('active');
             }
+
         </script>
     </head>
 <body>
@@ -25,10 +26,12 @@
                 <div class="header-info">
                         <div class="name" id="charName">小雪</div>
                         <div class="status">在线</div>
-                        <div class="version">v2.01</div>
+                        <div class="version">v2.2</div>
                     </div>
             </div>
             <div class="header-right">
+                <button class="icon-btn" id="saveBtn" title="快速存档" onclick="quickSave()">💾</button>
+                <button class="icon-btn" id="loadBtn" title="存档管理" onclick="openSaveManager()">📁</button>
                 <button class="icon-btn" id="memoryBtn" title="长期记忆" onclick="openMemory()">🧠</button>
                 <button class="icon-btn" id="settingsBtn" title="设置" onclick="openSettings()">⚙️</button>
             </div>
@@ -258,10 +261,94 @@
         </ul>
     </div>
 
+    <div class="modal" id="saveManagerModal">
+        <div class="modal-content save-manager-modal">
+            <div class="modal-header">
+                <h2>存档管理</h2>
+                <button class="close-btn" id="closeSaveManager" onclick="closeModal('saveManagerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="save-points-list" id="savePointsList">
+                </div>
+                <div class="save-actions">
+                    <button class="save-btn" onclick="createNewSave()">新建存档</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/memory.js"></script>
     <script src="js/api.js"></script>
     <script src="js/tts.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        function quickSave() {
+            const savePoint = Memory.quickSave();
+            if (savePoint) {
+                alert('存档成功！');
+            }
+        }
+        function openSaveManager() {
+            document.getElementById('saveManagerModal').classList.add('active');
+            renderSavePoints();
+        }
+        function renderSavePoints() {
+            const savePoints = Memory.getSavePoints();
+            const container = document.getElementById('savePointsList');
+            
+            if (savePoints.length === 0) {
+                container.innerHTML = '<p class="empty-tip">暂无存档</p>';
+                return;
+            }
+            
+            let html = '';
+            savePoints.forEach(sp => {
+                const time = new Date(sp.timestamp).toLocaleString('zh-CN');
+                html += `
+                    <div class="save-point-card" data-id="${sp.id}">
+                        <div class="save-point-header">
+                            <span class="save-point-title">${sp.description}</span>
+                            <span class="save-point-time">${time}</span>
+                        </div>
+                        <div class="save-point-info">
+                            <span class="save-point-messages">${sp.messageCount}条消息</span>
+                        </div>
+                        <div class="save-point-actions">
+                            <button class="load-btn" onclick="loadSavePoint(${sp.id})">加载</button>
+                            <button class="delete-btn" onclick="deleteSavePoint(${sp.id})">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        function createNewSave() {
+            const description = prompt('请输入存档描述：', '');
+            if (description !== null) {
+                const savePoint = Memory.saveGame(description);
+                if (savePoint) {
+                    alert('存档成功！');
+                    renderSavePoints();
+                }
+            }
+        }
+        function loadSavePoint(savePointId) {
+            if (confirm('确定要加载这个存档吗？当前进度将被覆盖！')) {
+                const success = Memory.rollbackToSavePoint(savePointId);
+                if (success) {
+                    closeModal('saveManagerModal');
+                    location.reload();
+                }
+            }
+        }
+        function deleteSavePoint(savePointId) {
+            if (confirm('确定要删除这个存档吗？')) {
+                Memory.deleteSavePoint(savePointId);
+                renderSavePoints();
+            }
+        }
+    </script>
 </body>
 </html>

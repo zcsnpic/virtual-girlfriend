@@ -137,6 +137,9 @@ const Memory = {
                     priorities: ['家人', '朋友', '自我成长', '帮助他人']
                 }
             },
+            // 存档系统
+            savePoints: [],
+            maxSavePoints: 10,
             // 自主故事系统
             storySystem: {
                 // 故事状态
@@ -199,7 +202,7 @@ const Memory = {
             evolutionSystem: {
                 // 演化状态
                 currentState: {
-                    version: '2.01',
+                    version: '2.2',
                     lastEvolution: new Date().toISOString(),
                     totalInteractions: 0,
                     totalStories: 0
@@ -1175,5 +1178,102 @@ const Memory = {
     getAbilities: function() {
         const data = this.load();
         return data.evolutionSystem.abilities;
+    },
+
+    // 存档系统方法
+
+    // 创建存档
+    saveGame: function(description = '') {
+        const data = this.load();
+        const now = new Date();
+        
+        const savePoint = {
+            id: Date.now(),
+            timestamp: now.toISOString(),
+            description: description || `存档 ${now.toLocaleString('zh-CN')}`,
+            // 保存的内容
+            messages: JSON.parse(JSON.stringify(data.messages)),
+            character: JSON.parse(JSON.stringify(data.character)),
+            memoryLayers: JSON.parse(JSON.stringify(data.memoryLayers)),
+            evolutionSystem: JSON.parse(JSON.stringify(data.evolutionSystem)),
+            storySystem: JSON.parse(JSON.stringify(data.storySystem)),
+            recalledMessages: JSON.parse(JSON.stringify(data.recalledMessages)),
+            relationship: JSON.parse(JSON.stringify(data.relationship)),
+            userInfo: JSON.parse(JSON.stringify(data.userInfo)),
+            habits: JSON.parse(JSON.stringify(data.habits)),
+            // 存档信息
+            messageCount: data.messages.length
+        };
+        
+        // 添加到存档列表
+        data.savePoints.unshift(savePoint);
+        
+        // 限制存档数量
+        if (data.savePoints.length > data.maxSavePoints) {
+            data.savePoints = data.savePoints.slice(0, data.maxSavePoints);
+        }
+        
+        this.save(data);
+        return savePoint;
+    },
+
+    // 获取存档列表
+    getSavePoints: function() {
+        const data = this.load();
+        return data.savePoints;
+    },
+
+    // 加载存档
+    loadSavePoint: function(savePointId) {
+        const data = this.load();
+        const savePoint = data.savePoints.find(sp => sp.id === savePointId);
+        
+        if (!savePoint) {
+            return null;
+        }
+        
+        return savePoint;
+    },
+
+    // 回退到存档
+    rollbackToSavePoint: function(savePointId) {
+        const data = this.load();
+        const savePoint = data.savePoints.find(sp => sp.id === savePointId);
+        
+        if (!savePoint) {
+            return false;
+        }
+        
+        // 恢复数据
+        data.messages = savePoint.messages;
+        data.character = savePoint.character;
+        data.memoryLayers = savePoint.memoryLayers;
+        data.evolutionSystem = savePoint.evolutionSystem;
+        data.storySystem = savePoint.storySystem;
+        data.recalledMessages = savePoint.recalledMessages;
+        data.relationship = savePoint.relationship;
+        data.userInfo = savePoint.userInfo;
+        data.habits = savePoint.habits;
+        
+        this.save(data);
+        return true;
+    },
+
+    // 删除存档
+    deleteSavePoint: function(savePointId) {
+        const data = this.load();
+        data.savePoints = data.savePoints.filter(sp => sp.id !== savePointId);
+        this.save(data);
+        return true;
+    },
+
+    // 快速存档（自动描述）
+    quickSave: function() {
+        const messages = this.getMessages();
+        const lastMessage = messages[messages.length - 1];
+        const description = lastMessage 
+            ? `快速存档 - ${lastMessage.content.substring(0, 30)}${lastMessage.content.length > 30 ? '...' : ''}`
+            : '快速存档';
+        return this.saveGame(description);
     }
 };

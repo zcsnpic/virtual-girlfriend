@@ -1249,6 +1249,102 @@ input:checked + .slider:before {
     color: var(--text-color);
 }
 
+/* 存档管理样式 */
+.save-manager-modal {
+    max-height: 80vh;
+}
+
+.save-points-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.save-point-card {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.save-point-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.save-point-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.save-point-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.save-point-time {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.save-point-info {
+    margin-bottom: 12px;
+}
+
+.save-point-messages {
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+.save-point-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.save-point-actions button {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-point-actions .load-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.save-point-actions .load-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.save-point-actions .delete-btn {
+    background-color: var(--bg-color);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.save-point-actions .delete-btn:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.save-actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
 /* 添加记忆表单样式 */
 .add-memory-form {
     display: flex;
