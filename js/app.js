@@ -7,6 +7,12 @@ const App = {
         this.bindEvents();
         this.setupScrollEffects();
         this.initMemoryReview();
+        // 初始化记忆管理系统
+        Memory.initMemoryManagement();
+        // 初始化故事系统
+        Memory.initStorySystem();
+        // 初始化演化系统
+        Memory.initEvolutionSystem();
         // 确保设置模态框在初始化时是隐藏的
         UI.hideModal('settingsModal');
     },
@@ -157,6 +163,9 @@ const App = {
         document.getElementById('sendBtn').disabled = true;
         input.value = '';
         input.style.height = 'auto';
+        
+        // 记录交互
+        Memory.recordInteraction();
 
         const userMsg = Memory.addMessage({ role: 'user', content: message });
         const msgElement = UI.createMessageElement(userMsg);

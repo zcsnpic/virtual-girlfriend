@@ -27,8 +27,8 @@ const API = {
             }
         }
 
-        const systemPrompt = Memory.buildMemoryContext();
         const recentMessages = Memory.getRecentContext(10);
+        const systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
 
         // 获取重要记忆
         const importantMessages = Memory.getImportantMessages(5);
@@ -36,9 +36,42 @@ const API = {
             role: m.role,
             content: m.content
         }));
+        
+        // 获取角色当前情感状态
+        const currentEmotion = Memory.getCharacterEmotion();
+        const moodMap = {
+            'happy': '开心',
+            'sad': '难过',
+            'angry': '生气',
+            'anxious': '焦虑',
+            'calm': '平静',
+            'excited': '兴奋'
+        };
+        
+        // 在系统提示中添加情感状态信息
+        const emotionInfo = `\n你当前的情绪状态：${moodMap[currentEmotion.currentMood]}，请在回复中体现出这种情绪。`;
+
+        // 添加用户消息到记忆系统
+        Memory.addMemory(userMessage, recentMessages, { type: 'user_input' });
+        
+        // 分析用户消息对角色情感的影响
+        const emotionImpact = this.analyzeEmotionImpact(userMessage);
+        if (emotionImpact) {
+            const currentEmotion = Memory.getCharacterEmotion();
+            const updatedEmotion = {
+                currentMood: emotionImpact.mood || currentEmotion.currentMood,
+                emotionalState: {
+                    ...currentEmotion.emotionalState,
+                    happiness: Math.max(0, Math.min(100, currentEmotion.emotionalState.happiness + (emotionImpact.happinessChange || 0))),
+                    energy: Math.max(0, Math.min(100, currentEmotion.emotionalState.energy + (emotionImpact.energyChange || 0))),
+                    stress: Math.max(0, Math.min(100, currentEmotion.emotionalState.stress + (emotionImpact.stressChange || 0)))
+                }
+            };
+            Memory.updateCharacterEmotion(updatedEmotion);
+        }
 
         const messages = [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: systemPrompt + emotionInfo },
             ...importantContext,
             ...recentMessages
         ];
@@ -119,11 +152,44 @@ const API = {
             content: userMessage
         });
 
-        const systemPrompt = Memory.buildMemoryContext();
         const recentMessages = Memory.getRecentContext(10);
+        const systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
+
+        // 添加用户消息到记忆系统
+        Memory.addMemory(userMessage, recentMessages, { type: 'user_input' });
+        
+        // 分析用户消息对角色情感的影响
+        const emotionImpact = this.analyzeEmotionImpact(userMessage);
+        if (emotionImpact) {
+            const currentEmotion = Memory.getCharacterEmotion();
+            const updatedEmotion = {
+                currentMood: emotionImpact.mood || currentEmotion.currentMood,
+                emotionalState: {
+                    ...currentEmotion.emotionalState,
+                    happiness: Math.max(0, Math.min(100, currentEmotion.emotionalState.happiness + (emotionImpact.happinessChange || 0))),
+                    energy: Math.max(0, Math.min(100, currentEmotion.emotionalState.energy + (emotionImpact.energyChange || 0))),
+                    stress: Math.max(0, Math.min(100, currentEmotion.emotionalState.stress + (emotionImpact.stressChange || 0)))
+                }
+            };
+            Memory.updateCharacterEmotion(updatedEmotion);
+        }
+
+        // 获取角色当前情感状态
+        const currentEmotion = Memory.getCharacterEmotion();
+        const moodMap = {
+            'happy': '开心',
+            'sad': '难过',
+            'angry': '生气',
+            'anxious': '焦虑',
+            'calm': '平静',
+            'excited': '兴奋'
+        };
+        
+        // 在系统提示中添加情感状态信息
+        const emotionInfo = `\n你当前的情绪状态：${moodMap[currentEmotion.currentMood]}，请在回复中体现出这种情绪。`;
 
         const messages = [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: systemPrompt + emotionInfo },
             ...recentMessages
         ];
 
@@ -180,6 +246,55 @@ const API = {
             return response.ok;
         } catch (error) {
             return false;
+        }
+    },
+
+    // 分析用户消息对情感的影响
+    analyzeEmotionImpact: function(userMessage) {
+        const lowerMessage = userMessage.toLowerCase();
+        
+        // 正面情感词汇
+        const positiveWords = ['开心', '快乐', '高兴', '喜欢', '爱', '好', '棒', '优秀', '成功', '幸福', '谢谢', '感谢'];
+        // 负面情感词汇
+        const negativeWords = ['难过', '伤心', '生气', '讨厌', '恨', '坏', '差', '失败', '痛苦', '烦恼', '焦虑', '压力'];
+        // 中性情感词汇
+        const neutralWords = ['今天', '明天', '昨天', '天气', '吃饭', '睡觉', '工作', '学习', '朋友', '家人'];
+        
+        let positiveCount = 0;
+        let negativeCount = 0;
+        
+        // 计算情感词汇出现次数
+        positiveWords.forEach(word => {
+            if (lowerMessage.includes(word)) positiveCount++;
+        });
+        
+        negativeWords.forEach(word => {
+            if (lowerMessage.includes(word)) negativeCount++;
+        });
+        
+        // 分析情感影响
+        if (positiveCount > negativeCount) {
+            return {
+                mood: 'happy',
+                happinessChange: positiveCount * 5,
+                energyChange: positiveCount * 3,
+                stressChange: -positiveCount * 2
+            };
+        } else if (negativeCount > positiveCount) {
+            return {
+                mood: 'sad',
+                happinessChange: -negativeCount * 5,
+                energyChange: -negativeCount * 3,
+                stressChange: negativeCount * 4
+            };
+        } else {
+            // 中性消息
+            return {
+                mood: 'calm',
+                happinessChange: 0,
+                energyChange: 0,
+                stressChange: 0
+            };
         }
     }
 };
