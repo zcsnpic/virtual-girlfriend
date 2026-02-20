@@ -10,7 +10,7 @@ const Memory = {
                 personality: 'gentle',
                 style: 'sweet',
                 userName: '亲爱的',
-                theme: 'pink',
+                theme: 'blue',
                 ttsEnabled: true,
                 ttsRate: 1.0
             },
