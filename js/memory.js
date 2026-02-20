@@ -252,13 +252,34 @@ const Memory = {
         const data = localStorage.getItem(this.STORAGE_KEY);
         if (data) {
             try {
-                return JSON.parse(data);
+                const parsedData = JSON.parse(data);
+                // 确保数据结构完整性，合并默认值
+                const defaultData = this.getDefaultData();
+                return this.mergeData(parsedData, defaultData);
             } catch (e) {
                 console.error('加载数据失败:', e);
                 return this.getDefaultData();
             }
         }
         return this.getDefaultData();
+    },
+
+    // 合并数据，确保所有必需属性都存在
+    mergeData: function(existingData, defaultData) {
+        const merged = { ...defaultData };
+        
+        // 递归合并对象
+        for (const key in existingData) {
+            if (existingData.hasOwnProperty(key)) {
+                if (existingData[key] !== null && typeof existingData[key] === 'object' && !Array.isArray(existingData[key])) {
+                    merged[key] = this.mergeData(existingData[key], defaultData[key] || {});
+                } else {
+                    merged[key] = existingData[key];
+                }
+            }
+        }
+        
+        return merged;
     },
 
     save: function(data) {
@@ -1184,43 +1205,67 @@ const Memory = {
 
     // 创建存档
     saveGame: function(description = '') {
-        const data = this.load();
-        const now = new Date();
-        
-        const savePoint = {
-            id: Date.now(),
-            timestamp: now.toISOString(),
-            description: description || `存档 ${now.toLocaleString('zh-CN')}`,
-            // 保存的内容
-            messages: JSON.parse(JSON.stringify(data.messages)),
-            character: JSON.parse(JSON.stringify(data.character)),
-            memoryLayers: JSON.parse(JSON.stringify(data.memoryLayers)),
-            evolutionSystem: JSON.parse(JSON.stringify(data.evolutionSystem)),
-            storySystem: JSON.parse(JSON.stringify(data.storySystem)),
-            recalledMessages: JSON.parse(JSON.stringify(data.recalledMessages)),
-            relationship: JSON.parse(JSON.stringify(data.relationship)),
-            userInfo: JSON.parse(JSON.stringify(data.userInfo)),
-            habits: JSON.parse(JSON.stringify(data.habits)),
-            // 存档信息
-            messageCount: data.messages.length
-        };
-        
-        // 添加到存档列表
-        data.savePoints.unshift(savePoint);
-        
-        // 限制存档数量
-        if (data.savePoints.length > data.maxSavePoints) {
-            data.savePoints = data.savePoints.slice(0, data.maxSavePoints);
+        try {
+            const data = this.load();
+            const now = new Date();
+            
+            // 确保savePoints存在
+            if (!data.savePoints) {
+                data.savePoints = [];
+            }
+            if (!data.maxSavePoints) {
+                data.maxSavePoints = 10;
+            }
+            
+            const savePoint = {
+                id: Date.now(),
+                timestamp: now.toISOString(),
+                description: description || `存档 ${now.toLocaleString('zh-CN')}`,
+                // 保存的内容
+                messages: JSON.parse(JSON.stringify(data.messages || [])),
+                character: JSON.parse(JSON.stringify(data.character || {})),
+                memoryLayers: JSON.parse(JSON.stringify(data.memoryLayers || {})),
+                evolutionSystem: JSON.parse(JSON.stringify(data.evolutionSystem || {})),
+                storySystem: JSON.parse(JSON.stringify(data.storySystem || {})),
+                recalledMessages: JSON.parse(JSON.stringify(data.recalledMessages || [])),
+                relationship: JSON.parse(JSON.stringify(data.relationship || {})),
+                userInfo: JSON.parse(JSON.stringify(data.userInfo || {})),
+                habits: JSON.parse(JSON.stringify(data.habits || {})),
+                // 存档信息
+                messageCount: (data.messages || []).length
+            };
+            
+            // 添加到存档列表
+            data.savePoints.unshift(savePoint);
+            
+            // 限制存档数量
+            if (data.savePoints.length > data.maxSavePoints) {
+                data.savePoints = data.savePoints.slice(0, data.maxSavePoints);
+            }
+            
+            this.save(data);
+            console.log('存档创建成功:', savePoint);
+            return savePoint;
+        } catch (error) {
+            console.error('创建存档失败:', error);
+            return null;
         }
-        
-        this.save(data);
-        return savePoint;
     },
 
     // 获取存档列表
     getSavePoints: function() {
-        const data = this.load();
-        return data.savePoints;
+        try {
+            const data = this.load();
+            // 确保savePoints存在
+            if (!data.savePoints) {
+                data.savePoints = [];
+                this.save(data);
+            }
+            return data.savePoints;
+        } catch (error) {
+            console.error('获取存档列表失败:', error);
+            return [];
+        }
     },
 
     // 加载存档
@@ -1269,11 +1314,17 @@ const Memory = {
 
     // 快速存档（自动描述）
     quickSave: function() {
-        const messages = this.getMessages();
-        const lastMessage = messages[messages.length - 1];
-        const description = lastMessage 
-            ? `快速存档 - ${lastMessage.content.substring(0, 30)}${lastMessage.content.length > 30 ? '...' : ''}`
-            : '快速存档';
-        return this.saveGame(description);
+        try {
+            const messages = this.getMessages();
+            const lastMessage = messages[messages.length - 1];
+            const description = lastMessage 
+                ? `快速存档 - ${lastMessage.content.substring(0, 30)}${lastMessage.content.length > 30 ? '...' : ''}`
+                : '快速存档';
+            console.log('执行快速存档，描述:', description);
+            return this.saveGame(description);
+        } catch (error) {
+            console.error('快速存档失败:', error);
+            return null;
+        }
     }
 };
