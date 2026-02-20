@@ -1,7 +1,7 @@
 {
   "name": "virtual-girlfriend",
-  "version": "1.0.0",
-  "description": "虚拟女友应用",
+  "version": "2.0.1",
+  "description": "智能虚拟聊天应用 v2.01",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
