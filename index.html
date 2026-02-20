@@ -284,54 +284,87 @@
     <script src="js/app.js"></script>
     <script>
         function quickSave() {
-            const savePoint = Memory.quickSave();
-            if (savePoint) {
-                alert('存档成功！');
+            try {
+                console.log('开始快速存档...');
+                const savePoint = Memory.quickSave();
+                console.log('存档结果:', savePoint);
+                if (savePoint) {
+                    alert('存档成功！');
+                    // 刷新存档列表
+                    renderSavePoints();
+                } else {
+                    alert('存档失败！');
+                }
+            } catch (error) {
+                console.error('快速存档失败:', error);
+                alert('存档失败：' + error.message);
             }
         }
         function openSaveManager() {
-            document.getElementById('saveManagerModal').classList.add('active');
-            renderSavePoints();
+            try {
+                console.log('打开存档管理...');
+                document.getElementById('saveManagerModal').classList.add('active');
+                renderSavePoints();
+            } catch (error) {
+                console.error('打开存档管理失败:', error);
+                alert('打开存档管理失败：' + error.message);
+            }
         }
         function renderSavePoints() {
-            const savePoints = Memory.getSavePoints();
-            const container = document.getElementById('savePointsList');
-            
-            if (savePoints.length === 0) {
-                container.innerHTML = '<p class="empty-tip">暂无存档</p>';
-                return;
+            try {
+                console.log('渲染存档列表...');
+                const savePoints = Memory.getSavePoints();
+                console.log('存档列表:', savePoints);
+                const container = document.getElementById('savePointsList');
+                
+                if (savePoints.length === 0) {
+                    container.innerHTML = '<p class="empty-tip">暂无存档</p>';
+                    return;
+                }
+                
+                let html = '';
+                savePoints.forEach(sp => {
+                    const time = new Date(sp.timestamp).toLocaleString('zh-CN');
+                    html += `
+                        <div class="save-point-card" data-id="${sp.id}">
+                            <div class="save-point-header">
+                                <span class="save-point-title">${sp.description}</span>
+                                <span class="save-point-time">${time}</span>
+                            </div>
+                            <div class="save-point-info">
+                                <span class="save-point-messages">${sp.messageCount}条消息</span>
+                            </div>
+                            <div class="save-point-actions">
+                                <button class="load-btn" onclick="loadSavePoint(${sp.id})">加载</button>
+                                <button class="delete-btn" onclick="deleteSavePoint(${sp.id})">删除</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('渲染存档列表失败:', error);
+                alert('渲染存档列表失败：' + error.message);
             }
-            
-            let html = '';
-            savePoints.forEach(sp => {
-                const time = new Date(sp.timestamp).toLocaleString('zh-CN');
-                html += `
-                    <div class="save-point-card" data-id="${sp.id}">
-                        <div class="save-point-header">
-                            <span class="save-point-title">${sp.description}</span>
-                            <span class="save-point-time">${time}</span>
-                        </div>
-                        <div class="save-point-info">
-                            <span class="save-point-messages">${sp.messageCount}条消息</span>
-                        </div>
-                        <div class="save-point-actions">
-                            <button class="load-btn" onclick="loadSavePoint(${sp.id})">加载</button>
-                            <button class="delete-btn" onclick="deleteSavePoint(${sp.id})">删除</button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
         }
         function createNewSave() {
-            const description = prompt('请输入存档描述：', '');
-            if (description !== null) {
-                const savePoint = Memory.saveGame(description);
-                if (savePoint) {
-                    alert('存档成功！');
-                    renderSavePoints();
+            try {
+                console.log('创建新存档...');
+                const description = prompt('请输入存档描述：', '');
+                if (description !== null) {
+                    const savePoint = Memory.saveGame(description);
+                    console.log('新存档结果:', savePoint);
+                    if (savePoint) {
+                        alert('存档成功！');
+                        renderSavePoints();
+                    } else {
+                        alert('存档失败！');
+                    }
                 }
+            } catch (error) {
+                console.error('创建新存档失败:', error);
+                alert('创建新存档失败：' + error.message);
             }
         }
         function loadSavePoint(savePointId) {
