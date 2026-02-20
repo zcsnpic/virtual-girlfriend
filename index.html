@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小雪</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>小雪</title>
+        <link rel="stylesheet" href="css/style.css">
+        <script>
+            function openSettings() {
+                document.getElementById('settingsModal').classList.add('active');
+            }
+            function openMemory() {
+                document.getElementById('memoryModal').classList.add('active');
+            }
+            function closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            }
+        </script>
+    </head>
 <body>
     <div id="app">
         <header class="header">
@@ -17,8 +28,8 @@
                     </div>
             </div>
             <div class="header-right">
-                <button class="icon-btn" id="memoryBtn" title="长期记忆">🧠</button>
-                <button class="icon-btn" id="settingsBtn" title="设置">⚙️</button>
+                <button class="icon-btn" id="memoryBtn" title="长期记忆" onclick="openMemory()">🧠</button>
+                <button class="icon-btn" id="settingsBtn" title="设置" onclick="openSettings()">⚙️</button>
             </div>
         </header>
 
@@ -43,11 +54,11 @@
         </footer>
     </div>
 
-    <div class="modal" id="settingsModal" style="display: none;">
+    <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>设置</h2>
-                <button class="close-btn" id="closeSettings">&times;</button>
+                <button class="close-btn" id="closeSettings" onclick="closeModal('settingsModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="settings-section">
@@ -133,7 +144,7 @@
         <div class="modal-content memory-modal">
             <div class="modal-header">
                 <h2>长期记忆</h2>
-                <button class="close-btn" id="closeMemory">&times;</button>
+                <button class="close-btn" id="closeMemory" onclick="closeModal('memoryModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="memory-tabs">
