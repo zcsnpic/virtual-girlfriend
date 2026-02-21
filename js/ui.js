@@ -760,12 +760,26 @@ const UI = {
 
     updateVoiceList: function() {
         const select = document.getElementById('ttsVoice');
-        if (!select) return;
+        if (!select) {
+            console.log('ttsVoice select element not found');
+            return;
+        }
 
         const voices = TTS.getVoices();
         const settings = Memory.getSettings();
 
+        console.log('updateVoiceList: 找到', voices.length, '个声音');
+
         select.innerHTML = '<option value="auto">自动选择（推荐）</option>';
+
+        if (voices.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = '等待声音列表加载...';
+            option.disabled = true;
+            select.appendChild(option);
+            return;
+        }
 
         voices.forEach(voice => {
             const option = document.createElement('option');
@@ -937,5 +951,13 @@ const UI = {
         setTimeout(() => {
             this.updateVoiceList();
         }, 100);
+
+        setTimeout(() => {
+            this.updateVoiceList();
+        }, 1000);
+
+        setTimeout(() => {
+            this.updateVoiceList();
+        }, 3000);
     }
 };

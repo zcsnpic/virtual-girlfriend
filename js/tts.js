@@ -276,7 +276,10 @@ const TTS = {
 
     init: function() {
         const loadVoices = () => {
+            const voices = this.synth.getVoices();
+            console.log('声音列表加载完成，共', voices.length, '个声音');
             this.voicesLoaded = true;
+            
             if (typeof UI !== 'undefined' && UI.updateVoiceList) {
                 UI.updateVoiceList();
             }
@@ -289,6 +292,12 @@ const TTS = {
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = loadVoices;
         }
+
+        setTimeout(() => {
+            if (!this.voicesLoaded && this.synth.getVoices().length > 0) {
+                loadVoices();
+            }
+        }, 500);
     }
 };
 
