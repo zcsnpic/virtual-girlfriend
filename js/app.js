@@ -94,6 +94,7 @@ const App = {
 
         UI.applyTheme(settings.theme || 'blue');
         UI.updateCharName(settings.charName || '小雪');
+        UI.updateAvatar(settings.avatar);
     },
 
     loadMessages: function() {
@@ -269,10 +270,20 @@ const App = {
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
             const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
+            console.log('=== 多条消息检测 ===');
+            console.log('multiMessageCount:', multiMessageCount);
+            console.log('hasSeparator:', hasSeparator);
+            console.log('hasMultipleScenes:', hasMultipleScenes);
+            console.log('lastMsg.content:', lastMsg ? lastMsg.content : 'null');
+            
             if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
                 const splitContents = UI.splitMessages(lastMsg.content);
                 
+                console.log('splitContents:', splitContents);
+                console.log('splitContents.length:', splitContents.length);
+                
                 if (splitContents.length > 1) {
+                    console.log('进入多条消息显示逻辑');
                     if (typingElement) {
                         typingElement.remove();
                     }
@@ -376,6 +387,17 @@ const App = {
     },
 
     saveSettings: function() {
+        const mainAvatar = document.getElementById('mainAvatar');
+        let avatar = '';
+        if (mainAvatar) {
+            const img = mainAvatar.querySelector('img');
+            if (img) {
+                avatar = img.src;
+            } else {
+                avatar = mainAvatar.textContent.trim();
+            }
+        }
+
         const settings = {
             apiKey: document.getElementById('apiKey').value.trim(),
             model: document.getElementById('modelSelect').value,
@@ -384,6 +406,7 @@ const App = {
             style: document.getElementById('styleSelect').value,
             userName: document.getElementById('userNameInput').value.trim() || '亲爱的',
             theme: document.getElementById('themeSelect').value,
+            avatar: avatar,
             ttsEnabled: document.getElementById('ttsEnabled').checked,
             ttsAutoPlay: document.getElementById('ttsAutoPlay').checked,
             ttsRate: parseFloat(document.getElementById('ttsRate').value),

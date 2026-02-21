@@ -25,11 +25,11 @@
     <div id="app">
         <header class="header">
             <div class="header-left">
-                <div class="avatar">💕</div>
+                <div class="avatar" id="mainAvatar">💕</div>
                 <div class="header-info">
                         <div class="name" id="charName">小雪</div>
                         <div class="status">在线</div>
-                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.52</div>
+                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.6</div>
                     </div>
             </div>
             <div class="header-right">
@@ -85,6 +85,27 @@
 
                 <div class="settings-section">
                     <h3>角色设置</h3>
+                    <div class="avatar-settings">
+                        <div class="avatar-preview">
+                            <div class="avatar-large" id="avatarPreview">💕</div>
+                        </div>
+                        <div class="avatar-upload-options">
+                            <div class="form-group">
+                                <label>上传头像</label>
+                                <input type="file" id="avatarInput" accept="image/*">
+                                <small>支持 JPG、PNG、GIF，建议小于100KB</small>
+                            </div>
+                            <div class="form-group">
+                                <label>或使用图片URL</label>
+                                <input type="text" id="avatarUrl" placeholder="https://example.com/avatar.jpg">
+                            </div>
+                            <div class="form-group">
+                                <label>或使用Emoji</label>
+                                <input type="text" id="avatarEmoji" placeholder="💕" maxlength="4">
+                            </div>
+                            <button type="button" id="resetAvatarBtn" class="reset-avatar-btn">恢复默认</button>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>她的名字</label>
                         <input type="text" id="charNameInput" placeholder="小雪">
@@ -397,6 +418,15 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.6</div>
+                        <div class="changelog-date">2025-02-21</div>
+                        <ul class="changelog-changes">
+                            <li>新增头像自定义功能，支持上传图片、URL或Emoji</li>
+                            <li>头像尺寸增大至70px，更清晰展示</li>
+                            <li>优化移动端浏览器TTS兼容性</li>
+                        </ul>
+                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v2.52</div>
                         <div class="changelog-date">2025-02-21</div>

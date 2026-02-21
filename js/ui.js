@@ -17,27 +17,32 @@ const UI = {
     },
 
     splitMessages: function(content) {
+        console.log('UI.splitMessages 输入:', content);
         if (!content) return [content];
         
         let messages = [];
         
         if (content.includes('|||')) {
             messages = content.split('|||').map(s => s.trim()).filter(s => s);
+            console.log('按|||拆分结果:', messages);
         } else {
             messages = [content];
         }
         
         messages = this.splitBySceneDescriptions(messages);
+        console.log('UI.splitMessages 输出:', messages);
         
         return messages;
     },
 
     splitBySceneDescriptions: function(messages) {
+        console.log('splitBySceneDescriptions 输入:', messages);
         const result = [];
         
         for (const msg of messages) {
             const scenePattern = /\[([^\]]+)\]/g;
             const matches = [...msg.matchAll(scenePattern)];
+            console.log('消息:', msg, '场景匹配数:', matches.length);
             
             if (matches.length <= 1) {
                 result.push(msg);
@@ -87,6 +92,7 @@ const UI = {
             }
         }
         
+        console.log('splitBySceneDescriptions 输出:', result);
         return result.filter(s => s);
     },
 
@@ -830,6 +836,7 @@ const UI = {
 
         // 初始化TTS设置
         this.initTtsSettings();
+        this.initAvatarSettings();
     },
 
     updateVoiceList: function() {
@@ -925,6 +932,100 @@ const UI = {
         });
 
         container.innerHTML = html;
+    },
+
+    updateAvatar: function(avatar) {
+        const mainAvatar = document.getElementById('mainAvatar');
+        const avatarPreview = document.getElementById('avatarPreview');
+        
+        const defaultAvatar = '💕';
+        const avatarValue = avatar || defaultAvatar;
+        
+        const isImage = avatarValue.startsWith('data:') || avatarValue.startsWith('http');
+        
+        if (mainAvatar) {
+            if (isImage) {
+                mainAvatar.innerHTML = `<img src="${avatarValue}" alt="头像">`;
+            } else {
+                mainAvatar.textContent = avatarValue;
+            }
+        }
+        
+        if (avatarPreview) {
+            if (isImage) {
+                avatarPreview.innerHTML = `<img src="${avatarValue}" alt="头像">`;
+            } else {
+                avatarPreview.textContent = avatarValue;
+            }
+        }
+    },
+
+    initAvatarSettings: function() {
+        const settings = Memory.getSettings();
+        const avatarInput = document.getElementById('avatarInput');
+        const avatarUrl = document.getElementById('avatarUrl');
+        const avatarEmoji = document.getElementById('avatarEmoji');
+        const resetAvatarBtn = document.getElementById('resetAvatarBtn');
+
+        this.updateAvatar(settings.avatar);
+
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (file.size > 200 * 1024) {
+                    UI.showToast('图片太大，建议小于200KB', 'error');
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    UI.showToast('请选择图片文件', 'error');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64 = event.target.result;
+                    UI.updateAvatar(base64);
+                    if (avatarUrl) avatarUrl.value = '';
+                    if (avatarEmoji) avatarEmoji.value = '';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (avatarUrl) {
+            avatarUrl.addEventListener('change', function() {
+                const url = this.value.trim();
+                if (url) {
+                    UI.updateAvatar(url);
+                    if (avatarEmoji) avatarEmoji.value = '';
+                    if (avatarInput) avatarInput.value = '';
+                }
+            });
+        }
+
+        if (avatarEmoji) {
+            avatarEmoji.addEventListener('input', function() {
+                const emoji = this.value.trim();
+                if (emoji) {
+                    UI.updateAvatar(emoji);
+                    if (avatarUrl) avatarUrl.value = '';
+                    if (avatarInput) avatarInput.value = '';
+                }
+            });
+        }
+
+        if (resetAvatarBtn) {
+            resetAvatarBtn.addEventListener('click', function() {
+                UI.updateAvatar('');
+                if (avatarInput) avatarInput.value = '';
+                if (avatarUrl) avatarUrl.value = '';
+                if (avatarEmoji) avatarEmoji.value = '';
+                UI.showToast('已恢复默认头像', 'success');
+            });
+        }
     },
 
     initTtsSettings: function() {

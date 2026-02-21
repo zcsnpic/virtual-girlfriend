@@ -11,6 +11,7 @@ const Memory = {
                 style: 'sweet',
                 userName: '亲爱的',
                 theme: 'blue',
+                avatar: '',
                 ttsEnabled: true,
                 ttsAutoPlay: true,
                 ttsRate: 1.0,
@@ -218,7 +219,7 @@ const Memory = {
             evolutionSystem: {
                 // 演化状态
                 currentState: {
-                    version: '2.4',
+                    version: '2.6',
                     lastEvolution: new Date().toISOString(),
                     totalInteractions: 0,
                     totalStories: 0
@@ -1411,6 +1412,8 @@ const Memory = {
         if (!content) return false;
         const scenePattern = /\[([^\]]+)\]/g;
         const matches = content.match(scenePattern);
-        return matches && matches.length > 1;
+        const result = matches && matches.length > 1;
+        console.log('hasMultipleSceneDescriptions:', result, 'matches:', matches ? matches.length : 0);
+        return result;
     }
 };
