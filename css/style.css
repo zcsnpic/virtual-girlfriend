@@ -1830,6 +1830,24 @@ input:checked + .slider:before {
     color: var(--primary-color);
 }
 
+.apply-avatar-btn {
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.apply-avatar-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 @media (max-width: 480px) {
     .avatar {
         width: 55px;
@@ -1844,5 +1862,122 @@ input:checked + .slider:before {
 
     .avatar-upload-options {
         width: 100%;
+    }
+}
+
+/* 场景展示区样式 */
+.scene-display {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(74, 144, 217, 0.95), rgba(100, 120, 180, 0.95));
+    padding: 12px 24px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+}
+
+.scene-display.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.scene-display.hiding {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+}
+
+.scene-icon {
+    font-size: 20px;
+    animation: sceneIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes sceneIconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.scene-text {
+    color: white;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 消息播放状态 */
+.message.playing {
+    animation: messagePlaying 1s ease-in-out infinite;
+}
+
+.message.playing .bubble {
+    box-shadow: 0 0 15px var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+@keyframes messagePlaying {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.01); }
+}
+
+/* 隐藏气泡内的场景描述 */
+.message.ai .scene-description {
+    display: none;
+}
+
+/* 语音按钮样式调整 */
+.tts-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.tts-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.tts-btn.playing {
+    animation: ttsPlaying 0.5s ease-in-out infinite;
+    opacity: 1;
+}
+
+@keyframes ttsPlaying {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+@media (max-width: 480px) {
+    .scene-display {
+        bottom: 70px;
+        padding: 10px 16px;
+        border-radius: 20px;
+    }
+
+    .scene-icon {
+        font-size: 16px;
+    }
+
+    .scene-text {
+        font-size: 12px;
     }
 }

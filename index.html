@@ -59,6 +59,11 @@
                 <button class="send-btn" id="sendBtn">发送</button>
             </div>
         </footer>
+
+        <div class="scene-display" id="sceneDisplay">
+            <div class="scene-icon">🌸</div>
+            <div class="scene-text" id="sceneText"></div>
+        </div>
     </div>
 
     <div class="modal" id="settingsModal">
@@ -88,6 +93,7 @@
                     <div class="avatar-settings">
                         <div class="avatar-preview">
                             <div class="avatar-large" id="avatarPreview">💕</div>
+                            <button type="button" id="applyAvatarBtn" class="apply-avatar-btn">应用头像</button>
                         </div>
                         <div class="avatar-upload-options">
                             <div class="form-group">
@@ -425,6 +431,14 @@
                             <li>新增头像自定义功能，支持上传图片、URL或Emoji</li>
                             <li>头像尺寸增大至70px，更清晰展示</li>
                             <li>优化移动端浏览器TTS兼容性</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.55</div>
+                        <div class="changelog-date">2025-02-21</div>
+                        <ul class="changelog-changes">
+                            <li>新增"应用头像"按钮，上传后可直接应用</li>
+                            <li>优化头像设置交互体验</li>
                         </ul>
                     </div>
                     <div class="changelog-item">

@@ -1,4 +1,72 @@
 const UI = {
+    sceneQueue: [],
+    currentScene: null,
+    sceneTimer: null,
+
+    showScene: function(scene) {
+        if (!scene) return;
+
+        const display = document.getElementById('sceneDisplay');
+        const text = document.getElementById('sceneText');
+        
+        if (!display || !text) return;
+
+        if (this.sceneTimer) {
+            clearTimeout(this.sceneTimer);
+        }
+
+        if (display.classList.contains('active')) {
+            display.classList.add('hiding');
+            setTimeout(() => {
+                text.textContent = scene;
+                display.classList.remove('hiding');
+                display.classList.add('active');
+            }, 300);
+        } else {
+            text.textContent = scene;
+            display.classList.add('active');
+        }
+
+        this.currentScene = scene;
+        console.log('场景展示:', scene);
+    },
+
+    hideScene: function() {
+        const display = document.getElementById('sceneDisplay');
+        
+        if (!display) return;
+
+        display.classList.add('hiding');
+        
+        setTimeout(() => {
+            display.classList.remove('active');
+            display.classList.remove('hiding');
+            this.currentScene = null;
+        }, 400);
+    },
+
+    setPlayingState: function(messageId, isPlaying) {
+        const messageEl = document.querySelector(`.message[data-id="${messageId}"]`);
+        if (messageEl) {
+            if (isPlaying) {
+                messageEl.classList.add('playing');
+            } else {
+                messageEl.classList.remove('playing');
+            }
+        }
+
+        const ttsBtn = messageEl?.querySelector('.tts-btn');
+        if (ttsBtn) {
+            if (isPlaying) {
+                ttsBtn.classList.add('playing');
+                ttsBtn.textContent = '🔊';
+            } else {
+                ttsBtn.classList.remove('playing');
+                ttsBtn.textContent = '🔊';
+            }
+        }
+    },
+
     formatTime: function(isoString) {
         const date = new Date(isoString);
         const now = new Date();
@@ -111,40 +179,24 @@ const UI = {
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
 
-        // 解析消息内容
-        let sceneElement = null;
-        let textElement = null;
-        
         if (message.role === 'assistant') {
-            // AI消息：分离场景和说话内容
             const parsed = Memory.parseMessage(message.content);
             
-            // 如果有场景描述，创建场景元素
-            if (parsed.hasScene) {
-                sceneElement = document.createElement('div');
-                sceneElement.className = 'scene-description';
-                sceneElement.textContent = parsed.scene;
-                bubble.appendChild(sceneElement);
-            }
-            
-            // 创建说话内容元素
-            textElement = document.createElement('span');
+            const textElement = document.createElement('span');
             textElement.className = 'text';
-            textElement.textContent = parsed.hasSpeech ? parsed.speech : message.content;
+            textElement.textContent = parsed.hasSpeech ? parsed.speech : Memory.getSpeechContent(message.content);
             bubble.appendChild(textElement);
             
-            // 添加语音按钮
             const ttsBtn = document.createElement('button');
             ttsBtn.className = 'tts-btn';
             ttsBtn.textContent = '🔊';
             ttsBtn.title = '朗读';
             ttsBtn.onclick = () => {
-                TTS.toggle(message.content);
+                TTS.toggle(message.content, message.id);
             };
             bubble.appendChild(ttsBtn);
         } else {
-            // 用户消息：直接显示
-            textElement = document.createElement('span');
+            const textElement = document.createElement('span');
             textElement.className = 'text';
             textElement.textContent = message.content;
             bubble.appendChild(textElement);
@@ -165,7 +217,6 @@ const UI = {
         div.appendChild(bubble);
         div.appendChild(time);
 
-        // 添加长按事件
         this.addLongPressEvent(div);
 
         return div;
@@ -1032,6 +1083,30 @@ const UI = {
                 if (avatarUrl) avatarUrl.value = '';
                 if (avatarEmoji) avatarEmoji.value = '';
                 UI.showToast('已恢复默认头像', 'success');
+            });
+        }
+
+        const applyAvatarBtn = document.getElementById('applyAvatarBtn');
+        if (applyAvatarBtn) {
+            applyAvatarBtn.addEventListener('click', function() {
+                const avatarPreview = document.getElementById('avatarPreview');
+                let avatar = '';
+                if (avatarPreview) {
+                    const img = avatarPreview.querySelector('img');
+                    if (img) {
+                        avatar = img.src;
+                    } else {
+                        avatar = avatarPreview.textContent.trim();
+                    }
+                }
+                
+                const settings = Memory.getSettings();
+                settings.avatar = avatar;
+                Memory.saveSettings(settings);
+                
+                UI.updateAvatar(avatar);
+                UI.showToast('头像已应用', 'success');
+                console.log('应用头像按钮点击, avatar:', avatar ? avatar.substring(0, 50) + '...' : '空');
             });
         }
     },

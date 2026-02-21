@@ -172,7 +172,7 @@ const TTS = {
         };
     },
 
-    speak: function(text, rate) {
+    speak: function(text, rate, messageId) {
         const settings = Memory.getSettings();
 
         if (!settings.ttsEnabled) {
@@ -196,6 +196,15 @@ const TTS = {
         }
 
         this.stop();
+
+        const parsed = Memory.parseMessage(text);
+        if (parsed.hasScene && typeof UI !== 'undefined') {
+            UI.showScene(parsed.scene);
+        }
+
+        if (messageId && typeof UI !== 'undefined') {
+            UI.setPlayingState(messageId, true);
+        }
 
         const utterance = new SpeechSynthesisUtterance(speechContent);
         
@@ -221,6 +230,12 @@ const TTS = {
 
         utterance.onend = () => {
             this.isPlaying = false;
+            if (typeof UI !== 'undefined') {
+                UI.hideScene();
+                if (messageId) {
+                    UI.setPlayingState(messageId, false);
+                }
+            }
         };
 
         utterance.onerror = (e) => {
