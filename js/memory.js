@@ -1358,54 +1358,59 @@ const Memory = {
         }
     },
 
-    // 消息解析器 - 分离场景和说话内容
     parseMessage: function(content) {
         try {
-            // 匹配方括号中的场景描述
-            const sceneMatch = content.match(/\[([^\]]+)\]/);
-            // 匹配双引号中的说话内容
+            const scenePattern = /\[([^\]]+)\]/g;
+            const sceneMatches = [...content.matchAll(scenePattern)];
+            
+            const firstScene = sceneMatches.length > 0 ? sceneMatches[0][1].trim() : null;
+            
             const speechMatch = content.match(/"([^"]+)"/);
             
-            // 提取场景描述（去掉方括号）
-            const scene = sceneMatch ? sceneMatch[1].trim() : null;
-            
-            // 提取说话内容（去掉双引号）
             let speech = speechMatch ? speechMatch[1].trim() : null;
             
-            // 如果没有匹配到双引号内容，使用原始内容（去掉场景描述部分）
             if (!speech) {
-                speech = sceneMatch ? content.replace(sceneMatch[0], '').trim() : content.trim();
+                speech = content.replace(scenePattern, '').trim();
             }
             
             return {
-                scene: scene,           // 场景描述（可能为null）
-                speech: speech,         // 说话内容
-                hasScene: !!scene,      // 是否有场景描述
-                hasSpeech: !!speech,    // 是否有说话内容
-                original: content       // 原始内容
+                scene: firstScene,
+                speech: speech,
+                hasScene: !!firstScene,
+                hasSpeech: !!speech,
+                original: content,
+                allScenes: sceneMatches.map(m => m[1].trim())
             };
         } catch (error) {
             console.error('消息解析失败:', error);
-            // 解析失败时返回原始内容
             return {
                 scene: null,
                 speech: content,
                 hasScene: false,
                 hasSpeech: true,
-                original: content
+                original: content,
+                allScenes: []
             };
         }
     },
 
-    // 获取语音播放内容（只返回说话内容）
     getSpeechContent: function(content) {
-        const parsed = this.parseMessage(content);
-        return parsed.speech || content;
+        if (!content) return '';
+        const scenePattern = /\[([^\]]+)\]/g;
+        let speech = content.replace(scenePattern, '').trim();
+        speech = speech.replace(/\|\|\|/g, ' ').trim();
+        return speech || '';
     },
 
-    // 获取场景描述
     getSceneDescription: function(content) {
         const parsed = this.parseMessage(content);
         return parsed.scene;
+    },
+
+    hasMultipleSceneDescriptions: function(content) {
+        if (!content) return false;
+        const scenePattern = /\[([^\]]+)\]/g;
+        const matches = content.match(scenePattern);
+        return matches && matches.length > 1;
     }
 };

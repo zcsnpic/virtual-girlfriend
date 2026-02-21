@@ -266,7 +266,10 @@ const App = {
             const multiMessageCount = parseInt(settings.multiMessageCount || '3');
             const messageDelay = settings.messageDelay || 600;
             
-            if (multiMessageCount > 1 && lastMsg && lastMsg.content && lastMsg.content.includes('|||')) {
+            const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
+            const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
+            
+            if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
                 const splitContents = UI.splitMessages(lastMsg.content);
                 
                 if (splitContents.length > 1) {
@@ -345,6 +348,11 @@ const App = {
         for (let i = 0; i < messages.length; i++) {
             const msg = messages[i];
             if (msg && msg.content) {
+                const speechContent = Memory.getSpeechContent(msg.content);
+                if (!speechContent || speechContent.trim() === '') {
+                    continue;
+                }
+                
                 TTS.speak(msg.content, rate);
                 await new Promise(resolve => {
                     const checkInterval = setInterval(() => {
