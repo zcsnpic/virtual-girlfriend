@@ -4,12 +4,24 @@ const UI = {
     sceneTimer: null,
 
     showScene: function(scene) {
-        if (!scene) return;
+        if (!scene) {
+            console.log('showScene: 场景为空，跳过');
+            return;
+        }
 
         const display = document.getElementById('sceneDisplay');
         const text = document.getElementById('sceneText');
         
-        if (!display || !text) return;
+        console.log('showScene - 元素状态:', {
+            display: display ? 'found' : 'not found',
+            text: text ? 'found' : 'not found',
+            scene: scene
+        });
+        
+        if (!display || !text) {
+            console.error('showScene: 找不到场景展示元素');
+            return;
+        }
 
         if (this.sceneTimer) {
             clearTimeout(this.sceneTimer);
@@ -21,14 +33,15 @@ const UI = {
                 text.textContent = scene;
                 display.classList.remove('hiding');
                 display.classList.add('active');
+                console.log('showScene: 场景切换完成 (从active切换)');
             }, 300);
         } else {
             text.textContent = scene;
             display.classList.add('active');
+            console.log('showScene: 场景展示激活');
         }
 
         this.currentScene = scene;
-        console.log('场景展示:', scene);
     },
 
     hideScene: function() {
@@ -184,7 +197,16 @@ const UI = {
             
             const textElement = document.createElement('span');
             textElement.className = 'text';
-            textElement.textContent = parsed.hasSpeech ? parsed.speech : Memory.getSpeechContent(message.content);
+            
+            if (parsed.hasSpeech && parsed.speech.trim()) {
+                textElement.textContent = parsed.speech;
+            } else if (parsed.hasScene) {
+                textElement.textContent = `[${parsed.scene}]`;
+                textElement.style.fontStyle = 'italic';
+                textElement.style.color = 'var(--text-light)';
+            } else {
+                textElement.textContent = Memory.getSpeechContent(message.content);
+            }
             bubble.appendChild(textElement);
             
             const ttsBtn = document.createElement('button');

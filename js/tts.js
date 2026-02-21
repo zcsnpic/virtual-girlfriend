@@ -198,7 +198,15 @@ const TTS = {
         this.stop();
 
         const parsed = Memory.parseMessage(text);
+        console.log('TTS.speak - 解析结果:', {
+            hasScene: parsed.hasScene,
+            scene: parsed.scene,
+            hasSpeech: parsed.hasSpeech,
+            speech: parsed.speech
+        });
+        
         if (parsed.hasScene && typeof UI !== 'undefined') {
+            console.log('TTS.speak - 准备展示场景:', parsed.scene);
             UI.showScene(parsed.scene);
         }
 
