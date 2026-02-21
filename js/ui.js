@@ -17,10 +17,77 @@ const UI = {
     },
 
     splitMessages: function(content) {
-        if (!content || !content.includes('|||')) {
-            return [content];
+        if (!content) return [content];
+        
+        let messages = [];
+        
+        if (content.includes('|||')) {
+            messages = content.split('|||').map(s => s.trim()).filter(s => s);
+        } else {
+            messages = [content];
         }
-        return content.split('|||').map(s => s.trim()).filter(s => s);
+        
+        messages = this.splitBySceneDescriptions(messages);
+        
+        return messages;
+    },
+
+    splitBySceneDescriptions: function(messages) {
+        const result = [];
+        
+        for (const msg of messages) {
+            const scenePattern = /\[([^\]]+)\]/g;
+            const matches = [...msg.matchAll(scenePattern)];
+            
+            if (matches.length <= 1) {
+                result.push(msg);
+                continue;
+            }
+            
+            const parts = [];
+            let lastIndex = 0;
+            
+            for (let i = 0; i < matches.length; i++) {
+                const match = matches[i];
+                const sceneStart = match.index;
+                const sceneEnd = match.index + match[0].length;
+                
+                if (sceneStart > lastIndex) {
+                    const beforeScene = msg.substring(lastIndex, sceneStart).trim();
+                    if (beforeScene) {
+                        parts.push({ type: 'text', content: beforeScene });
+                    }
+                }
+                
+                parts.push({ type: 'scene', content: match[0] });
+                lastIndex = sceneEnd;
+            }
+            
+            if (lastIndex < msg.length) {
+                const remaining = msg.substring(lastIndex).trim();
+                if (remaining) {
+                    parts.push({ type: 'text', content: remaining });
+                }
+            }
+            
+            let currentMsg = '';
+            for (const part of parts) {
+                if (part.type === 'scene') {
+                    if (currentMsg.trim()) {
+                        result.push(currentMsg.trim());
+                        currentMsg = '';
+                    }
+                    result.push(part.content);
+                } else {
+                    currentMsg += part.content;
+                }
+            }
+            if (currentMsg.trim()) {
+                result.push(currentMsg.trim());
+            }
+        }
+        
+        return result.filter(s => s);
     },
 
     createMessageElement: function(message) {
@@ -767,6 +834,7 @@ const UI = {
 
     updateVoiceList: function() {
         const select = document.getElementById('ttsVoice');
+        const voiceSelectGroup = select?.closest('.form-group');
         if (!select) {
             console.log('ttsVoice select element not found');
             return;
@@ -777,17 +845,19 @@ const UI = {
 
         console.log('updateVoiceList: 找到', voices.length, '个声音');
 
-        select.innerHTML = '<option value="auto">自动选择（推荐）</option>';
-
         if (voices.length === 0) {
-            const option = document.createElement('option');
-            option.value = '';
-            option.textContent = '正在加载声音列表...';
-            option.disabled = true;
-            select.appendChild(option);
-            console.log('声音列表为空，等待加载');
+            if (voiceSelectGroup) {
+                voiceSelectGroup.style.display = 'none';
+            }
+            console.log('声音列表为空，隐藏声音选择器');
             return;
         }
+
+        if (voiceSelectGroup) {
+            voiceSelectGroup.style.display = '';
+        }
+
+        select.innerHTML = '<option value="auto">自动选择（推荐）</option>';
 
         voices.forEach(voice => {
             const option = document.createElement('option');

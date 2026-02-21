@@ -5,6 +5,42 @@ const TTS = {
     currentAudio: null,
     voicesLoaded: false,
 
+    isSupported: function() {
+        return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+    },
+
+    getSupportInfo: function() {
+        const info = {
+            supported: this.isSupported(),
+            voicesCount: 0,
+            hasChineseVoice: false,
+            platform: 'unknown'
+        };
+
+        if (!info.supported) {
+            return info;
+        }
+
+        const voices = this.synth.getVoices();
+        info.voicesCount = voices.length;
+        info.hasChineseVoice = voices.some(v => 
+            v.lang.includes('zh') || v.lang.includes('CN')
+        );
+
+        const ua = navigator.userAgent;
+        if (/iPhone|iPad|iPod/.test(ua)) {
+            info.platform = 'iOS';
+        } else if (/Android/.test(ua)) {
+            info.platform = 'Android';
+        } else if (/Windows/.test(ua)) {
+            info.platform = 'Windows';
+        } else if (/Mac/.test(ua)) {
+            info.platform = 'Mac';
+        }
+
+        return info;
+    },
+
     EMOTION_CONFIG: {
         happy: { rate: 1.1, pitch: 1.3, description: '开心' },
         sad: { rate: 0.9, pitch: 0.9, description: '难过' },
@@ -143,6 +179,11 @@ const TTS = {
             return;
         }
 
+        if (!this.isSupported()) {
+            console.warn('当前浏览器不支持语音合成');
+            return;
+        }
+
         if (settings.ttsApiEnabled && settings.ttsProvider && settings.ttsProvider !== 'browser') {
             return this.speakExternal(text);
         }
@@ -166,6 +207,8 @@ const TTS = {
         const voice = this.getSelectedVoice();
         if (voice) {
             utterance.voice = voice;
+        } else {
+            console.log('使用浏览器默认声音');
         }
 
         if (emotionParams.emotion && emotionParams.emotion !== 'calm') {
@@ -180,7 +223,8 @@ const TTS = {
             this.isPlaying = false;
         };
 
-        utterance.onerror = () => {
+        utterance.onerror = (e) => {
+            console.error('TTS播放错误:', e);
             this.isPlaying = false;
         };
 
@@ -289,6 +333,14 @@ const TTS = {
     },
 
     init: function() {
+        const supportInfo = this.getSupportInfo();
+        console.log('TTS兼容性检测:', supportInfo);
+
+        if (!supportInfo.supported) {
+            console.warn('当前浏览器不支持Web Speech API');
+            return;
+        }
+
         const loadVoices = () => {
             const voices = this.synth.getVoices();
             console.log('声音列表加载完成，共', voices.length, '个声音');
@@ -307,33 +359,26 @@ const TTS = {
             speechSynthesis.onvoiceschanged = loadVoices;
         }
 
-        setTimeout(() => {
-            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
-                console.log('重试加载声音列表...');
-                loadVoices();
-            }
-        }, 100);
+        const retryTimes = [100, 500, 1500, 3000];
+        retryTimes.forEach((time, index) => {
+            setTimeout(() => {
+                if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
+                    console.log(`第${index + 1}次重试加载声音列表...`);
+                    loadVoices();
+                }
+            }, time);
+        });
 
         setTimeout(() => {
-            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
-                console.log('第二次重试加载声音列表...');
-                loadVoices();
+            const finalVoices = this.synth.getVoices();
+            if (finalVoices.length === 0) {
+                console.warn('声音列表最终为空，可能是移动端浏览器限制');
+                console.log('提示: TTS仍可使用默认声音播放，但无法选择声音');
+                if (typeof UI !== 'undefined' && UI.updateVoiceList) {
+                    UI.updateVoiceList();
+                }
             }
-        }, 500);
-
-        setTimeout(() => {
-            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
-                console.log('第三次重试加载声音列表...');
-                loadVoices();
-            }
-        }, 1500);
-
-        setTimeout(() => {
-            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
-                console.log('最后一次重试加载声音列表...');
-                loadVoices();
-            }
-        }, 3000);
+        }, 5000);
     }
 };
 
