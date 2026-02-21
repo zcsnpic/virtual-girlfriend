@@ -28,6 +28,7 @@ const App = {
         document.getElementById('userNameInput').value = settings.userName || '亲爱的';
         document.getElementById('themeSelect').value = settings.theme || 'blue';
         document.getElementById('ttsEnabled').checked = settings.ttsEnabled !== false;
+        document.getElementById('ttsAutoPlay').checked = settings.ttsAutoPlay !== false;
         document.getElementById('ttsRate').value = settings.ttsRate || 1.0;
         document.getElementById('ttsRateValue').textContent = (settings.ttsRate || 1.0) + 'x';
 
@@ -195,7 +196,7 @@ const App = {
             const messages = Memory.getMessages();
             const lastMsg = messages[messages.length - 1];
             const msgElement = UI.createMessageElement(lastMsg);
-            
+
             if (typingElement) {
                 typingElement.replaceWith(msgElement);
             } else {
@@ -203,6 +204,12 @@ const App = {
             }
 
             UI.scrollToBottom();
+
+            // 自动播放语音
+            const settings = Memory.getSettings();
+            if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
+                TTS.speak(lastMsg.content, settings.ttsRate);
+            }
 
         } catch (error) {
             UI.hideTyping();
@@ -225,6 +232,7 @@ const App = {
             userName: document.getElementById('userNameInput').value.trim() || '亲爱的',
             theme: document.getElementById('themeSelect').value,
             ttsEnabled: document.getElementById('ttsEnabled').checked,
+            ttsAutoPlay: document.getElementById('ttsAutoPlay').checked,
             ttsRate: parseFloat(document.getElementById('ttsRate').value)
         };
 
