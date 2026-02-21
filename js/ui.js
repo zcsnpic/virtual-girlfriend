@@ -935,6 +935,7 @@ const UI = {
     },
 
     updateAvatar: function(avatar) {
+        console.log('updateAvatar 被调用，avatar:', avatar ? avatar.substring(0, 50) + '...' : '空');
         const mainAvatar = document.getElementById('mainAvatar');
         const avatarPreview = document.getElementById('avatarPreview');
         
@@ -942,13 +943,18 @@ const UI = {
         const avatarValue = avatar || defaultAvatar;
         
         const isImage = avatarValue.startsWith('data:') || avatarValue.startsWith('http');
+        console.log('isImage:', isImage, 'avatarValue:', avatarValue.substring(0, 30));
         
         if (mainAvatar) {
             if (isImage) {
                 mainAvatar.innerHTML = `<img src="${avatarValue}" alt="头像">`;
+                console.log('mainAvatar 设置为图片');
             } else {
                 mainAvatar.textContent = avatarValue;
+                console.log('mainAvatar 设置为文本:', avatarValue);
             }
+        } else {
+            console.log('mainAvatar 元素未找到');
         }
         
         if (avatarPreview) {
