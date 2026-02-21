@@ -15,6 +15,9 @@
             function closeModal(modalId) {
                 document.getElementById(modalId).classList.remove('active');
             }
+            function openChangelog() {
+                document.getElementById('changelogModal').classList.add('active');
+            }
 
         </script>
     </head>
@@ -26,7 +29,7 @@
                 <div class="header-info">
                         <div class="name" id="charName">小雪</div>
                         <div class="status">在线</div>
-                        <div class="version">v2.31</div>
+                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.31</div>
                     </div>
             </div>
             <div class="header-right">
@@ -279,6 +282,67 @@
                 </div>
                 <div class="save-actions">
                     <button class="save-btn" onclick="createNewSave()">新建存档</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="changelogModal">
+        <div class="modal-content changelog-modal">
+            <div class="modal-header">
+                <h2>版本更新记录</h2>
+                <button class="close-btn" onclick="closeModal('changelogModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.31</div>
+                        <div class="changelog-date">2025-02-21</div>
+                        <ul class="changelog-changes">
+                            <li>新增版本更新记录页面</li>
+                            <li>优化 GitHub Pages 部署配置</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.3</div>
+                        <div class="changelog-date">2025-02-20</div>
+                        <ul class="changelog-changes">
+                            <li>新增语音自动播放功能</li>
+                            <li>场景描述与语音分离显示</li>
+                            <li>优化消息解析器</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.2</div>
+                        <div class="changelog-date">2025-02-19</div>
+                        <ul class="changelog-changes">
+                            <li>新增存档系统</li>
+                            <li>修复存档按钮和显示问题</li>
+                            <li>优化用户界面</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.0</div>
+                        <div class="changelog-date">2025-02-18</div>
+                        <ul class="changelog-changes">
+                            <li>增强智能记忆系统</li>
+                            <li>新增立体人设系统</li>
+                            <li>新增自主故事系统</li>
+                            <li>新增动态演化系统</li>
+                            <li>分层记忆存储（短期/中期/长期）</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-item">
+                        <div class="changelog-version">v1.0</div>
+                        <div class="changelog-date">2025-02-15</div>
+                        <ul class="changelog-changes">
+                            <li>基础聊天功能</li>
+                            <li>DeepSeek API 集成</li>
+                            <li>语音朗读功能</li>
+                            <li>主题切换</li>
+                            <li>角色设置</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
