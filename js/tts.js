@@ -46,9 +46,18 @@ const TTS = {
             return;
         }
 
+        // 只播放说话内容，不播放场景描述
+        const speechContent = Memory.getSpeechContent(text);
+        
+        // 如果没有说话内容，不播放
+        if (!speechContent || speechContent.trim() === '') {
+            console.log('没有可播放的说话内容');
+            return;
+        }
+
         this.stop();
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(speechContent);
         utterance.rate = rate || settings.ttsRate || 1.0;
         utterance.pitch = 1.2;
         utterance.lang = 'zh-CN';

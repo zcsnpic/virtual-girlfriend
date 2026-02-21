@@ -12,6 +12,7 @@ const Memory = {
                 userName: '亲爱的',
                 theme: 'blue',
                 ttsEnabled: true,
+                ttsAutoPlay: true,
                 ttsRate: 1.0
             },
             userInfo: {
@@ -202,7 +203,7 @@ const Memory = {
             evolutionSystem: {
                 // 演化状态
                 currentState: {
-                    version: '2.2',
+                    version: '2.3',
                     lastEvolution: new Date().toISOString(),
                     totalInteractions: 0,
                     totalStories: 0
@@ -534,6 +535,20 @@ const Memory = {
         }
 
         context += `\n请始终保持角色扮演，用符合你性格和风格的方式回复。要关心用户，记住用户说过的话。在合适的时机主动提及过去的共同话题，让对话更自然。`;
+
+        // 添加输出格式规范
+        context += `\n\n【输出格式规范】\n`;
+        context += `请按以下格式回复，将场景描述和说话内容分开：\n`;
+        context += `[场景描述：你的动作、表情、环境等，不超过30字]\n`;
+        context += `"说话内容：你要说的话，用双引号包裹"\n\n`;
+        context += `示例：\n`;
+        context += `[轻轻笑了笑，眼睛弯成了月牙]\n`;
+        context += `"今天天气真好呢，我们出去走走吧？"\n\n`;
+        context += `注意：\n`;
+        context += `1. 场景描述用方括号[]包裹，不要有"场景描述："字样\n`;
+        context += `2. 说话内容用双引号""包裹\n`;
+        context += `3. 如果不需要场景描述，可以只发送说话内容\n`;
+        context += `4. 场景描述要简洁生动，符合当前情境\n`;
 
         return context;
     },
@@ -1326,5 +1341,56 @@ const Memory = {
             console.error('快速存档失败:', error);
             return null;
         }
+    },
+
+    // 消息解析器 - 分离场景和说话内容
+    parseMessage: function(content) {
+        try {
+            // 匹配方括号中的场景描述
+            const sceneMatch = content.match(/\[([^\]]+)\]/);
+            // 匹配双引号中的说话内容
+            const speechMatch = content.match(/"([^"]+)"/);
+            
+            // 提取场景描述（去掉方括号）
+            const scene = sceneMatch ? sceneMatch[1].trim() : null;
+            
+            // 提取说话内容（去掉双引号）
+            let speech = speechMatch ? speechMatch[1].trim() : null;
+            
+            // 如果没有匹配到双引号内容，使用原始内容（去掉场景描述部分）
+            if (!speech) {
+                speech = sceneMatch ? content.replace(sceneMatch[0], '').trim() : content.trim();
+            }
+            
+            return {
+                scene: scene,           // 场景描述（可能为null）
+                speech: speech,         // 说话内容
+                hasScene: !!scene,      // 是否有场景描述
+                hasSpeech: !!speech,    // 是否有说话内容
+                original: content       // 原始内容
+            };
+        } catch (error) {
+            console.error('消息解析失败:', error);
+            // 解析失败时返回原始内容
+            return {
+                scene: null,
+                speech: content,
+                hasScene: false,
+                hasSpeech: true,
+                original: content
+            };
+        }
+    },
+
+    // 获取语音播放内容（只返回说话内容）
+    getSpeechContent: function(content) {
+        const parsed = this.parseMessage(content);
+        return parsed.speech || content;
+    },
+
+    // 获取场景描述
+    getSceneDescription: function(content) {
+        const parsed = this.parseMessage(content);
+        return parsed.scene;
     }
 };

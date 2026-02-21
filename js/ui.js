@@ -31,13 +31,29 @@ const UI = {
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
 
-        const text = document.createElement('span');
-        text.className = 'text';
-        text.textContent = message.content;
-
-        bubble.appendChild(text);
-
+        // 解析消息内容
+        let sceneElement = null;
+        let textElement = null;
+        
         if (message.role === 'assistant') {
+            // AI消息：分离场景和说话内容
+            const parsed = Memory.parseMessage(message.content);
+            
+            // 如果有场景描述，创建场景元素
+            if (parsed.hasScene) {
+                sceneElement = document.createElement('div');
+                sceneElement.className = 'scene-description';
+                sceneElement.textContent = parsed.scene;
+                bubble.appendChild(sceneElement);
+            }
+            
+            // 创建说话内容元素
+            textElement = document.createElement('span');
+            textElement.className = 'text';
+            textElement.textContent = parsed.hasSpeech ? parsed.speech : message.content;
+            bubble.appendChild(textElement);
+            
+            // 添加语音按钮
             const ttsBtn = document.createElement('button');
             ttsBtn.className = 'tts-btn';
             ttsBtn.textContent = '🔊';
@@ -46,6 +62,12 @@ const UI = {
                 TTS.toggle(message.content);
             };
             bubble.appendChild(ttsBtn);
+        } else {
+            // 用户消息：直接显示
+            textElement = document.createElement('span');
+            textElement.className = 'text';
+            textElement.textContent = message.content;
+            bubble.appendChild(textElement);
         }
 
         if (message.important) {
