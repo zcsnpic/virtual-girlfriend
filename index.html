@@ -29,7 +29,7 @@
                 <div class="header-info">
                         <div class="name" id="charName">小雪</div>
                         <div class="status">在线</div>
-                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.4</div>
+                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.5</div>
                     </div>
             </div>
             <div class="header-right">
@@ -168,6 +168,26 @@
                             <span class="slider"></span>
                         </label>
                         <small class="setting-hint">根据对话内容自动调整语速和音调</small>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>对话设置</h3>
+                    <div class="form-group">
+                        <label>连续消息条数</label>
+                        <select id="multiMessageCount">
+                            <option value="1">1条（传统模式）</option>
+                            <option value="2">1-2条</option>
+                            <option value="3" selected>1-3条（推荐）</option>
+                            <option value="4">1-4条</option>
+                        </select>
+                        <small class="setting-hint">让AI一次发送多条消息，更自然</small>
+                    </div>
+                    <div class="form-group">
+                        <label>消息间隔时间</label>
+                        <input type="range" id="messageDelay" min="300" max="1500" step="100" value="600">
+                        <span id="messageDelayValue">0.6秒</span>
+                        <small class="setting-hint">多条消息之间的显示间隔</small>
                     </div>
                 </div>
 
@@ -377,6 +397,15 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.5</div>
+                        <div class="changelog-date">2025-02-21</div>
+                        <ul class="changelog-changes">
+                            <li>新增连续消息功能，AI可以一次发送多条消息</li>
+                            <li>新增消息间隔时间设置</li>
+                            <li>对话更加自然流畅</li>
+                        </ul>
+                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v2.4</div>
                         <div class="changelog-date">2025-02-21</div>

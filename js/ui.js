@@ -16,6 +16,13 @@ const UI = {
         }
     },
 
+    splitMessages: function(content) {
+        if (!content || !content.includes('|||')) {
+            return [content];
+        }
+        return content.split('|||').map(s => s.trim()).filter(s => s);
+    },
+
     createMessageElement: function(message) {
         const div = document.createElement('div');
         div.className = `message ${message.role === 'user' ? 'user' : 'ai'}`;
@@ -775,9 +782,10 @@ const UI = {
         if (voices.length === 0) {
             const option = document.createElement('option');
             option.value = '';
-            option.textContent = '等待声音列表加载...';
+            option.textContent = '正在加载声音列表...';
             option.disabled = true;
             select.appendChild(option);
+            console.log('声音列表为空，等待加载');
             return;
         }
 
@@ -790,6 +798,8 @@ const UI = {
             }
             select.appendChild(option);
         });
+        
+        console.log('声音列表更新完成');
     },
 
     updateTtsApiVoiceList: function(provider) {

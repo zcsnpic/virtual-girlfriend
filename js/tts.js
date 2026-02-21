@@ -28,10 +28,24 @@ const TTS = {
 
     getVoices: function() {
         const voices = this.synth.getVoices();
+        console.log('原始声音列表:', voices.length, '个');
+        
+        if (voices.length === 0) {
+            return [];
+        }
+        
         const chineseVoices = voices.filter(v => 
             v.lang.includes('zh') || v.lang.includes('CN') || v.lang.includes('chinese')
         );
-        return chineseVoices.length > 0 ? chineseVoices : voices;
+        
+        console.log('中文声音:', chineseVoices.length, '个');
+        
+        if (chineseVoices.length > 0) {
+            return chineseVoices;
+        }
+        
+        console.log('没有中文声音，返回所有声音');
+        return voices;
     },
 
     getVoiceList: function() {
@@ -294,10 +308,32 @@ const TTS = {
         }
 
         setTimeout(() => {
-            if (!this.voicesLoaded && this.synth.getVoices().length > 0) {
+            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
+                console.log('重试加载声音列表...');
+                loadVoices();
+            }
+        }, 100);
+
+        setTimeout(() => {
+            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
+                console.log('第二次重试加载声音列表...');
                 loadVoices();
             }
         }, 500);
+
+        setTimeout(() => {
+            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
+                console.log('第三次重试加载声音列表...');
+                loadVoices();
+            }
+        }, 1500);
+
+        setTimeout(() => {
+            if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
+                console.log('最后一次重试加载声音列表...');
+                loadVoices();
+            }
+        }, 3000);
     }
 };
 

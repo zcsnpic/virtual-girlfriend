@@ -81,6 +81,17 @@ const App = {
             document.getElementById('ttsCustomBody').value = settings.ttsCustomBody || '';
         }
 
+        if (document.getElementById('multiMessageCount')) {
+            document.getElementById('multiMessageCount').value = settings.multiMessageCount || '3';
+        }
+        if (document.getElementById('messageDelay')) {
+            document.getElementById('messageDelay').value = settings.messageDelay || 600;
+        }
+        if (document.getElementById('messageDelayValue')) {
+            const delay = settings.messageDelay || 600;
+            document.getElementById('messageDelayValue').textContent = (delay / 1000).toFixed(1) + '秒';
+        }
+
         UI.applyTheme(settings.theme || 'blue');
         UI.updateCharName(settings.charName || '小雪');
     },
@@ -132,6 +143,14 @@ const App = {
         ttsRate.addEventListener('input', (e) => {
             document.getElementById('ttsRateValue').textContent = e.target.value + 'x';
         });
+
+        const messageDelay = document.getElementById('messageDelay');
+        if (messageDelay) {
+            messageDelay.addEventListener('input', (e) => {
+                const delay = parseInt(e.target.value);
+                document.getElementById('messageDelayValue').textContent = (delay / 1000).toFixed(1) + '秒';
+            });
+        }
 
         document.getElementById('settingsModal').addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
@@ -214,7 +233,6 @@ const App = {
         input.value = '';
         input.style.height = 'auto';
         
-        // 记录交互
         Memory.recordInteraction();
 
         const userMsg = Memory.addMessage({ role: 'user', content: message });
@@ -244,20 +262,72 @@ const App = {
 
             const messages = Memory.getMessages();
             const lastMsg = messages[messages.length - 1];
-            const msgElement = UI.createMessageElement(lastMsg);
-
-            if (typingElement) {
-                typingElement.replaceWith(msgElement);
+            
+            const multiMessageCount = parseInt(settings.multiMessageCount || '3');
+            const messageDelay = settings.messageDelay || 600;
+            
+            if (multiMessageCount > 1 && lastMsg && lastMsg.content && lastMsg.content.includes('|||')) {
+                const splitContents = UI.splitMessages(lastMsg.content);
+                
+                if (splitContents.length > 1) {
+                    if (typingElement) {
+                        typingElement.remove();
+                    }
+                    
+                    const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data') || '{}');
+                    const msgIndex = data.messages ? data.messages.findIndex(m => m.id === lastMsg.id) : -1;
+                    if (msgIndex !== -1) {
+                        data.messages[msgIndex].content = splitContents[0];
+                        localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
+                    }
+                    
+                    const firstMsg = { ...lastMsg, content: splitContents[0] };
+                    const firstElement = UI.createMessageElement(firstMsg);
+                    document.getElementById('messages').appendChild(firstElement);
+                    UI.scrollToBottom();
+                    
+                    const additionalMessages = [];
+                    for (let i = 1; i < splitContents.length; i++) {
+                        await new Promise(resolve => setTimeout(resolve, messageDelay));
+                        
+                        const newMsg = Memory.addMessage({
+                            role: 'assistant',
+                            content: splitContents[i]
+                        });
+                        additionalMessages.push(newMsg);
+                        
+                        const newElement = UI.createMessageElement(newMsg);
+                        document.getElementById('messages').appendChild(newElement);
+                        UI.scrollToBottom();
+                    }
+                    
+                    if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false) {
+                        const allMessages = [firstMsg, ...additionalMessages];
+                        await this.playMessagesSequentially(allMessages, settings.ttsRate);
+                    }
+                } else {
+                    if (typingElement) {
+                        typingElement.replaceWith(UI.createMessageElement(lastMsg));
+                    } else {
+                        document.getElementById('messages').appendChild(UI.createMessageElement(lastMsg));
+                    }
+                    UI.scrollToBottom();
+                    
+                    if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
+                        TTS.speak(lastMsg.content, settings.ttsRate);
+                    }
+                }
             } else {
-                document.getElementById('messages').appendChild(msgElement);
-            }
-
-            UI.scrollToBottom();
-
-            // 自动播放语音
-            const settings = Memory.getSettings();
-            if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
-                TTS.speak(lastMsg.content, settings.ttsRate);
+                if (typingElement) {
+                    typingElement.replaceWith(UI.createMessageElement(lastMsg));
+                } else {
+                    document.getElementById('messages').appendChild(UI.createMessageElement(lastMsg));
+                }
+                UI.scrollToBottom();
+                
+                if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
+                    TTS.speak(lastMsg.content, settings.ttsRate);
+                }
             }
 
         } catch (error) {
@@ -269,6 +339,32 @@ const App = {
         this.isSending = false;
         document.getElementById('sendBtn').disabled = false;
         input.focus();
+    },
+
+    playMessagesSequentially: async function(messages, rate) {
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            if (msg && msg.content) {
+                TTS.speak(msg.content, rate);
+                await new Promise(resolve => {
+                    const checkInterval = setInterval(() => {
+                        if (!TTS.isPlaying) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 100);
+                    
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }, 10000);
+                });
+                
+                if (i < messages.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+            }
+        }
     },
 
     saveSettings: function() {
@@ -297,7 +393,9 @@ const App = {
             ttsRegion: document.getElementById('ttsRegion')?.value || 'eastasia',
             ttsEndpoint: document.getElementById('ttsEndpoint')?.value || '',
             ttsCustomHeaders: document.getElementById('ttsCustomHeaders')?.value || '',
-            ttsCustomBody: document.getElementById('ttsCustomBody')?.value || ''
+            ttsCustomBody: document.getElementById('ttsCustomBody')?.value || '',
+            multiMessageCount: document.getElementById('multiMessageCount')?.value || '3',
+            messageDelay: parseInt(document.getElementById('messageDelay')?.value || 600)
         };
 
         Memory.saveSettings(settings);

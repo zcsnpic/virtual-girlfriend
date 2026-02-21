@@ -30,7 +30,24 @@ const API = {
         const recentMessages = Memory.getRecentContext(10);
         const systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
 
-        // 获取重要记忆
+        const multiMessageCount = parseInt(settings.multiMessageCount || '3');
+        let multiMessageGuide = '';
+        if (multiMessageCount > 1) {
+            multiMessageGuide = `
+
+【消息格式要求】
+你可以一次发送${multiMessageCount}条以内的消息，让对话更自然真实。
+每条消息之间用三个竖线"|||"分隔。例如：
+"在干嘛呢？|||今天天气真好呀~|||我刚刚在想你呢 😊"
+
+注意：
+- 每条消息应该简短自然，像真实的聊天消息（一般不超过20字）
+- 不要强行拆分，如果一句话就够了就只发一条
+- 可以在不同消息中表达不同的情绪或话题
+- 可以用场景描述（方括号）配合文字，例如："[轻轻笑了笑]|||你今天看起来心情不错呢~"
+- 分隔符"|||"只用于分割消息，不要在其他地方使用`;
+        }
+
         const importantMessages = Memory.getImportantMessages(5);
         const importantContext = importantMessages.map(m => ({
             role: m.role,
@@ -71,7 +88,7 @@ const API = {
         }
 
         const messages = [
-            { role: 'system', content: systemPrompt + emotionInfo },
+            { role: 'system', content: systemPrompt + emotionInfo + multiMessageGuide },
             ...importantContext,
             ...recentMessages
         ];
