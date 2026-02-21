@@ -1,7 +1,7 @@
 const UI = {
     sceneQueue: [],
-    currentScene: null,
-    sceneTimer: null,
+    maxScenes: 8,
+    sceneIdCounter: 0,
 
     showScene: function(scene) {
         if (!scene) {
@@ -9,53 +9,62 @@ const UI = {
             return;
         }
 
-        const display = document.getElementById('sceneDisplay');
-        const text = document.getElementById('sceneText');
+        const sceneList = document.getElementById('sceneList');
         
-        console.log('showScene - 元素状态:', {
-            display: display ? 'found' : 'not found',
-            text: text ? 'found' : 'not found',
-            scene: scene
-        });
-        
-        if (!display || !text) {
-            console.error('showScene: 找不到场景展示元素');
+        if (!sceneList) {
+            console.error('showScene: 找不到场景列表元素');
             return;
         }
 
-        if (this.sceneTimer) {
-            clearTimeout(this.sceneTimer);
-        }
+        const sceneId = 'scene-' + (++this.sceneIdCounter);
 
-        if (display.classList.contains('active')) {
-            display.classList.add('hiding');
+        const sceneItem = document.createElement('div');
+        sceneItem.className = 'scene-item';
+        sceneItem.id = sceneId;
+        sceneItem.innerHTML = `<span class="scene-icon">🌸</span><span class="scene-text">${scene}</span>`;
+
+        sceneList.appendChild(sceneItem);
+
+        this.sceneQueue.push({
+            id: sceneId,
+            text: scene,
+            timestamp: Date.now()
+        });
+
+        console.log('showScene: 添加场景', scene, '当前队列长度:', this.sceneQueue.length);
+
+        while (this.sceneQueue.length > this.maxScenes) {
+            this.hideOldestScene();
+        }
+    },
+
+    hideOldestScene: function() {
+        if (this.sceneQueue.length === 0) return;
+
+        const oldest = this.sceneQueue.shift();
+        const sceneItem = document.getElementById(oldest.id);
+
+        if (sceneItem) {
+            sceneItem.classList.add('fading');
             setTimeout(() => {
-                text.textContent = scene;
-                display.classList.remove('hiding');
-                display.classList.add('active');
-                console.log('showScene: 场景切换完成 (从active切换)');
-            }, 300);
-        } else {
-            text.textContent = scene;
-            display.classList.add('active');
-            console.log('showScene: 场景展示激活');
+                if (sceneItem.parentNode) {
+                    sceneItem.parentNode.removeChild(sceneItem);
+                }
+            }, 500);
         }
 
-        this.currentScene = scene;
+        console.log('hideOldestScene: 移除场景', oldest.text, '剩余:', this.sceneQueue.length);
     },
 
     hideScene: function() {
-        const display = document.getElementById('sceneDisplay');
-        
-        if (!display) return;
+    },
 
-        display.classList.add('hiding');
-        
-        setTimeout(() => {
-            display.classList.remove('active');
-            display.classList.remove('hiding');
-            this.currentScene = null;
-        }, 400);
+    clearAllScenes: function() {
+        const sceneList = document.getElementById('sceneList');
+        if (sceneList) {
+            sceneList.innerHTML = '';
+        }
+        this.sceneQueue = [];
     },
 
     setPlayingState: function(messageId, isPlaying) {

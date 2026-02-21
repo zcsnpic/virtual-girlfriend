@@ -1989,39 +1989,75 @@ input:checked + .slider:before {
     bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
+    z-index: 100;
+    max-width: 90%;
+    pointer-events: none;
+}
+
+.scene-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.scene-item {
     background: linear-gradient(135deg, rgba(74, 144, 217, 0.95), rgba(100, 120, 180, 0.95));
     padding: 12px 24px;
     border-radius: 24px;
+    color: white;
+    font-size: 16px;
+    font-style: italic;
+    line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
     gap: 10px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.4s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    max-width: 90%;
+    animation: sceneSlideIn 0.4s ease;
+    max-width: 100%;
+    word-break: break-word;
 }
 
-.scene-display.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
+.scene-item .scene-icon {
+    font-size: 18px;
+    flex-shrink: 0;
 }
 
-.scene-display.hiding {
-    opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+.scene-item.fading {
+    animation: sceneFadeOut 0.5s ease forwards;
 }
 
-.scene-icon {
-    font-size: 20px;
-    animation: sceneIconPulse 2s ease-in-out infinite;
+@keyframes sceneSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes sceneFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 }
 
 @keyframes sceneIconPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
+}
+
+.scene-icon {
+    font-size: 20px;
+    animation: sceneIconPulse 2s ease-in-out infinite;
 }
 
 .scene-text {
@@ -2087,15 +2123,15 @@ input:checked + .slider:before {
 @media (max-width: 480px) {
     .scene-display {
         bottom: 70px;
+    }
+
+    .scene-item {
         padding: 10px 16px;
+        font-size: 14px;
         border-radius: 20px;
     }
 
-    .scene-icon {
-        font-size: 16px;
-    }
-
-    .scene-text {
-        font-size: 12px;
+    .scene-item .scene-icon {
+        font-size: 14px;
     }
 }

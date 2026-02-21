@@ -238,22 +238,16 @@ const TTS = {
 
         utterance.onend = () => {
             this.isPlaying = false;
-            if (typeof UI !== 'undefined') {
-                UI.hideScene();
-                if (messageId) {
-                    UI.setPlayingState(messageId, false);
-                }
+            if (messageId && typeof UI !== 'undefined') {
+                UI.setPlayingState(messageId, false);
             }
         };
 
         utterance.onerror = (e) => {
             console.error('TTS播放错误:', e);
             this.isPlaying = false;
-            if (typeof UI !== 'undefined') {
-                UI.hideScene();
-                if (messageId) {
-                    UI.setPlayingState(messageId, false);
-                }
+            if (messageId && typeof UI !== 'undefined') {
+                UI.setPlayingState(messageId, false);
             }
         };
 
@@ -315,10 +309,6 @@ const TTS = {
         }
         this.isPlaying = false;
         this.currentUtterance = null;
-        
-        if (typeof UI !== 'undefined') {
-            UI.hideScene();
-        }
     },
 
     pause: function() {

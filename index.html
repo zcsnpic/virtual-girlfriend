@@ -29,7 +29,7 @@
                 <div class="header-info">
                         <div class="name" id="charName">小雪</div>
                         <div class="status">在线</div>
-                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.7</div>
+                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.8</div>
                     </div>
             </div>
             <div class="header-right">
@@ -62,8 +62,7 @@
     </div>
 
     <div class="scene-display" id="sceneDisplay">
-        <div class="scene-icon">🌸</div>
-        <div class="scene-text" id="sceneText"></div>
+        <div class="scene-list" id="sceneList"></div>
     </div>
 
     <div class="modal" id="settingsModal">
@@ -205,8 +204,12 @@
                         <select id="multiMessageCount">
                             <option value="1">1条（传统模式）</option>
                             <option value="2">1-2条</option>
-                            <option value="3" selected>1-3条（推荐）</option>
+                            <option value="3">1-3条</option>
                             <option value="4">1-4条</option>
+                            <option value="5">1-5条</option>
+                            <option value="6">1-6条</option>
+                            <option value="7">1-7条</option>
+                            <option value="8" selected>1-8条（推荐）</option>
                         </select>
                         <small class="setting-hint">让AI一次发送多条消息，更自然</small>
                     </div>
@@ -455,6 +458,16 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.8</div>
+                        <div class="changelog-date">2025-02-21</div>
+                        <ul class="changelog-changes">
+                            <li>场景描述独立展示，最多8条堆叠显示</li>
+                            <li>场景渐入渐出动画效果</li>
+                            <li>消息气泡不再显示场景描述</li>
+                            <li>连续消息上限提升至8条</li>
+                        </ul>
+                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v2.7</div>
                         <div class="changelog-date">2025-02-21</div>
