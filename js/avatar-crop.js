@@ -18,17 +18,32 @@ const AvatarCrop = {
     dragStartY: 0,
     
     minCropSize: 50,
+    initialized: false,
     
     init: function() {
+        if (this.initialized) return;
+        
         this.canvas = document.getElementById('cropCanvas');
         this.previewCanvas = document.getElementById('cropPreviewCanvas');
         
-        if (!this.canvas || !this.previewCanvas) return;
+        if (!this.canvas || !this.previewCanvas) {
+            console.log('AvatarCrop: canvas元素未找到，延迟初始化');
+            return;
+        }
         
         this.ctx = this.canvas.getContext('2d');
         this.previewCtx = this.previewCanvas.getContext('2d');
         
         this.bindEvents();
+        this.initialized = true;
+        console.log('AvatarCrop: 初始化完成');
+    },
+    
+    ensureInit: function() {
+        if (!this.initialized) {
+            this.init();
+        }
+        return this.initialized;
     },
     
     bindEvents: function() {
@@ -56,11 +71,24 @@ const AvatarCrop = {
     },
     
     loadImage: function(src) {
+        console.log('AvatarCrop.loadImage 被调用');
+        
+        if (!this.ensureInit()) {
+            console.log('AvatarCrop: 初始化失败，直接更新头像');
+            UI.updateAvatar(src);
+            return;
+        }
+        
         this.image = new Image();
         this.image.onload = () => {
+            console.log('AvatarCrop: 图片加载完成');
             this.setupCanvas();
             this.draw();
             UI.showModal('avatarCropModal');
+        };
+        this.image.onerror = () => {
+            console.log('AvatarCrop: 图片加载失败');
+            UI.updateAvatar(src);
         };
         this.image.src = src;
     },

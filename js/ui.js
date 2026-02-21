@@ -1068,10 +1068,13 @@ const UI = {
                 reader.onload = function(event) {
                     const base64 = event.target.result;
                     console.log('图片读取完成, base64长度:', base64.length);
+                    console.log('AvatarCrop 是否存在:', typeof AvatarCrop !== 'undefined');
                     
-                    if (typeof AvatarCrop !== 'undefined') {
+                    if (typeof AvatarCrop !== 'undefined' && AvatarCrop) {
+                        console.log('调用 AvatarCrop.loadImage');
                         AvatarCrop.loadImage(base64);
                     } else {
+                        console.log('AvatarCrop 不存在，直接更新头像');
                         UI.updateAvatar(base64);
                     }
                     
