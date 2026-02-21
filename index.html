@@ -416,6 +416,37 @@
         </div>
     </div>
 
+    <div class="modal" id="avatarCropModal">
+        <div class="modal-content avatar-crop-modal">
+            <div class="modal-header">
+                <h2>裁剪头像</h2>
+                <button class="close-btn" onclick="closeModal('avatarCropModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="crop-container">
+                    <div class="crop-preview-area">
+                        <div class="crop-canvas-wrapper">
+                            <canvas id="cropCanvas"></canvas>
+                            <div class="crop-circle-overlay"></div>
+                            <div class="crop-handle crop-handle-nw" data-handle="nw"></div>
+                            <div class="crop-handle crop-handle-ne" data-handle="ne"></div>
+                            <div class="crop-handle crop-handle-sw" data-handle="sw"></div>
+                            <div class="crop-handle crop-handle-se" data-handle="se"></div>
+                        </div>
+                    </div>
+                    <div class="crop-preview-circle">
+                        <div class="crop-preview-label">预览</div>
+                        <canvas id="cropPreviewCanvas" width="100" height="100"></canvas>
+                    </div>
+                </div>
+                <div class="crop-actions">
+                    <button type="button" class="crop-cancel-btn" onclick="closeModal('avatarCropModal')">取消</button>
+                    <button type="button" class="crop-confirm-btn" id="confirmCropBtn">确认裁剪</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal" id="changelogModal">
         <div class="modal-content changelog-modal">
             <div class="modal-header">
@@ -441,6 +472,16 @@
                             <li>新增头像自定义功能，支持上传图片、URL或Emoji</li>
                             <li>头像尺寸增大至70px，更清晰展示</li>
                             <li>优化移动端浏览器TTS兼容性</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-item">
+                        <div class="changelog-version">v2.56</div>
+                        <div class="changelog-date">2025-02-21</div>
+                        <ul class="changelog-changes">
+                            <li>新增头像裁剪功能</li>
+                            <li>上传图片后可选择区域裁剪</li>
+                            <li>支持拖动和缩放裁剪框</li>
+                            <li>实时预览裁剪效果</li>
                         </ul>
                     </div>
                     <div class="changelog-item">
@@ -548,6 +589,7 @@
     <script src="js/tts.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/avatar-crop.js"></script>
     <script>
         function quickSave() {
             try {

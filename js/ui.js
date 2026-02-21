@@ -1032,8 +1032,8 @@ const UI = {
                 console.log('头像文件选择事件触发, file:', file);
                 if (!file) return;
 
-                if (file.size > 200 * 1024) {
-                    UI.showToast('图片太大，建议小于200KB', 'error');
+                if (file.size > 500 * 1024) {
+                    UI.showToast('图片太大，建议小于500KB', 'error');
                     return;
                 }
 
@@ -1046,7 +1046,13 @@ const UI = {
                 reader.onload = function(event) {
                     const base64 = event.target.result;
                     console.log('图片读取完成, base64长度:', base64.length);
-                    UI.updateAvatar(base64);
+                    
+                    if (typeof AvatarCrop !== 'undefined') {
+                        AvatarCrop.loadImage(base64);
+                    } else {
+                        UI.updateAvatar(base64);
+                    }
+                    
                     if (avatarUrl) avatarUrl.value = '';
                     if (avatarEmoji) avatarEmoji.value = '';
                 };
