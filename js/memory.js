@@ -13,7 +13,22 @@ const Memory = {
                 theme: 'blue',
                 ttsEnabled: true,
                 ttsAutoPlay: true,
-                ttsRate: 1.0
+                ttsRate: 1.0,
+                ttsVoice: 'auto',
+                ttsPitch: 1.2,
+                ttsEmotion: true,
+                ttsApiEnabled: false,
+                ttsProvider: 'browser',
+                ttsApiKey: '',
+                ttsApiVoice: '',
+                ttsAppId: '',
+                ttsSecretId: '',
+                ttsSecretKey: '',
+                ttsToken: '',
+                ttsRegion: 'eastasia',
+                ttsEndpoint: '',
+                ttsCustomHeaders: '',
+                ttsCustomBody: ''
             },
             userInfo: {
                 name: '',
@@ -203,7 +218,7 @@ const Memory = {
             evolutionSystem: {
                 // 演化状态
                 currentState: {
-                    version: '2.31',
+                    version: '2.4',
                     lastEvolution: new Date().toISOString(),
                     totalInteractions: 0,
                     totalStories: 0

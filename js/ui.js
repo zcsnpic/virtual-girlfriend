@@ -753,5 +753,189 @@ const UI = {
 
         // 初始化记忆管理界面
         this.initMemoryManagement();
+
+        // 初始化TTS设置
+        this.initTtsSettings();
+    },
+
+    updateVoiceList: function() {
+        const select = document.getElementById('ttsVoice');
+        if (!select) return;
+
+        const voices = TTS.getVoices();
+        const settings = Memory.getSettings();
+
+        select.innerHTML = '<option value="auto">自动选择（推荐）</option>';
+
+        voices.forEach(voice => {
+            const option = document.createElement('option');
+            option.value = voice.name;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if (settings.ttsVoice === voice.name) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+    },
+
+    updateTtsApiVoiceList: function(provider) {
+        const select = document.getElementById('ttsApiVoice');
+        if (!select) return;
+
+        const voices = TTSProvider.getVoices(provider);
+        const settings = Memory.getSettings();
+
+        select.innerHTML = '';
+
+        if (voices.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = '请先配置API';
+            select.appendChild(option);
+            return;
+        }
+
+        voices.forEach(voice => {
+            const option = document.createElement('option');
+            option.value = voice.id;
+            option.textContent = voice.name;
+            if (settings.ttsApiVoice === voice.id) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+    },
+
+    updateTtsExtraConfig: function(provider) {
+        const container = document.getElementById('ttsExtraConfig');
+        if (!container) return;
+
+        const extraConfig = TTSProvider.getExtraConfig(provider);
+        const settings = Memory.getSettings();
+
+        if (extraConfig.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        extraConfig.forEach(config => {
+            const value = settings['tts' + config.key.charAt(0).toUpperCase() + config.key.slice(1)] || config.default || '';
+            html += `
+                <div class="form-group">
+                    <label>${config.label}</label>
+                    <input type="${config.type}" id="tts${config.key.charAt(0).toUpperCase() + config.key.slice(1)}" 
+                           value="${value}" placeholder="请输入${config.label}">
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    },
+
+    initTtsSettings: function() {
+        const settings = Memory.getSettings();
+
+        const ttsApiEnabled = document.getElementById('ttsApiEnabled');
+        const ttsApiConfig = document.getElementById('ttsApiConfig');
+        const ttsProvider = document.getElementById('ttsProvider');
+        const ttsCustomConfig = document.getElementById('ttsCustomConfig');
+        const ttsApiKeyGroup = document.getElementById('ttsApiKeyGroup');
+        const ttsRate = document.getElementById('ttsRate');
+        const ttsRateValue = document.getElementById('ttsRateValue');
+        const ttsPitch = document.getElementById('ttsPitch');
+        const ttsPitchValue = document.getElementById('ttsPitchValue');
+        const testVoiceBtn = document.getElementById('testVoiceBtn');
+        const testTtsApiBtn = document.getElementById('testTtsApiBtn');
+        const ttsTestResult = document.getElementById('ttsTestResult');
+
+        if (ttsApiEnabled && ttsApiConfig) {
+            ttsApiEnabled.addEventListener('change', function() {
+                ttsApiConfig.style.display = this.checked ? 'block' : 'none';
+            });
+            ttsApiConfig.style.display = settings.ttsApiEnabled ? 'block' : 'none';
+        }
+
+        if (ttsProvider) {
+            ttsProvider.addEventListener('change', function() {
+                const provider = this.value;
+                
+                if (ttsCustomConfig) {
+                    ttsCustomConfig.style.display = provider === 'custom' ? 'block' : 'none';
+                }
+
+                if (ttsApiKeyGroup) {
+                    ttsApiKeyGroup.style.display = provider === 'browser' ? 'none' : 'block';
+                }
+
+                UI.updateTtsApiVoiceList(provider);
+                UI.updateTtsExtraConfig(provider);
+            });
+
+            if (settings.ttsProvider && settings.ttsProvider !== 'browser') {
+                ttsProvider.value = settings.ttsProvider;
+                UI.updateTtsApiVoiceList(settings.ttsProvider);
+                UI.updateTtsExtraConfig(settings.ttsProvider);
+                if (ttsCustomConfig) {
+                    ttsCustomConfig.style.display = settings.ttsProvider === 'custom' ? 'block' : 'none';
+                }
+            }
+        }
+
+        if (ttsRate && ttsRateValue) {
+            ttsRate.addEventListener('input', function() {
+                ttsRateValue.textContent = parseFloat(this.value).toFixed(1) + 'x';
+            });
+        }
+
+        if (ttsPitch && ttsPitchValue) {
+            ttsPitch.addEventListener('input', function() {
+                ttsPitchValue.textContent = parseFloat(this.value).toFixed(1);
+            });
+        }
+
+        if (testVoiceBtn) {
+            testVoiceBtn.addEventListener('click', function() {
+                const voiceSelect = document.getElementById('ttsVoice');
+                const selectedVoice = voiceSelect ? voiceSelect.value : 'auto';
+                TTS.testVoice(selectedVoice);
+            });
+        }
+
+        if (testTtsApiBtn && ttsTestResult) {
+            testTtsApiBtn.addEventListener('click', async function() {
+                ttsTestResult.textContent = '测试中...';
+                ttsTestResult.style.color = '#666';
+
+                const provider = document.getElementById('ttsProvider').value;
+                const config = {
+                    provider: provider,
+                    apiKey: document.getElementById('ttsApiKey')?.value || '',
+                    voice: document.getElementById('ttsApiVoice')?.value || '',
+                    appId: document.getElementById('ttsAppId')?.value || '',
+                    secretId: document.getElementById('ttsSecretId')?.value || '',
+                    secretKey: document.getElementById('ttsSecretKey')?.value || '',
+                    token: document.getElementById('ttsToken')?.value || '',
+                    region: document.getElementById('ttsRegion')?.value || 'eastasia',
+                    endpoint: document.getElementById('ttsEndpoint')?.value || '',
+                    customHeaders: document.getElementById('ttsCustomHeaders')?.value || '',
+                    customBody: document.getElementById('ttsCustomBody')?.value || ''
+                };
+
+                const result = await TTSProvider.testConnection(config);
+
+                if (result.success) {
+                    ttsTestResult.textContent = '✓ 测试成功';
+                    ttsTestResult.style.color = '#4CAF50';
+                } else {
+                    ttsTestResult.textContent = '✗ ' + (result.error || '测试失败');
+                    ttsTestResult.style.color = '#f44336';
+                }
+            });
+        }
+
+        setTimeout(() => {
+            this.updateVoiceList();
+        }, 100);
     }
 };

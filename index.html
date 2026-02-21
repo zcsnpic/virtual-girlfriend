@@ -29,7 +29,7 @@
                 <div class="header-info">
                         <div class="name" id="charName">小雪</div>
                         <div class="status">在线</div>
-                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.31</div>
+                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.4</div>
                     </div>
             </div>
             <div class="header-right">
@@ -143,9 +143,91 @@
                         </label>
                     </div>
                     <div class="form-group">
+                        <label>选择声音</label>
+                        <div class="voice-select-wrapper">
+                            <select id="ttsVoice">
+                                <option value="auto">自动选择（推荐）</option>
+                            </select>
+                            <button type="button" id="testVoiceBtn" class="test-voice-btn" title="试听">🔊</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label>语速</label>
                         <input type="range" id="ttsRate" min="0.5" max="2" step="0.1" value="1">
                         <span id="ttsRateValue">1.0x</span>
+                    </div>
+                    <div class="form-group">
+                        <label>音调</label>
+                        <input type="range" id="ttsPitch" min="0.5" max="2" step="0.1" value="1.2">
+                        <span id="ttsPitchValue">1.2</span>
+                    </div>
+                    <div class="form-group">
+                        <label>情感语音</label>
+                        <label class="switch">
+                            <input type="checkbox" id="ttsEmotion" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <small class="setting-hint">根据对话内容自动调整语速和音调</small>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>外部TTS API <small class="section-hint">（可选，更高质量）</small></h3>
+                    <div class="form-group">
+                        <label>启用外部API</label>
+                        <label class="switch">
+                            <input type="checkbox" id="ttsApiEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="ttsApiConfig" class="tts-api-config" style="display:none;">
+                        <div class="form-group">
+                            <label>TTS平台</label>
+                            <select id="ttsProvider">
+                                <option value="browser">浏览器原生（免费）</option>
+                                <option value="openai">OpenAI TTS</option>
+                                <option value="azure">Azure TTS（微软）</option>
+                                <option value="tencent">腾讯云 TTS</option>
+                                <option value="aliyun">阿里云 TTS</option>
+                                <option value="volcengine">火山引擎 TTS</option>
+                                <option value="xfyun">讯飞 TTS</option>
+                                <option value="elevenlabs">ElevenLabs</option>
+                                <option value="custom">自定义API</option>
+                            </select>
+                        </div>
+                        
+                        <div id="ttsApiCommonConfig">
+                            <div class="form-group" id="ttsApiKeyGroup">
+                                <label>API密钥</label>
+                                <input type="password" id="ttsApiKey" placeholder="输入API密钥">
+                            </div>
+                            <div class="form-group" id="ttsApiVoiceGroup">
+                                <label>声音</label>
+                                <select id="ttsApiVoice"></select>
+                            </div>
+                        </div>
+
+                        <div id="ttsExtraConfig"></div>
+
+                        <div id="ttsCustomConfig" style="display:none;">
+                            <div class="form-group">
+                                <label>API端点</label>
+                                <input type="text" id="ttsEndpoint" placeholder="https://api.example.com/tts">
+                            </div>
+                            <div class="form-group">
+                                <label>自定义请求头（JSON）</label>
+                                <textarea id="ttsCustomHeaders" rows="2" placeholder='{"Authorization": "Bearer {apiKey}"}'></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>请求体模板（JSON）</label>
+                                <textarea id="ttsCustomBody" rows="3" placeholder='{"text": "{text}", "voice": "{voice}"}'></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="button" id="testTtsApiBtn" class="test-btn">🔊 测试连接</button>
+                            <span id="ttsTestResult"></span>
+                        </div>
                     </div>
                 </div>
 
@@ -296,6 +378,17 @@
             <div class="modal-body">
                 <div class="changelog-list">
                     <div class="changelog-item">
+                        <div class="changelog-version">v2.4</div>
+                        <div class="changelog-date">2025-02-21</div>
+                        <ul class="changelog-changes">
+                            <li>新增声音选择器，可手动选择系统可用声音</li>
+                            <li>新增音调调节功能</li>
+                            <li>新增情感语音功能，根据对话内容自动调整语速和音调</li>
+                            <li>新增外部TTS API支持（OpenAI/Azure/腾讯/阿里/火山/讯飞/ElevenLabs）</li>
+                            <li>支持自定义TTS API配置</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-item">
                         <div class="changelog-version">v2.31</div>
                         <div class="changelog-date">2025-02-21</div>
                         <ul class="changelog-changes">
@@ -350,6 +443,7 @@
 
     <script src="js/memory.js"></script>
     <script src="js/api.js"></script>
+    <script src="js/tts-provider.js"></script>
     <script src="js/tts.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>

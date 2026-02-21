@@ -32,6 +32,55 @@ const App = {
         document.getElementById('ttsRate').value = settings.ttsRate || 1.0;
         document.getElementById('ttsRateValue').textContent = (settings.ttsRate || 1.0) + 'x';
 
+        if (document.getElementById('ttsVoice')) {
+            document.getElementById('ttsVoice').value = settings.ttsVoice || 'auto';
+        }
+        if (document.getElementById('ttsPitch')) {
+            document.getElementById('ttsPitch').value = settings.ttsPitch || 1.2;
+        }
+        if (document.getElementById('ttsPitchValue')) {
+            document.getElementById('ttsPitchValue').textContent = settings.ttsPitch || 1.2;
+        }
+        if (document.getElementById('ttsEmotion')) {
+            document.getElementById('ttsEmotion').checked = settings.ttsEmotion !== false;
+        }
+        if (document.getElementById('ttsApiEnabled')) {
+            document.getElementById('ttsApiEnabled').checked = settings.ttsApiEnabled || false;
+        }
+        if (document.getElementById('ttsProvider')) {
+            document.getElementById('ttsProvider').value = settings.ttsProvider || 'browser';
+        }
+        if (document.getElementById('ttsApiKey')) {
+            document.getElementById('ttsApiKey').value = settings.ttsApiKey || '';
+        }
+        if (document.getElementById('ttsApiVoice')) {
+            document.getElementById('ttsApiVoice').value = settings.ttsApiVoice || '';
+        }
+        if (document.getElementById('ttsAppId')) {
+            document.getElementById('ttsAppId').value = settings.ttsAppId || '';
+        }
+        if (document.getElementById('ttsSecretId')) {
+            document.getElementById('ttsSecretId').value = settings.ttsSecretId || '';
+        }
+        if (document.getElementById('ttsSecretKey')) {
+            document.getElementById('ttsSecretKey').value = settings.ttsSecretKey || '';
+        }
+        if (document.getElementById('ttsToken')) {
+            document.getElementById('ttsToken').value = settings.ttsToken || '';
+        }
+        if (document.getElementById('ttsRegion')) {
+            document.getElementById('ttsRegion').value = settings.ttsRegion || 'eastasia';
+        }
+        if (document.getElementById('ttsEndpoint')) {
+            document.getElementById('ttsEndpoint').value = settings.ttsEndpoint || '';
+        }
+        if (document.getElementById('ttsCustomHeaders')) {
+            document.getElementById('ttsCustomHeaders').value = settings.ttsCustomHeaders || '';
+        }
+        if (document.getElementById('ttsCustomBody')) {
+            document.getElementById('ttsCustomBody').value = settings.ttsCustomBody || '';
+        }
+
         UI.applyTheme(settings.theme || 'blue');
         UI.updateCharName(settings.charName || '小雪');
     },
@@ -233,7 +282,22 @@ const App = {
             theme: document.getElementById('themeSelect').value,
             ttsEnabled: document.getElementById('ttsEnabled').checked,
             ttsAutoPlay: document.getElementById('ttsAutoPlay').checked,
-            ttsRate: parseFloat(document.getElementById('ttsRate').value)
+            ttsRate: parseFloat(document.getElementById('ttsRate').value),
+            ttsVoice: document.getElementById('ttsVoice')?.value || 'auto',
+            ttsPitch: parseFloat(document.getElementById('ttsPitch')?.value || 1.2),
+            ttsEmotion: document.getElementById('ttsEmotion')?.checked !== false,
+            ttsApiEnabled: document.getElementById('ttsApiEnabled')?.checked || false,
+            ttsProvider: document.getElementById('ttsProvider')?.value || 'browser',
+            ttsApiKey: document.getElementById('ttsApiKey')?.value || '',
+            ttsApiVoice: document.getElementById('ttsApiVoice')?.value || '',
+            ttsAppId: document.getElementById('ttsAppId')?.value || '',
+            ttsSecretId: document.getElementById('ttsSecretId')?.value || '',
+            ttsSecretKey: document.getElementById('ttsSecretKey')?.value || '',
+            ttsToken: document.getElementById('ttsToken')?.value || '',
+            ttsRegion: document.getElementById('ttsRegion')?.value || 'eastasia',
+            ttsEndpoint: document.getElementById('ttsEndpoint')?.value || '',
+            ttsCustomHeaders: document.getElementById('ttsCustomHeaders')?.value || '',
+            ttsCustomBody: document.getElementById('ttsCustomBody')?.value || ''
         };
 
         Memory.saveSettings(settings);
