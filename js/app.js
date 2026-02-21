@@ -329,7 +329,7 @@ const App = {
                     UI.scrollToBottom();
                     
                     if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
-                        TTS.speak(lastMsg.content, settings.ttsRate);
+                        TTS.speak(lastMsg.content, settings.ttsRate, lastMsg.id);
                     }
                 }
             } else {
@@ -341,7 +341,7 @@ const App = {
                 UI.scrollToBottom();
                 
                 if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
-                    TTS.speak(lastMsg.content, settings.ttsRate);
+                    TTS.speak(lastMsg.content, settings.ttsRate, lastMsg.id);
                 }
             }
 
@@ -365,7 +365,7 @@ const App = {
                     continue;
                 }
                 
-                TTS.speak(msg.content, rate);
+                TTS.speak(msg.content, rate, msg.id);
                 await new Promise(resolve => {
                     const checkInterval = setInterval(() => {
                         if (!TTS.isPlaying) {

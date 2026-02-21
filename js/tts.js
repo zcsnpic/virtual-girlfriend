@@ -241,6 +241,12 @@ const TTS = {
         utterance.onerror = (e) => {
             console.error('TTS播放错误:', e);
             this.isPlaying = false;
+            if (typeof UI !== 'undefined') {
+                UI.hideScene();
+                if (messageId) {
+                    UI.setPlayingState(messageId, false);
+                }
+            }
         };
 
         this.currentUtterance = utterance;
@@ -301,6 +307,10 @@ const TTS = {
         }
         this.isPlaying = false;
         this.currentUtterance = null;
+        
+        if (typeof UI !== 'undefined') {
+            UI.hideScene();
+        }
     },
 
     pause: function() {
@@ -321,11 +331,11 @@ const TTS = {
         }
     },
 
-    toggle: function(text, rate) {
+    toggle: function(text, rate, messageId) {
         if (this.isPlaying) {
             this.stop();
         } else {
-            this.speak(text, rate);
+            this.speak(text, rate, messageId);
         }
     },
 
