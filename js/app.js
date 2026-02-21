@@ -94,6 +94,7 @@ const App = {
 
         UI.applyTheme(settings.theme || 'blue');
         UI.updateCharName(settings.charName || '小雪');
+        console.log('loadSettings - settings.avatar:', settings.avatar ? settings.avatar.substring(0, 50) + '...' : '空');
         UI.updateAvatar(settings.avatar);
     },
 
@@ -393,9 +394,13 @@ const App = {
             const img = mainAvatar.querySelector('img');
             if (img) {
                 avatar = img.src;
+                console.log('saveSettings - 从img.src获取avatar:', avatar.substring(0, 50) + '...');
             } else {
                 avatar = mainAvatar.textContent.trim();
+                console.log('saveSettings - 从textContent获取avatar:', avatar);
             }
+        } else {
+            console.log('saveSettings - mainAvatar元素未找到');
         }
 
         const settings = {

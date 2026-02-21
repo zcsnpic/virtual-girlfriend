@@ -978,6 +978,7 @@ const UI = {
         if (avatarInput) {
             avatarInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
+                console.log('头像文件选择事件触发, file:', file);
                 if (!file) return;
 
                 if (file.size > 200 * 1024) {
@@ -993,6 +994,7 @@ const UI = {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const base64 = event.target.result;
+                    console.log('图片读取完成, base64长度:', base64.length);
                     UI.updateAvatar(base64);
                     if (avatarUrl) avatarUrl.value = '';
                     if (avatarEmoji) avatarEmoji.value = '';
