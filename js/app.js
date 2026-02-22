@@ -197,6 +197,13 @@ const App = {
         const input = document.getElementById('messageInput');
         const value = input.value;
         
+        console.log('[自动发送] 输入事件', { 
+            inputType: e.inputType, 
+            data: e.data,
+            dataLength: e.data ? e.data.length : 0,
+            valueLength: value.length
+        });
+        
         if (!value.trim()) {
             this.clearAutoSendTimer();
             return;
@@ -204,13 +211,17 @@ const App = {
 
         const eventData = e.data || '';
         const inputType = e.inputType || '';
-        const isBatchInput = eventData.length > 2 || inputType === 'insertFromPaste';
-
-        if (isBatchInput) {
+        
+        const isPaste = inputType === 'insertFromPaste' || inputType === 'insertFromDrop';
+        const isVoiceInput = inputType === 'insertFromSpeech' || (eventData.length > 5 && inputType === 'insertText');
+        const isBatchInput = eventData.length > 2;
+        
+        if (isPaste || isVoiceInput || isBatchInput) {
             this.clearAutoSendTimer();
-            console.log('[自动发送] 检测到批量输入，立即发送');
+            console.log('[自动发送] 立即发送', { isPaste, isVoiceInput, isBatchInput, inputType, eventDataLength: eventData.length });
             this.sendMessage();
         } else {
+            console.log('[自动发送] 启动延迟发送');
             this.startAutoSendTimer();
         }
     },
