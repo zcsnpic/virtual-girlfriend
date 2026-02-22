@@ -1,5 +1,8 @@
 const Memory = {
     STORAGE_KEY: 'virtual_girlfriend_data',
+    _cache: null,
+    _cacheTime: 0,
+    CACHE_TTL: 1000,
 
     getDefaultData: function() {
         return {
@@ -269,15 +272,21 @@ const Memory = {
     },
 
     load: function() {
+        const now = Date.now();
+        if (this._cache && (now - this._cacheTime) < this.CACHE_TTL) {
+            return this._cache;
+        }
+        
         const data = localStorage.getItem(this.STORAGE_KEY);
         if (data) {
             try {
                 const parsedData = JSON.parse(data);
-                // 确保数据结构完整性，合并默认值
                 const defaultData = this.getDefaultData();
-                return this.mergeData(parsedData, defaultData);
+                const result = this.mergeData(parsedData, defaultData);
+                this._cache = result;
+                this._cacheTime = now;
+                return result;
             } catch (e) {
-                console.error('加载数据失败:', e);
                 return this.getDefaultData();
             }
         }
@@ -304,10 +313,11 @@ const Memory = {
 
     save: function(data) {
         try {
+            this._cache = data;
+            this._cacheTime = Date.now();
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
             return true;
         } catch (e) {
-            console.error('保存数据失败:', e);
             return false;
         }
     },

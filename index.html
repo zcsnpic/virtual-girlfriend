@@ -46,7 +46,7 @@
                     <div class="header-info">
                             <div class="name" id="charName">小雪</div>
                             <div class="status">在线</div>
-                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.1</div>
+                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.2</div>
                         </div>
                 </div>
                 <div class="header-right">
@@ -465,6 +465,16 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v3.2</div>
+                        <div class="changelog-date">2025-02-22</div>
+                        <ul class="changelog-changes">
+                            <li>修复 XSS 安全漏洞，防止恶意脚本注入</li>
+                            <li>修复定时器内存泄漏问题</li>
+                            <li>优化性能：添加数据缓存机制</li>
+                            <li>清理调试日志，提升代码质量</li>
+                        </ul>
+                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v3.1</div>
                         <div class="changelog-date">2025-02-22</div>
