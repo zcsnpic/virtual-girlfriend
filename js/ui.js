@@ -120,19 +120,32 @@ const UI = {
         
         for (const msg of messages) {
             const scenePattern = /\[([^\]]+)\]/g;
-            const matches = [...msg.matchAll(scenePattern)];
-            console.log('消息:', msg, '场景匹配数:', matches.length);
+            const speechPattern = /"([^"]+)"/g;
+            const sceneMatches = [...msg.matchAll(scenePattern)];
+            const speechMatches = [...msg.matchAll(speechPattern)];
             
-            if (matches.length <= 1) {
+            console.log('消息:', msg, '场景数:', sceneMatches.length, '语音数:', speechMatches.length);
+            
+            if (sceneMatches.length <= 1) {
                 result.push(msg);
+                continue;
+            }
+            
+            if (sceneMatches.length === speechMatches.length) {
+                for (let i = 0; i < sceneMatches.length; i++) {
+                    const sceneContent = sceneMatches[i][0];
+                    const speechContent = speechMatches[i][0];
+                    result.push(`${sceneContent} ${speechContent}`);
+                }
+                console.log('按场景-语音配对拆分:', result);
                 continue;
             }
             
             const parts = [];
             let lastIndex = 0;
             
-            for (let i = 0; i < matches.length; i++) {
-                const match = matches[i];
+            for (let i = 0; i < sceneMatches.length; i++) {
+                const match = sceneMatches[i];
                 const sceneStart = match.index;
                 const sceneEnd = match.index + match[0].length;
                 
