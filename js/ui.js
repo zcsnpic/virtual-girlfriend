@@ -458,6 +458,83 @@ const UI = {
         }
     },
 
+    unmarkAsCore: function(messageId) {
+        const success = Memory.unmarkAsCore(messageId);
+        if (success) {
+            this.showToast('已取消核心记忆', 'success');
+            this.loadImportantMemory();
+        } else {
+            this.showToast('操作失败', 'error');
+        }
+    },
+
+    showAddMemoryModal: function() {
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.id = 'addMemoryModal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h2>添加重要记忆</h2>
+                    <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>记忆内容</label>
+                        <textarea id="addMemoryContent" rows="3" placeholder="请输入记忆内容..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>消息来源</label>
+                        <select id="addMemoryRole">
+                            <option value="user">用户说（"你"=角色，"我"=用户）</option>
+                            <option value="assistant">角色说（"我"=角色，"你"=用户）</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="addMemoryCore">
+                            设为核心记忆（最高优先级，最多10条）
+                        </label>
+                    </div>
+                    <button class="save-btn" onclick="UI.saveNewMemory()">保存</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    },
+
+    saveNewMemory: function() {
+        const content = document.getElementById('addMemoryContent').value.trim();
+        const role = document.getElementById('addMemoryRole').value;
+        const isCore = document.getElementById('addMemoryCore').checked;
+        
+        if (!content) {
+            this.showToast('请输入记忆内容', 'error');
+            return;
+        }
+        
+        const message = Memory.addImportantMemory({
+            role: role,
+            content: content,
+            core: isCore
+        });
+        
+        if (message) {
+            this.showToast('记忆已添加', 'success');
+            document.getElementById('addMemoryModal').remove();
+            this.loadImportantMemory();
+        } else {
+            this.showToast('添加失败', 'error');
+        }
+    },
+
     // 添加到记忆
     addToMemory: function(messageId) {
         // 调用Memory模块的方法标记消息为重要

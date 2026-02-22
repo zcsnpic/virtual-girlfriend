@@ -417,6 +417,34 @@ const Memory = {
         return false;
     },
 
+    addImportantMemory: function(options) {
+        const data = this.load();
+        const isCore = options.core || false;
+        
+        if (isCore) {
+            const coreCount = data.messages.filter(m => m.core).length;
+            if (coreCount >= 10) {
+                return null;
+            }
+        }
+        
+        const newMessage = {
+            id: Date.now(),
+            role: options.role || 'user',
+            content: options.content,
+            timestamp: new Date().toISOString(),
+            recalled: false,
+            important: true,
+            core: isCore,
+            reviewCount: 0,
+            lastReviewed: null
+        };
+        
+        data.messages.push(newMessage);
+        this.save(data);
+        return newMessage;
+    },
+
     markAsCore: function(messageId) {
         const data = this.load();
         const coreCount = data.messages.filter(m => m.core).length;

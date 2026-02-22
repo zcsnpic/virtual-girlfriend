@@ -46,7 +46,7 @@
                     <div class="header-info">
                             <div class="name" id="charName">小雪</div>
                             <div class="status">在线</div>
-                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.2</div>
+                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.3</div>
                         </div>
                 </div>
                 <div class="header-right">
@@ -305,6 +305,9 @@
                     <button class="tab-btn" data-tab="profile">用户档案</button>
                 </div>
                 <div class="tab-content active" id="importantTab">
+                    <div class="memory-actions-bar">
+                        <button class="add-memory-btn" onclick="UI.showAddMemoryModal()">+ 添加记忆</button>
+                    </div>
                     <div class="important-memories" id="importantMemories">
                         <div class="memory-card">
                             <div class="memory-header">
@@ -418,6 +421,16 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v3.3</div>
+                        <div class="changelog-date">2025-02-23</div>
+                        <ul class="changelog-changes">
+                            <li>重要记忆页面新增"添加记忆"按钮</li>
+                            <li>可直接添加重要记忆，无需通过消息气泡操作</li>
+                            <li>添加时可选择消息来源（用户说/角色说）</li>
+                            <li>添加时可选择是否设为核心记忆</li>
+                        </ul>
+                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v3.2</div>
                         <div class="changelog-date">2025-02-22</div>

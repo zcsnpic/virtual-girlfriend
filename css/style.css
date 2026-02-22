@@ -1242,6 +1242,34 @@ input:checked + .slider:before {
     cursor: pointer;
 }
 
+.memory-actions-bar {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+}
+
+.add-memory-btn {
+    width: 100%;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-memory-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.add-memory-btn:active {
+    transform: translateY(0);
+}
+
 .edit-btn, .delete-btn {
     padding: 6px 12px;
     border: 1px solid var(--border-color);
