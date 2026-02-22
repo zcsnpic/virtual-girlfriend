@@ -429,10 +429,50 @@ const Memory = {
         return false;
     },
 
+    markAsCore: function(messageId) {
+        const data = this.load();
+        const coreCount = data.messages.filter(m => m.core).length;
+        if (coreCount >= 10) {
+            return false;
+        }
+        const message = data.messages.find(m => m.id == messageId);
+        if (message) {
+            message.core = true;
+            message.important = true;
+            this.save(data);
+            return true;
+        }
+        return false;
+    },
+
+    unmarkAsCore: function(messageId) {
+        const data = this.load();
+        const message = data.messages.find(m => m.id == messageId);
+        if (message) {
+            message.core = false;
+            this.save(data);
+            return true;
+        }
+        return false;
+    },
+
+    getCoreMessages: function(limit) {
+        const data = this.load();
+        const coreMessages = data.messages.filter(m => m.core).sort((a, b) => {
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        });
+        if (limit) {
+            return coreMessages.slice(0, limit);
+        }
+        return coreMessages;
+    },
+
     getImportantMessages: function(limit) {
         const data = this.load();
         const importantMessages = data.messages.filter(m => m.important).sort((a, b) => {
-            // 优先按reviewCount排序，然后按时间排序
+            if (a.core !== b.core) {
+                return b.core ? 1 : -1;
+            }
             if (b.reviewCount !== a.reviewCount) {
                 return b.reviewCount - a.reviewCount;
             }
@@ -537,6 +577,16 @@ const Memory = {
         }
         if (relationship.milestones && relationship.milestones.length > 0) {
             context += `重要事件：${relationship.milestones.join('、')}\n`;
+        }
+
+        // 添加核心记忆
+        const coreMessages = this.getCoreMessages(10);
+        if (coreMessages.length > 0) {
+            context += `\n【核心记忆】（必须记住，最高优先级）\n`;
+            coreMessages.forEach((msg, index) => {
+                const roleLabel = msg.role === 'user' ? '[用户说]' : '[角色说]';
+                context += `${index + 1}. ${roleLabel} ${msg.content}\n`;
+            });
         }
 
         // 添加重要记忆
