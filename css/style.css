@@ -1105,6 +1105,7 @@ input:checked + .slider:before {
     overflow-y: auto;
     display: none;
     animation: fadeIn 0.3s ease;
+    max-height: 50vh;
 }
 
 .tab-content.active {
