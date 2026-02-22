@@ -143,6 +143,10 @@ const API = {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullContent = '';
+            let lastContent = '';
+            let repeatCount = 0;
+            const MAX_REPEATS = 3;
+            const MAX_LENGTH = 2000;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -160,7 +164,19 @@ const API = {
                             const parsed = JSON.parse(data);
                             const content = parsed.choices?.[0]?.delta?.content;
                             if (content) {
+                                if (content === lastContent) {
+                                    repeatCount++;
+                                    if (repeatCount >= MAX_REPEATS) {
+                                        break;
+                                    }
+                                } else {
+                                    repeatCount = 0;
+                                    lastContent = content;
+                                }
                                 fullContent += content;
+                                if (fullContent.length > MAX_LENGTH) {
+                                    break;
+                                }
                                 if (onStream) {
                                     onStream(fullContent);
                                 }
@@ -169,6 +185,10 @@ const API = {
                             // 忽略解析错误
                         }
                     }
+                }
+                
+                if (repeatCount >= MAX_REPEATS || fullContent.length > MAX_LENGTH) {
+                    break;
                 }
             }
 
