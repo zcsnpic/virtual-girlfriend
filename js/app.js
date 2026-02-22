@@ -478,11 +478,11 @@ const App = {
         input.focus();
     },
 
-    playMessagesSequentially: async function(messages, rate) {
+    playMessagesSequentially: async function(messages, rate, sendId) {
         this.isPlayingSequence = true;
         
         for (let i = 0; i < messages.length; i++) {
-            if (!this.isPlayingSequence) {
+            if (!this.isPlayingSequence || (sendId && this.currentSendId !== sendId)) {
                 console.log('[打断] 停止播放序列');
                 return;
             }
@@ -497,7 +497,7 @@ const App = {
                 TTS.speak(msg.content, rate, msg.id);
                 await new Promise(resolve => {
                     const checkInterval = setInterval(() => {
-                        if (!TTS.isPlaying || !this.isPlayingSequence) {
+                        if (!TTS.isPlaying || !this.isPlayingSequence || (sendId && this.currentSendId !== sendId)) {
                             clearInterval(checkInterval);
                             resolve();
                         }
@@ -509,7 +509,7 @@ const App = {
                     }, 10000);
                 });
                 
-                if (!this.isPlayingSequence) return;
+                if (!this.isPlayingSequence || (sendId && this.currentSendId !== sendId)) return;
                 
                 if (i < messages.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 300));
