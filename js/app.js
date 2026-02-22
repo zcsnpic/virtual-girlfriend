@@ -278,8 +278,6 @@ const App = {
         
         API.abort();
         
-        TTS.stop();
-        
         this.messageTimers.forEach(timer => clearTimeout(timer));
         this.messageTimers = [];
         
@@ -435,6 +433,7 @@ const App = {
                     }
                     
                     if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false) {
+                        TTS.stop();
                         const allMessages = [firstMsg, ...additionalMessages];
                         await this.playMessagesSequentially(allMessages, settings.ttsRate, mySendId);
                     }
@@ -447,6 +446,7 @@ const App = {
                     UI.scrollToBottom();
                     
                     if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
+                        TTS.stop();
                         TTS.speak(lastMsg.content, settings.ttsRate, lastMsg.id);
                     }
                 }
@@ -459,6 +459,7 @@ const App = {
                 UI.scrollToBottom();
                 
                 if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false && lastMsg && lastMsg.content) {
+                    TTS.stop();
                     TTS.speak(lastMsg.content, settings.ttsRate, lastMsg.id);
                 }
             }
