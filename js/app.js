@@ -3,6 +3,7 @@ const App = {
     autoSendTimer: null,
     isComposing: false,
     lastInputLength: 0,
+    messageTimers: [],
 
     init: function() {
         this.loadSettings();
@@ -268,6 +269,22 @@ const App = {
         }
     },
 
+    interruptSending: function() {
+        console.log('[打断] 停止当前发送');
+        
+        API.abort();
+        
+        TTS.stop();
+        
+        this.messageTimers.forEach(timer => clearTimeout(timer));
+        this.messageTimers = [];
+        
+        this.isSending = false;
+        document.getElementById('sendBtn').disabled = false;
+        
+        UI.hideTyping();
+    },
+
     initMemoryReview: function() {
         // 检查是否需要复习
         this.checkMemoryReview();
@@ -306,14 +323,15 @@ const App = {
     },
 
     sendMessage: async function() {
-        if (this.isSending) return;
+        if (this.isSending) {
+            this.interruptSending();
+        }
         
         this.clearAutoSendTimer();
 
         const input = document.getElementById('messageInput');
         const message = input.value.trim();
         
-        // 空输入时，让AI继续发消息
         const isEmptyInput = !message;
         const continuePrompt = isEmptyInput ? '（请继续说，或者主动发起一个新话题）' : message;
 
@@ -325,13 +343,12 @@ const App = {
         }
 
         this.isSending = true;
-        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('sendBtn').disabled = false;
         input.value = '';
         input.style.height = 'auto';
         
         Memory.recordInteraction();
 
-        // 只有非空输入才添加用户消息
         if (!isEmptyInput) {
             const userMsg = Memory.addMessage({ role: 'user', content: message });
             const msgElement = UI.createMessageElement(userMsg);
@@ -340,6 +357,7 @@ const App = {
         }
 
         let streamingElement = null;
+        const self = this;
 
         try {
             await API.sendMessage(continuePrompt, (content) => {
@@ -365,20 +383,10 @@ const App = {
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
             const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
-            console.log('=== 多条消息检测 ===');
-            console.log('multiMessageCount:', multiMessageCount);
-            console.log('hasSeparator:', hasSeparator);
-            console.log('hasMultipleScenes:', hasMultipleScenes);
-            console.log('lastMsg.content:', lastMsg ? lastMsg.content : 'null');
-            
             if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
                 const splitContents = UI.splitMessages(lastMsg.content);
                 
-                console.log('splitContents:', splitContents);
-                console.log('splitContents.length:', splitContents.length);
-                
                 if (splitContents.length > 1) {
-                    console.log('进入多条消息显示逻辑');
                     if (streamingElement) {
                         streamingElement.remove();
                     }
@@ -397,7 +405,12 @@ const App = {
                     
                     const additionalMessages = [];
                     for (let i = 1; i < splitContents.length; i++) {
-                        await new Promise(resolve => setTimeout(resolve, messageDelay));
+                        await new Promise(resolve => {
+                            const timer = setTimeout(resolve, messageDelay);
+                            self.messageTimers.push(timer);
+                        });
+                        
+                        if (!self.isSending) return;
                         
                         const newMsg = Memory.addMessage({
                             role: 'assistant',
@@ -440,9 +453,13 @@ const App = {
             }
 
         } catch (error) {
-            UI.hideTyping();
-            UI.showToast(error.message || '发送失败，请重试', 'error');
-            console.error('发送消息失败:', error);
+            if (error.name === 'AbortError') {
+                console.log('[打断] API 请求已中止');
+            } else {
+                UI.hideTyping();
+                UI.showToast(error.message || '发送失败，请重试', 'error');
+                console.error('发送消息失败:', error);
+            }
         }
 
         this.isSending = false;
