@@ -97,14 +97,15 @@ body {
 #app {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
     max-width: 600px;
     margin: 0 auto;
     background-color: var(--card-bg);
     box-shadow: var(--shadow-md);
     position: relative;
     z-index: 1;
+    overflow: hidden;
 }
 
 .header {
@@ -1898,7 +1899,7 @@ input:checked + .slider:before {
     bottom: 126px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 99;
+    z-index: 101;
     box-sizing: border-box;
 }
 
