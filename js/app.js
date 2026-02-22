@@ -6,21 +6,6 @@ const App = {
     messageTimers: [],
     isPlayingSequence: false,
     currentSendId: 0,
-    timers: {
-        memoryReview: null
-    },
-
-    cleanup: function() {
-        this.clearAutoSendTimer();
-        this.messageTimers.forEach(timer => clearTimeout(timer));
-        this.messageTimers = [];
-        if (this.timers.memoryReview) {
-            clearInterval(this.timers.memoryReview);
-            this.timers.memoryReview = null;
-        }
-        TTS.cleanup && TTS.cleanup();
-        UI.cleanup && UI.cleanup();
-    },
 
     init: function() {
         this.loadSettings();
@@ -122,6 +107,7 @@ const App = {
 
         UI.applyTheme(settings.theme || 'blue');
         UI.updateCharName(settings.charName || '小雪');
+        console.log('loadSettings - settings.avatar:', settings.avatar ? settings.avatar.substring(0, 50) + '...' : '空');
         UI.updateAvatar(settings.avatar);
     },
 
@@ -169,6 +155,7 @@ const App = {
             
             if (addedLength > 5) {
                 this.clearAutoSendTimer();
+                console.log('[自动发送] 组合输入结束，新增字符>', addedLength, '，立即发送');
                 this.sendMessage();
             } else {
                 this.lastInputLength = currentLength;
@@ -230,9 +217,8 @@ const App = {
             }
         });
 
+        // 初始化UI事件监听器
         UI.initEventListeners();
-
-        window.addEventListener('beforeunload', () => this.cleanup());
     },
 
     setupScrollEffects: function() {
@@ -267,6 +253,7 @@ const App = {
         
         if (isPaste) {
             this.clearAutoSendTimer();
+            console.log('[自动发送] 粘贴输入，立即发送');
             this.sendMessage();
         } else {
             this.lastInputLength = value.length;
@@ -281,9 +268,12 @@ const App = {
         const delaySeconds = parseFloat(settings.autoSendDelay || 2.5);
         const delayMs = delaySeconds * 1000;
         
+        console.log('[自动发送] 启动计时器:', delaySeconds, '秒');
+        
         this.autoSendTimer = setTimeout(() => {
             const input = document.getElementById('messageInput');
             if (input.value.trim() && !this.isSending) {
+                console.log('[自动发送] 计时器触发，发送消息');
                 this.sendMessage();
             }
         }, delayMs);
@@ -297,6 +287,8 @@ const App = {
     },
 
     interruptSending: function() {
+        console.log('[打断] 停止当前发送');
+        
         API.abort();
         
         this.messageTimers.forEach(timer => clearTimeout(timer));
@@ -309,8 +301,11 @@ const App = {
     },
 
     initMemoryReview: function() {
+        // 检查是否需要复习
         this.checkMemoryReview();
-        this.timers.memoryReview = setInterval(() => this.checkMemoryReview(), 60 * 60 * 1000);
+        
+        // 每小时检查一次
+        setInterval(() => this.checkMemoryReview(), 60 * 60 * 1000);
     },
 
     // 检查记忆复习
@@ -329,6 +324,10 @@ const App = {
     performMemoryReview: function() {
         const messagesForReview = Memory.getMessagesForReview();
         if (messagesForReview.length > 0) {
+            // 在控制台记录复习内容
+            console.log('📝 开始记忆复习:', messagesForReview);
+            
+            // 复习每条记忆
             messagesForReview.forEach(msg => {
                 Memory.reviewMessage(msg.id);
             });

@@ -4,13 +4,6 @@ const TTS = {
     isPlaying: false,
     currentAudio: null,
     voicesLoaded: false,
-    timers: [],
-
-    cleanup: function() {
-        this.stop();
-        this.timers.forEach(timer => clearTimeout(timer));
-        this.timers = [];
-    },
 
     isSupported: function() {
         return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
@@ -391,23 +384,24 @@ const TTS = {
 
         const retryTimes = [100, 500, 1500, 3000];
         retryTimes.forEach((time, index) => {
-            const timer = setTimeout(() => {
+            setTimeout(() => {
                 if (!this.voicesLoaded || this.synth.getVoices().length === 0) {
+                    console.log(`第${index + 1}次重试加载声音列表...`);
                     loadVoices();
                 }
             }, time);
-            this.timers.push(timer);
         });
 
-        const finalTimer = setTimeout(() => {
+        setTimeout(() => {
             const finalVoices = this.synth.getVoices();
             if (finalVoices.length === 0) {
+                console.warn('声音列表最终为空，可能是移动端浏览器限制');
+                console.log('提示: TTS仍可使用默认声音播放，但无法选择声音');
                 if (typeof UI !== 'undefined' && UI.updateVoiceList) {
                     UI.updateVoiceList();
                 }
             }
         }, 5000);
-        this.timers.push(finalTimer);
     }
 };
 

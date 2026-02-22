@@ -1,18 +1,5 @@
 const UI = {
     currentScene: null,
-    timers: [],
-
-    cleanup: function() {
-        this.timers.forEach(timer => clearTimeout(timer));
-        this.timers = [];
-    },
-
-    escapeHtml: function(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    },
 
     showScene: function(scene) {
         if (!scene) {
@@ -39,10 +26,10 @@ const UI = {
         const sceneBar = document.getElementById('sceneBar');
         if (sceneBar && sceneBar.classList.contains('active')) {
             sceneBar.classList.add('hiding');
-            const timer = setTimeout(() => {
+            setTimeout(() => {
                 sceneBar.classList.remove('active', 'hiding');
             }, 400);
-            this.timers.push(timer);
+            console.log('hideScene: 隐藏场景');
         }
         this.currentScene = null;
     },
@@ -435,9 +422,6 @@ const UI = {
             case 'add-to-memory':
                 this.addToMemory(messageId);
                 break;
-            case 'add-to-core':
-                this.addToCoreMemory(messageId);
-                break;
             case 'view-details':
                 this.viewMessageDetails(messageId);
                 break;
@@ -447,27 +431,6 @@ const UI = {
             case 'delete':
                 this.deleteMessage(messageId);
                 break;
-        }
-    },
-
-    addToCoreMemory: function(messageId) {
-        const success = Memory.markAsCore(messageId);
-        if (success) {
-            this.showToast('已设为核心记忆', 'success');
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.classList.add('important');
-                const bubble = messageElement.querySelector('.bubble');
-                if (bubble && !bubble.querySelector('.core-indicator')) {
-                    const indicator = document.createElement('span');
-                    indicator.className = 'core-indicator';
-                    indicator.textContent = '⭐⭐';
-                    indicator.title = '核心记忆';
-                    bubble.appendChild(indicator);
-                }
-            }
-        } else {
-            this.showToast('核心记忆已达上限（最多10条）', 'error');
         }
     },
 
@@ -613,11 +576,11 @@ const UI = {
                                 <div class="timeline-content">
                                     <div class="memory-card">
                                         <div class="memory-header">
-                                            <span class="memory-title">${this.escapeHtml(this.getMemoryTitle(msg.content))}</span>
+                                            <span class="memory-title">${this.getMemoryTitle(msg.content)}</span>
                                             <span class="memory-indicator">⭐</span>
                                         </div>
                                         <div class="memory-body">
-                                            <p>${this.escapeHtml(msg.content)}</p>
+                                            <p>${msg.content}</p>
                                         </div>
                                         <div class="memory-footer">
                                             <button class="edit-btn" onclick="UI.editMemory(${msg.id})">编辑</button>
@@ -640,34 +603,27 @@ const UI = {
         const importantMemories = document.getElementById('importantMemories');
         if (!importantMemories) return;
         
-        const messages = Memory.getImportantMessages(100);
+        // 获取所有重要记忆
+        const messages = Memory.getImportantMessages();
         
         if (messages.length === 0) {
             importantMemories.innerHTML = '<div class="empty-memory">暂无重要记忆</div>';
             return;
         }
         
+        // 生成重要记忆HTML
         let html = '';
         messages.forEach(msg => {
-            const roleLabel = msg.role === 'user' ? '<span class="role-tag user">用户说</span>' : '<span class="role-tag assistant">角色说</span>';
-            const isCore = msg.core;
-            const coreClass = isCore ? 'core' : '';
-            const starIcon = isCore ? '⭐⭐' : '⭐';
-            const coreBtn = isCore 
-                ? `<button class="uncore-btn" onclick="UI.unmarkAsCore(${msg.id})">取消核心</button>`
-                : `<button class="core-btn" onclick="UI.markAsCore(${msg.id})">设为核心</button>`;
             html += `
-                <div class="memory-card ${coreClass}">
+                <div class="memory-card">
                     <div class="memory-header">
-                        ${roleLabel}
-                        <span class="memory-title">${this.escapeHtml(this.getMemoryTitle(msg.content))}</span>
-                        <span class="memory-indicator">${starIcon}</span>
+                        <span class="memory-title">${this.getMemoryTitle(msg.content)}</span>
+                        <span class="memory-indicator">⭐</span>
                     </div>
                     <div class="memory-body">
-                        <p>${this.escapeHtml(msg.content)}</p>
+                        <p>${msg.content}</p>
                     </div>
                     <div class="memory-footer">
-                        ${coreBtn}
                         <button class="edit-btn" onclick="UI.editMemory(${msg.id})">编辑</button>
                         <button class="delete-btn" onclick="UI.deleteMemory(${msg.id})">删除</button>
                     </div>
@@ -676,24 +632,6 @@ const UI = {
         });
         
         importantMemories.innerHTML = html;
-    },
-
-    markAsCore: function(messageId) {
-        const success = Memory.markAsCore(messageId);
-        if (success) {
-            this.showToast('已设为核心记忆', 'success');
-            this.loadImportantMemory();
-        } else {
-            this.showToast('核心记忆已达上限（最多10条）', 'error');
-        }
-    },
-
-    unmarkAsCore: function(messageId) {
-        const success = Memory.unmarkAsCore(messageId);
-        if (success) {
-            this.showToast('已取消核心记忆', 'success');
-            this.loadImportantMemory();
-        }
     },
     
     // 加载用户档案
@@ -714,27 +652,27 @@ const UI = {
                 <div class="profile-body">
                     <div class="profile-item">
                         <label>姓名</label>
-                        <span>${this.escapeHtml(userInfo.name) || '未设置'}</span>
+                        <span>${userInfo.name || '未设置'}</span>
                     </div>
                     <div class="profile-item">
                         <label>昵称</label>
-                        <span>${this.escapeHtml(userInfo.nickname) || '未设置'}</span>
+                        <span>${userInfo.nickname || '未设置'}</span>
                     </div>
                     <div class="profile-item">
                         <label>生日</label>
-                        <span>${this.escapeHtml(userInfo.birthday) || '未设置'}</span>
+                        <span>${userInfo.birthday || '未设置'}</span>
                     </div>
                     <div class="profile-item">
                         <label>职业</label>
-                        <span>${this.escapeHtml(userInfo.job) || '未设置'}</span>
+                        <span>${userInfo.job || '未设置'}</span>
                     </div>
                     <div class="profile-item">
                         <label>爱好</label>
-                        <span>${userInfo.hobbies && userInfo.hobbies.length > 0 ? this.escapeHtml(userInfo.hobbies.join('、')) : '未设置'}</span>
+                        <span>${userInfo.hobbies && userInfo.hobbies.length > 0 ? userInfo.hobbies.join('、') : '未设置'}</span>
                     </div>
                     <div class="profile-item">
                         <label>喜欢的食物</label>
-                        <span>${userInfo.favoriteFood && userInfo.favoriteFood.length > 0 ? this.escapeHtml(userInfo.favoriteFood.join('、')) : '未设置'}</span>
+                        <span>${userInfo.favoriteFood && userInfo.favoriteFood.length > 0 ? userInfo.favoriteFood.join('、') : '未设置'}</span>
                     </div>
                 </div>
             </div>
@@ -854,27 +792,27 @@ const UI = {
                 <div class="modal-body">
                     <div class="form-group">
                         <label>姓名</label>
-                        <input type="text" id="editName" value="${this.escapeHtml(userInfo.name) || ''}" placeholder="请输入姓名">
+                        <input type="text" id="editName" value="${userInfo.name || ''}" placeholder="请输入姓名">
                     </div>
                     <div class="form-group">
                         <label>昵称</label>
-                        <input type="text" id="editNickname" value="${this.escapeHtml(userInfo.nickname) || ''}" placeholder="请输入昵称">
+                        <input type="text" id="editNickname" value="${userInfo.nickname || ''}" placeholder="请输入昵称">
                     </div>
                     <div class="form-group">
                         <label>生日</label>
-                        <input type="date" id="editBirthday" value="${this.escapeHtml(userInfo.birthday) || ''}">
+                        <input type="date" id="editBirthday" value="${userInfo.birthday || ''}">
                     </div>
                     <div class="form-group">
                         <label>职业</label>
-                        <input type="text" id="editJob" value="${this.escapeHtml(userInfo.job) || ''}" placeholder="请输入职业">
+                        <input type="text" id="editJob" value="${userInfo.job || ''}" placeholder="请输入职业">
                     </div>
                     <div class="form-group">
                         <label>爱好（用逗号分隔）</label>
-                        <input type="text" id="editHobbies" value="${userInfo.hobbies && userInfo.hobbies.length > 0 ? this.escapeHtml(userInfo.hobbies.join(', ')) : ''}" placeholder="请输入爱好">
+                        <input type="text" id="editHobbies" value="${userInfo.hobbies && userInfo.hobbies.length > 0 ? userInfo.hobbies.join(', ') : ''}" placeholder="请输入爱好">
                     </div>
                     <div class="form-group">
                         <label>喜欢的食物（用逗号分隔）</label>
-                        <input type="text" id="editFavoriteFood" value="${userInfo.favoriteFood && userInfo.favoriteFood.length > 0 ? this.escapeHtml(userInfo.favoriteFood.join(', ')) : ''}" placeholder="请输入喜欢的食物">
+                        <input type="text" id="editFavoriteFood" value="${userInfo.favoriteFood && userInfo.favoriteFood.length > 0 ? userInfo.favoriteFood.join(', ') : ''}" placeholder="请输入喜欢的食物">
                     </div>
                     <button class="save-btn" onclick="UI.saveUserProfile()">保存</button>
                 </div>
@@ -1292,9 +1230,16 @@ const UI = {
             });
         }
 
-        [100, 1000, 3000].forEach(time => {
-            const timer = setTimeout(() => this.updateVoiceList(), time);
-            this.timers.push(timer);
-        });
+        setTimeout(() => {
+            this.updateVoiceList();
+        }, 100);
+
+        setTimeout(() => {
+            this.updateVoiceList();
+        }, 1000);
+
+        setTimeout(() => {
+            this.updateVoiceList();
+        }, 3000);
     }
 };

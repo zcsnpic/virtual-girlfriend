@@ -46,7 +46,7 @@
                     <div class="header-info">
                             <div class="name" id="charName">小雪</div>
                             <div class="status">在线</div>
-                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.3</div>
+                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.1</div>
                         </div>
                 </div>
                 <div class="header-right">
@@ -403,8 +403,7 @@
 
     <div class="long-press-menu" id="longPressMenu">
         <ul>
-            <li data-action="add-to-memory">⭐ 添加到记忆</li>
-            <li data-action="add-to-core">⭐⭐ 设为核心记忆</li>
+            <li data-action="add-to-memory">添加到永久记忆</li>
             <li data-action="view-details">查看详情</li>
             <li data-action="copy">复制内容</li>
             <li data-action="delete">删除消息</li>
@@ -466,26 +465,6 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
-                    <div class="changelog-item">
-                        <div class="changelog-version">v3.3</div>
-                        <div class="changelog-date">2025-02-22</div>
-                        <ul class="changelog-changes">
-                            <li>新增核心记忆功能，最高优先级注入</li>
-                            <li>重要记忆添加视角说明，明确"你""我"指代</li>
-                            <li>重要记忆显示消息来源，避免角色混淆</li>
-                            <li>取消自动存储，所有重要记忆手工添加</li>
-                        </ul>
-                    </div>
-                    <div class="changelog-item">
-                        <div class="changelog-version">v3.2</div>
-                        <div class="changelog-date">2025-02-22</div>
-                        <ul class="changelog-changes">
-                            <li>修复 XSS 安全漏洞，防止恶意脚本注入</li>
-                            <li>修复定时器内存泄漏问题</li>
-                            <li>优化性能：添加数据缓存机制</li>
-                            <li>清理调试日志，提升代码质量</li>
-                        </ul>
-                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v3.1</div>
                         <div class="changelog-date">2025-02-22</div>

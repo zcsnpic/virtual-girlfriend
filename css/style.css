@@ -1188,50 +1188,6 @@ input:checked + .slider:before {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-    gap: 8px;
-}
-
-.role-tag {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 500;
-    flex-shrink: 0;
-}
-
-.role-tag.user {
-    background-color: #e3f2fd;
-    color: #1976d2;
-}
-
-.role-tag.assistant {
-    background-color: #fce4ec;
-    color: #c2185b;
-}
-
-.memory-card.core {
-    background-color: #fffbeb;
-    border-left: 3px solid #f59e0b;
-}
-
-.core-btn {
-    background-color: #f59e0b;
-    color: white;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.uncore-btn {
-    background-color: #9ca3af;
-    color: white;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
 }
 
 .memory-title {
