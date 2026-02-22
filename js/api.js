@@ -52,6 +52,7 @@ const API = {
         }
 
         const multiMessageCount = parseInt(settings.multiMessageCount || '3');
+        console.log('[API] multiMessageCount 设置值:', settings.multiMessageCount, '解析后:', multiMessageCount);
         let multiMessageGuide = '';
         if (multiMessageCount > 1) {
             multiMessageGuide = `

@@ -30,6 +30,8 @@ const Memory = {
                 ttsEndpoint: '',
                 ttsCustomHeaders: '',
                 ttsCustomBody: '',
+                multiMessageCount: '8',
+                messageDelay: 600,
                 autoSendDelay: 2.5
             },
             userInfo: {

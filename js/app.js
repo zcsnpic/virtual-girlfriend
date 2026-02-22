@@ -400,6 +400,7 @@ const App = {
             const lastMsg = messages[messages.length - 1];
             
             const multiMessageCount = parseInt(settings.multiMessageCount || '3');
+            console.log('[App] multiMessageCount:', settings.multiMessageCount, '->', multiMessageCount);
             const messageDelay = settings.messageDelay || 600;
             
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
