@@ -46,10 +46,11 @@
                     <div class="header-info">
                             <div class="name" id="charName">小雪</div>
                             <div class="status">在线</div>
-                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.0</div>
+                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.1</div>
                         </div>
                 </div>
                 <div class="header-right">
+                    <button class="icon-btn active" id="toggleBubblesBtn" title="显示/隐藏对话气泡">💬</button>
                     <button class="icon-btn" id="saveBtn" title="快速存档" onclick="quickSave()">💾</button>
                     <button class="icon-btn" id="loadBtn" title="存档管理" onclick="openSaveManager()">📁</button>
                     <button class="icon-btn" id="memoryBtn" title="长期记忆" onclick="openMemory()">🧠</button>
@@ -464,6 +465,15 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v3.1</div>
+                        <div class="changelog-date">2025-02-22</div>
+                        <ul class="changelog-changes">
+                            <li>新增气泡对话显示切换按钮（💬）</li>
+                            <li>点击可隐藏/显示对话气泡区，专注聊天</li>
+                            <li>状态自动记忆，刷新后保持</li>
+                        </ul>
+                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v3.0</div>
                         <div class="changelog-date">2025-02-22</div>

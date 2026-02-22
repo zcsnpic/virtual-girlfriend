@@ -163,6 +163,21 @@ const App = {
             }
         });
 
+        const toggleBubblesBtn = document.getElementById('toggleBubblesBtn');
+        if (toggleBubblesBtn) {
+            const showBubbles = localStorage.getItem('showChatBubbles') !== 'false';
+            if (!showBubbles) {
+                document.body.classList.add('hide-chat-bubbles');
+                toggleBubblesBtn.classList.remove('active');
+            }
+            
+            toggleBubblesBtn.addEventListener('click', () => {
+                const isHidden = document.body.classList.toggle('hide-chat-bubbles');
+                toggleBubblesBtn.classList.toggle('active', !isHidden);
+                localStorage.setItem('showChatBubbles', !isHidden);
+            });
+        }
+
         settingsBtn.addEventListener('click', () => {
             UI.showModal('settingsModal');
         });
