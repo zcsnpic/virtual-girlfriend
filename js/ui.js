@@ -193,34 +193,44 @@ const UI = {
         if (message.role === 'assistant') {
             const parsed = Memory.parseMessage(message.content);
             
-            const textElement = document.createElement('span');
-            textElement.className = 'text';
-            
-            if (parsed.hasScene && !parsed.hasSpeech) {
-                div.classList.add('scene');
-                textElement.textContent = parsed.scene;
-            } else if (parsed.hasSpeech && parsed.speech.trim()) {
+            // 场景和语音合并显示
+            if (parsed.hasScene && parsed.hasSpeech) {
+                // 场景突出显示
+                const sceneElement = document.createElement('div');
+                sceneElement.className = 'scene-text';
+                sceneElement.textContent = `『${parsed.scene}』`;
+                bubble.appendChild(sceneElement);
+                
+                // 语音内容
+                const textElement = document.createElement('div');
+                textElement.className = 'speech-text';
                 textElement.textContent = parsed.speech;
-            } else if (parsed.hasScene) {
-                div.classList.add('scene');
-                textElement.textContent = parsed.scene;
+                bubble.appendChild(textElement);
+            } else if (parsed.hasScene && !parsed.hasSpeech) {
+                // 只有场景
+                div.classList.add('scene-only');
+                const sceneElement = document.createElement('div');
+                sceneElement.className = 'scene-text';
+                sceneElement.textContent = `『${parsed.scene}』`;
+                bubble.appendChild(sceneElement);
+            } else if (parsed.hasSpeech && parsed.speech.trim()) {
+                // 只有语音
+                const textElement = document.createElement('span');
+                textElement.className = 'text';
+                textElement.textContent = parsed.speech;
+                bubble.appendChild(textElement);
             } else {
+                // 默认显示内容
+                const textElement = document.createElement('span');
+                textElement.className = 'text';
                 textElement.textContent = Memory.getSpeechContent(message.content);
+                bubble.appendChild(textElement);
             }
-            bubble.appendChild(textElement);
         } else {
             const textElement = document.createElement('span');
             textElement.className = 'text';
             textElement.textContent = message.content;
             bubble.appendChild(textElement);
-        }
-
-        if (message.important) {
-            const memoryIndicator = document.createElement('span');
-            memoryIndicator.className = 'memory-indicator';
-            memoryIndicator.textContent = '⭐';
-            memoryIndicator.title = '重要记忆';
-            bubble.appendChild(memoryIndicator);
         }
 
         const time = document.createElement('div');
