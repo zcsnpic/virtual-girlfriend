@@ -407,7 +407,16 @@ const App = {
             const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
             if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
-                const splitContents = UI.splitMessages(lastMsg.content).slice(0, multiMessageCount);
+                const allSplitContents = UI.splitMessages(lastMsg.content);
+                
+                let splitContents;
+                if (allSplitContents.length > multiMessageCount) {
+                    splitContents = allSplitContents.slice(0, multiMessageCount - 1);
+                    const remaining = allSplitContents.slice(multiMessageCount - 1).join(' ');
+                    splitContents.push(remaining);
+                } else {
+                    splitContents = allSplitContents;
+                }
                 
                 if (splitContents.length > 1) {
                     if (streamingElement) {
