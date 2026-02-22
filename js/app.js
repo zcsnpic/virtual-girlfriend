@@ -252,7 +252,7 @@ const App = {
         try {
             let typingElement = document.getElementById('typingIndicator');
 
-            await API.sendMessage(message, (content) => {
+            await API.sendMessage(continuePrompt, (content) => {
                 if (!typingElement) {
                     typingElement = document.createElement('div');
                     typingElement.className = 'message ai';
@@ -265,7 +265,7 @@ const App = {
                 bubble.innerHTML = `<span class="text">${content}</span><button class="tts-btn" title="朗读">🔊</button>`;
                 typingElement.appendChild(bubble);
                 UI.scrollToBottom();
-            });
+            }, isEmptyInput);
 
             const messages = Memory.getMessages();
             const lastMsg = messages[messages.length - 1];

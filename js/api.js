@@ -1,34 +1,42 @@
 const API = {
     BASE_URL: 'https://api.deepseek.com',
 
-    sendMessage: async function(userMessage, onStream) {
+    sendMessage: async function(userMessage, onStream, isContinue = false) {
         const settings = Memory.getSettings();
 
         if (!settings.apiKey) {
             throw new Error('请先在设置中配置 DeepSeek API 密钥');
         }
 
-        Memory.addMessage({
-            role: 'user',
-            content: userMessage
-        });
+        // 只有非继续对话时才添加用户消息
+        if (!isContinue) {
+            Memory.addMessage({
+                role: 'user',
+                content: userMessage
+            });
 
-        // 标记用户消息为重要（如果包含个人信息或重要事件）
-        const importantKeywords = ['名字', '生日', '职业', '爱好', '喜欢', '讨厌', '重要', '纪念日', '生日'];
-        const isImportant = importantKeywords.some(keyword => 
-            userMessage.toLowerCase().includes(keyword)
-        );
+            // 标记用户消息为重要（如果包含个人信息或重要事件）
+            const importantKeywords = ['名字', '生日', '职业', '爱好', '喜欢', '讨厌', '重要', '纪念日', '生日'];
+            const isImportant = importantKeywords.some(keyword => 
+                userMessage.toLowerCase().includes(keyword)
+            );
 
-        if (isImportant) {
-            const messages = Memory.getMessages();
-            const lastMessage = messages[messages.length - 1];
-            if (lastMessage && lastMessage.role === 'user') {
-                Memory.markAsImportant(lastMessage.id);
+            if (isImportant) {
+                const messages = Memory.getMessages();
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage && lastMessage.role === 'user') {
+                    Memory.markAsImportant(lastMessage.id);
+                }
             }
         }
 
         const recentMessages = Memory.getRecentContext(10);
-        const systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
+        let systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
+        
+        // 如果是继续对话，添加特殊提示
+        if (isContinue) {
+            systemPrompt += '\n\n【继续对话提示】\n用户希望你继续说话。请主动发起话题、分享你的想法、或者延续之前的对话。可以是：\n- 分享你今天的心情或经历\n- 询问用户的情况\n- 提出一个有趣的话题\n- 继续之前未说完的内容\n\n请自然地开始说话，不要说"好的我继续"之类的话。';
+        }
 
         const multiMessageCount = parseInt(settings.multiMessageCount || '3');
         let multiMessageGuide = '';
