@@ -29,7 +29,7 @@
                 <div class="header-info">
                         <div class="name" id="charName">小雪</div>
                         <div class="status">在线</div>
-                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.93</div>
+                        <div class="version" onclick="openChangelog()" style="cursor: pointer;">v2.94</div>
                     </div>
             </div>
             <div class="header-right">
@@ -39,6 +39,10 @@
                 <button class="icon-btn" id="settingsBtn" title="设置" onclick="openSettings()">⚙️</button>
             </div>
         </header>
+        <div class="scene-bar" id="sceneBar">
+            <span class="scene-icon">🌸</span>
+            <span class="scene-text" id="sceneText"></span>
+        </div>
 
         <main class="chat-container" id="chatContainer">
             <div class="messages" id="messages">
@@ -58,10 +62,6 @@
                 <button class="send-btn" id="sendBtn">发送</button>
             </div>
         </footer>
-    </div>
-
-    <div class="scene-display" id="sceneDisplay">
-        <div class="scene-list" id="sceneList"></div>
     </div>
 
     <div class="modal" id="settingsModal">

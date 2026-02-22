@@ -1,6 +1,5 @@
 const UI = {
     currentScene: null,
-    sceneTimer: null,
 
     showScene: function(scene) {
         if (!scene) {
@@ -8,33 +7,25 @@ const UI = {
             return;
         }
 
-        const sceneDisplay = document.getElementById('sceneDisplay');
-        const sceneList = document.getElementById('sceneList');
+        const sceneBar = document.getElementById('sceneBar');
+        const sceneText = document.getElementById('sceneText');
         
-        if (!sceneDisplay || !sceneList) {
+        if (!sceneBar || !sceneText) {
             console.error('showScene: 找不到场景元素');
             return;
         }
 
-        if (this.sceneTimer) {
-            clearTimeout(this.sceneTimer);
-            this.sceneTimer = null;
-        }
-
-        sceneList.innerHTML = `<div class="scene-item"><span class="scene-icon">🌸</span><span class="scene-text">${scene}</span></div>`;
-        
-        sceneDisplay.classList.remove('hiding');
-        sceneDisplay.classList.add('active');
+        sceneText.textContent = scene;
+        sceneBar.classList.add('active');
         
         this.currentScene = scene;
         console.log('showScene: 显示场景', scene);
     },
 
     hideScene: function() {
-        const sceneDisplay = document.getElementById('sceneDisplay');
-        if (sceneDisplay && sceneDisplay.classList.contains('active')) {
-            sceneDisplay.classList.remove('active');
-            sceneDisplay.classList.add('hiding');
+        const sceneBar = document.getElementById('sceneBar');
+        if (sceneBar) {
+            sceneBar.classList.remove('active');
             console.log('hideScene: 隐藏场景');
         }
         this.currentScene = null;
