@@ -207,12 +207,14 @@ const UI = {
             const textElement = document.createElement('span');
             textElement.className = 'text';
             
-            if (parsed.hasSpeech && parsed.speech.trim()) {
+            if (parsed.hasScene && !parsed.hasSpeech) {
+                div.classList.add('scene');
+                textElement.textContent = parsed.scene;
+            } else if (parsed.hasSpeech && parsed.speech.trim()) {
                 textElement.textContent = parsed.speech;
             } else if (parsed.hasScene) {
-                textElement.textContent = `[${parsed.scene}]`;
-                textElement.style.fontStyle = 'italic';
-                textElement.style.color = 'var(--text-light)';
+                div.classList.add('scene');
+                textElement.textContent = parsed.scene;
             } else {
                 textElement.textContent = Memory.getSpeechContent(message.content);
             }
