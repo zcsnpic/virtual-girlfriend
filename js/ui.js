@@ -76,17 +76,6 @@ const UI = {
                 messageEl.classList.remove('playing');
             }
         }
-
-        const ttsBtn = messageEl?.querySelector('.tts-btn');
-        if (ttsBtn) {
-            if (isPlaying) {
-                ttsBtn.classList.add('playing');
-                ttsBtn.textContent = '🔊';
-            } else {
-                ttsBtn.classList.remove('playing');
-                ttsBtn.textContent = '🔊';
-            }
-        }
     },
 
     formatTime: function(isoString) {
@@ -219,15 +208,6 @@ const UI = {
                 textElement.textContent = Memory.getSpeechContent(message.content);
             }
             bubble.appendChild(textElement);
-            
-            const ttsBtn = document.createElement('button');
-            ttsBtn.className = 'tts-btn';
-            ttsBtn.textContent = '🔊';
-            ttsBtn.title = '朗读';
-            ttsBtn.onclick = () => {
-                TTS.toggle(message.content, message.id);
-            };
-            bubble.appendChild(ttsBtn);
         } else {
             const textElement = document.createElement('span');
             textElement.className = 'text';
@@ -295,7 +275,7 @@ const UI = {
             typing.classList.remove('typing');
             const bubble = typing.querySelector('.bubble');
             bubble.classList.remove('typing-indicator');
-            bubble.innerHTML = `<span class="text">${content}</span><button class="tts-btn" title="朗读">🔊</button>`;
+            bubble.innerHTML = `<span class="text">${content}</span>`;
         }
     },
 

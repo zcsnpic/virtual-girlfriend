@@ -262,7 +262,7 @@ const App = {
                 typingElement.innerHTML = '';
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
-                bubble.innerHTML = `<span class="text">${content}</span><button class="tts-btn" title="朗读">🔊</button>`;
+                bubble.innerHTML = `<span class="text">${content}</span>`;
                 typingElement.appendChild(bubble);
                 UI.scrollToBottom();
             }, isEmptyInput);
