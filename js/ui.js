@@ -80,95 +80,35 @@ const UI = {
     },
 
     splitMessages: function(content) {
-        console.log('UI.splitMessages 输入:', content);
         if (!content) return [content];
         
-        let messages = [];
-        
         if (content.includes('|||')) {
-            messages = content.split('|||').map(s => s.trim()).filter(s => s);
-            console.log('按|||拆分结果:', messages);
-        } else {
-            messages = [content];
+            return content.split('|||').map(s => s.trim()).filter(s => s);
         }
         
-        messages = this.splitBySceneDescriptions(messages);
-        console.log('UI.splitMessages 输出:', messages);
-        
-        return messages;
+        return [content];
     },
 
     splitBySceneDescriptions: function(messages) {
-        console.log('splitBySceneDescriptions 输入:', messages);
         const result = [];
         
         for (const msg of messages) {
-            const scenePattern = /\[([^\]]+)\]/g;
-            const speechPattern = /"([^"]+)"/g;
-            const sceneMatches = [...msg.matchAll(scenePattern)];
-            const speechMatches = [...msg.matchAll(speechPattern)];
+            if (msg.includes('|||')) {
+                result.push(msg);
+                continue;
+            }
             
-            console.log('消息:', msg, '场景数:', sceneMatches.length, '语音数:', speechMatches.length);
+            const scenePattern = /\[([^\]]+)\]/g;
+            const sceneMatches = [...msg.matchAll(scenePattern)];
             
             if (sceneMatches.length <= 1) {
                 result.push(msg);
                 continue;
             }
             
-            if (sceneMatches.length === speechMatches.length) {
-                for (let i = 0; i < sceneMatches.length; i++) {
-                    const sceneContent = sceneMatches[i][0];
-                    const speechContent = speechMatches[i][0];
-                    result.push(`${sceneContent} ${speechContent}`);
-                }
-                console.log('按场景-语音配对拆分:', result);
-                continue;
-            }
-            
-            const parts = [];
-            let lastIndex = 0;
-            
-            for (let i = 0; i < sceneMatches.length; i++) {
-                const match = sceneMatches[i];
-                const sceneStart = match.index;
-                const sceneEnd = match.index + match[0].length;
-                
-                if (sceneStart > lastIndex) {
-                    const beforeScene = msg.substring(lastIndex, sceneStart).trim();
-                    if (beforeScene) {
-                        parts.push({ type: 'text', content: beforeScene });
-                    }
-                }
-                
-                parts.push({ type: 'scene', content: match[0] });
-                lastIndex = sceneEnd;
-            }
-            
-            if (lastIndex < msg.length) {
-                const remaining = msg.substring(lastIndex).trim();
-                if (remaining) {
-                    parts.push({ type: 'text', content: remaining });
-                }
-            }
-            
-            let currentMsg = '';
-            for (const part of parts) {
-                if (part.type === 'scene') {
-                    if (currentMsg.trim()) {
-                        result.push(currentMsg.trim());
-                        currentMsg = '';
-                    }
-                    result.push(part.content);
-                } else {
-                    currentMsg += part.content;
-                }
-            }
-            if (currentMsg.trim()) {
-                result.push(currentMsg.trim());
-            }
+            result.push(msg);
         }
         
-        console.log('splitBySceneDescriptions 输出:', result);
         return result.filter(s => s);
     },
 

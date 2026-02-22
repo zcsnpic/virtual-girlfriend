@@ -404,9 +404,8 @@ const App = {
             const messageDelay = settings.messageDelay || 600;
             
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
-            const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
-            if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
+            if (multiMessageCount > 1 && lastMsg && lastMsg.content && hasSeparator) {
                 const allSplitContents = UI.splitMessages(lastMsg.content);
                 
                 let splitContents;
