@@ -247,23 +247,20 @@ const App = {
             UI.scrollToBottom();
         }
 
-        UI.showTyping();
+        let streamingElement = null;
 
         try {
-            let typingElement = document.getElementById('typingIndicator');
-
             await API.sendMessage(continuePrompt, (content) => {
-                if (!typingElement) {
-                    typingElement = document.createElement('div');
-                    typingElement.className = 'message ai';
-                    typingElement.id = 'typingIndicator';
-                    document.getElementById('messages').appendChild(typingElement);
+                if (!streamingElement) {
+                    streamingElement = document.createElement('div');
+                    streamingElement.className = 'message ai';
+                    document.getElementById('messages').appendChild(streamingElement);
                 }
-                typingElement.innerHTML = '';
+                streamingElement.innerHTML = '';
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
                 bubble.innerHTML = `<span class="text">${content}</span>`;
-                typingElement.appendChild(bubble);
+                streamingElement.appendChild(bubble);
                 UI.scrollToBottom();
             }, isEmptyInput);
 
@@ -290,8 +287,8 @@ const App = {
                 
                 if (splitContents.length > 1) {
                     console.log('进入多条消息显示逻辑');
-                    if (typingElement) {
-                        typingElement.remove();
+                    if (streamingElement) {
+                        streamingElement.remove();
                     }
                     
                     const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data') || '{}');
@@ -326,8 +323,8 @@ const App = {
                         await this.playMessagesSequentially(allMessages, settings.ttsRate);
                     }
                 } else {
-                    if (typingElement) {
-                        typingElement.replaceWith(UI.createMessageElement(lastMsg));
+                    if (streamingElement) {
+                        streamingElement.replaceWith(UI.createMessageElement(lastMsg));
                     } else {
                         document.getElementById('messages').appendChild(UI.createMessageElement(lastMsg));
                     }
@@ -338,8 +335,8 @@ const App = {
                     }
                 }
             } else {
-                if (typingElement) {
-                    typingElement.replaceWith(UI.createMessageElement(lastMsg));
+                if (streamingElement) {
+                    streamingElement.replaceWith(UI.createMessageElement(lastMsg));
                 } else {
                     document.getElementById('messages').appendChild(UI.createMessageElement(lastMsg));
                 }
