@@ -1850,13 +1850,13 @@ input:checked + .slider:before {
 /* 场景展示区样式 */
 .scene-bar {
     width: 100%;
-    min-height: 44px;
-    padding: 10px 20px;
-    background: linear-gradient(135deg, rgba(74, 144, 217, 0.12), rgba(100, 120, 180, 0.08));
+    min-height: 48px;
+    padding: 12px 20px;
+    background: var(--card-bg);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.4s ease, visibility 0.4s ease;
@@ -1869,15 +1869,17 @@ input:checked + .slider:before {
 }
 
 .scene-bar .scene-icon {
-    font-size: 18px;
+    display: none;
 }
 
 .scene-bar .scene-text {
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 17px;
+    font-weight: 600;
     font-style: italic;
     color: var(--primary-color);
-    line-height: 1.4;
+    line-height: 1.5;
+    text-align: center;
+    letter-spacing: 0.5px;
 }
 
 /* 消息播放状态 */
@@ -1934,15 +1936,11 @@ input:checked + .slider:before {
 
 @media (max-width: 480px) {
     .scene-bar {
-        padding: 8px 16px;
-        min-height: 40px;
-    }
-
-    .scene-bar .scene-icon {
-        font-size: 16px;
+        padding: 10px 16px;
+        min-height: 44px;
     }
 
     .scene-bar .scene-text {
-        font-size: 14px;
+        font-size: 15px;
     }
 }
