@@ -391,7 +391,7 @@ const App = {
             const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
             if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
-                const splitContents = UI.splitMessages(lastMsg.content);
+                const splitContents = UI.splitMessages(lastMsg.content).slice(0, multiMessageCount);
                 
                 if (splitContents.length > 1) {
                     if (streamingElement) {
