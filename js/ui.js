@@ -910,19 +910,21 @@ const UI = {
 
         console.log('updateVoiceList: 找到', voices.length, '个声音');
 
-        if (voices.length === 0) {
-            if (voiceSelectGroup) {
-                voiceSelectGroup.style.display = 'none';
-            }
-            console.log('声音列表为空，隐藏声音选择器');
-            return;
-        }
-
         if (voiceSelectGroup) {
             voiceSelectGroup.style.display = '';
         }
 
         select.innerHTML = '<option value="auto">自动选择（推荐）</option>';
+
+        if (voices.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = '（浏览器未提供可选声音）';
+            option.disabled = true;
+            select.appendChild(option);
+            console.log('声音列表为空，显示提示');
+            return;
+        }
 
         voices.forEach(voice => {
             const option = document.createElement('option');
