@@ -29,7 +29,8 @@ const Memory = {
                 ttsRegion: 'eastasia',
                 ttsEndpoint: '',
                 ttsCustomHeaders: '',
-                ttsCustomBody: ''
+                ttsCustomBody: '',
+                autoSendDelay: 2.5
             },
             userInfo: {
                 name: '',

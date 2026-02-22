@@ -1,5 +1,6 @@
 const App = {
     isSending: false,
+    autoSendTimer: null,
 
     init: function() {
         this.loadSettings();
@@ -92,6 +93,13 @@ const App = {
             document.getElementById('messageDelayValue').textContent = (delay / 1000).toFixed(1) + '秒';
         }
 
+        if (document.getElementById('autoSendDelay')) {
+            document.getElementById('autoSendDelay').value = settings.autoSendDelay || 2.5;
+        }
+        if (document.getElementById('autoSendDelayValue')) {
+            document.getElementById('autoSendDelayValue').textContent = (settings.autoSendDelay || 2.5) + '秒';
+        }
+
         UI.applyTheme(settings.theme || 'blue');
         UI.updateCharName(settings.charName || '小雪');
         console.log('loadSettings - settings.avatar:', settings.avatar ? settings.avatar.substring(0, 50) + '...' : '空');
@@ -123,9 +131,10 @@ const App = {
             }
         });
 
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        messageInput.addEventListener('input', (e) => {
+            e.target.style.height = 'auto';
+            e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+            this.handleSmartAutoSend(e);
         });
 
         settingsBtn.addEventListener('click', () => {
@@ -154,6 +163,13 @@ const App = {
             });
         }
 
+        const autoSendDelay = document.getElementById('autoSendDelay');
+        if (autoSendDelay) {
+            autoSendDelay.addEventListener('input', (e) => {
+                document.getElementById('autoSendDelayValue').textContent = parseFloat(e.target.value).toFixed(1) + '秒';
+            });
+        }
+
         document.getElementById('settingsModal').addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
                 UI.hideModal('settingsModal');
@@ -177,7 +193,53 @@ const App = {
         });
     },
 
-    // 初始化记忆复习机制
+    handleSmartAutoSend: function(e) {
+        const input = document.getElementById('messageInput');
+        const value = input.value;
+        
+        if (!value.trim()) {
+            this.clearAutoSendTimer();
+            return;
+        }
+
+        const eventData = e.data || '';
+        const inputType = e.inputType || '';
+        const isBatchInput = eventData.length > 2 || inputType === 'insertFromPaste';
+
+        if (isBatchInput) {
+            this.clearAutoSendTimer();
+            console.log('[自动发送] 检测到批量输入，立即发送');
+            this.sendMessage();
+        } else {
+            this.startAutoSendTimer();
+        }
+    },
+
+    startAutoSendTimer: function() {
+        this.clearAutoSendTimer();
+        
+        const settings = Memory.getSettings();
+        const delaySeconds = parseFloat(settings.autoSendDelay || 2.5);
+        const delayMs = delaySeconds * 1000;
+        
+        console.log('[自动发送] 启动计时器:', delaySeconds, '秒');
+        
+        this.autoSendTimer = setTimeout(() => {
+            const input = document.getElementById('messageInput');
+            if (input.value.trim() && !this.isSending) {
+                console.log('[自动发送] 计时器触发，发送消息');
+                this.sendMessage();
+            }
+        }, delayMs);
+    },
+
+    clearAutoSendTimer: function() {
+        if (this.autoSendTimer) {
+            clearTimeout(this.autoSendTimer);
+            this.autoSendTimer = null;
+        }
+    },
+
     initMemoryReview: function() {
         // 检查是否需要复习
         this.checkMemoryReview();
@@ -217,6 +279,8 @@ const App = {
 
     sendMessage: async function() {
         if (this.isSending) return;
+        
+        this.clearAutoSendTimer();
 
         const input = document.getElementById('messageInput');
         const message = input.value.trim();
@@ -433,7 +497,8 @@ const App = {
             ttsCustomHeaders: document.getElementById('ttsCustomHeaders')?.value || '',
             ttsCustomBody: document.getElementById('ttsCustomBody')?.value || '',
             multiMessageCount: document.getElementById('multiMessageCount')?.value || '3',
-            messageDelay: parseInt(document.getElementById('messageDelay')?.value || 600)
+            messageDelay: parseInt(document.getElementById('messageDelay')?.value || 600),
+            autoSendDelay: parseFloat(document.getElementById('autoSendDelay')?.value || 2.5)
         };
 
         Memory.saveSettings(settings);
