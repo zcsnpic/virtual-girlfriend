@@ -37,40 +37,24 @@ const API = {
         }
 
         const multiMessageCount = parseInt(settings.multiMessageCount || '3');
-        console.log('[API] multiMessageCount 设置值:', settings.multiMessageCount, '解析后:', multiMessageCount);
         let multiMessageGuide = '';
         if (multiMessageCount > 1) {
             multiMessageGuide = `
 
-【消息格式要求 - 必须遵守】
-你可以一次发送最多${multiMessageCount}条消息，让对话更自然真实。
-每条消息之间用三个竖线"|||"分隔。
+【消息格式要求】
+你可以一次发送最多${multiMessageCount}条消息，用"|||"分隔。
 
 【严格限制】
-- 最多只能发送${multiMessageCount}条消息，不能超过！
-- 如果内容较多，请精简或合并到${multiMessageCount}条以内
+- 最多${multiMessageCount}条消息，不能超过！
 
-【拆分消息的时机】
-以下情况应该拆分成多条消息：
-1. **场景动作与说话分开**：先描述动作，再说话
-   例如："[轻轻笑了笑]|||你今天看起来心情不错呢~"
-   
-2. **多个场景动作**：每个场景动作单独一条
-   例如："[双手托腮]|||嗯...|||让我想想|||[眼睛一亮]|||有主意了！"
+【示例】
+- 单条：你好呀~
+- 两条：[笑了笑]|||你好呀~
+- 三条：在干嘛？|||想你了|||嘿嘿~
 
-3. **情感/话题转换**：当情绪或话题发生变化时拆分
-   例如："今天好累呀~|||不过看到你消息就好开心|||你呢？今天过得怎么样？"
-
-【格式示例】
-好的例子：
-- "在干嘛呢？|||今天天气真好呀~|||我刚刚在想你呢 😊"
-- "[微微脸红]|||那个...|||其实我想说...|||算了没什么啦~"
-
-【注意事项】
-- 每条消息应该简短自然（一般不超过30字）
-- 场景描述用方括号[]包裹，如[轻轻笑了笑]
-- 不要强行拆分，如果一句话就够了就只发一条
-- 分隔符"|||"只用于分割消息，不要在其他地方使用`;
+【注意】
+- 每条消息简短（不超过30字）
+- 场景描述用[]包裹`;
         }
 
         const importantMessages = Memory.getImportantMessages(5);
