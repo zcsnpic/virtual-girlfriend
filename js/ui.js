@@ -616,20 +616,20 @@ const UI = {
         const importantMemories = document.getElementById('importantMemories');
         if (!importantMemories) return;
         
-        // 获取所有重要记忆
-        const messages = Memory.getImportantMessages();
+        const messages = Memory.getImportantMessages(100);
         
         if (messages.length === 0) {
             importantMemories.innerHTML = '<div class="empty-memory">暂无重要记忆</div>';
             return;
         }
         
-        // 生成重要记忆HTML
         let html = '';
         messages.forEach(msg => {
+            const roleLabel = msg.role === 'user' ? '<span class="role-tag user">用户说</span>' : '<span class="role-tag assistant">角色说</span>';
             html += `
                 <div class="memory-card">
                     <div class="memory-header">
+                        ${roleLabel}
                         <span class="memory-title">${this.escapeHtml(this.getMemoryTitle(msg.content))}</span>
                         <span class="memory-indicator">⭐</span>
                     </div>

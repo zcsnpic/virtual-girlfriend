@@ -1188,6 +1188,25 @@ input:checked + .slider:before {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
+    gap: 8px;
+}
+
+.role-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.role-tag.user {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.role-tag.assistant {
+    background-color: #fce4ec;
+    color: #c2185b;
 }
 
 .memory-title {
