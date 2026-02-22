@@ -1105,7 +1105,6 @@ input:checked + .slider:before {
     overflow-y: auto;
     display: none;
     animation: fadeIn 0.3s ease;
-    max-height: 50vh;
 }
 
 .tab-content.active {
@@ -1208,31 +1207,6 @@ input:checked + .slider:before {
 .role-tag.assistant {
     background-color: #fce4ec;
     color: #c2185b;
-}
-
-.memory-card.core {
-    background-color: #fffbeb;
-    border-left: 3px solid #f59e0b;
-}
-
-.core-btn {
-    background-color: #f59e0b;
-    color: white;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.uncore-btn {
-    background-color: #9ca3af;
-    color: white;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
 }
 
 .memory-title {
