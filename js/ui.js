@@ -24,8 +24,11 @@ const UI = {
 
     hideScene: function() {
         const sceneBar = document.getElementById('sceneBar');
-        if (sceneBar) {
-            sceneBar.classList.remove('active');
+        if (sceneBar && sceneBar.classList.contains('active')) {
+            sceneBar.classList.add('hiding');
+            setTimeout(() => {
+                sceneBar.classList.remove('active', 'hiding');
+            }, 400);
             console.log('hideScene: 隐藏场景');
         }
         this.currentScene = null;
