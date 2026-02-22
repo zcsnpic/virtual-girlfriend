@@ -21,29 +21,14 @@ const API = {
             throw new Error('请先在设置中配置 DeepSeek API 密钥');
         }
 
-        // 只有非继续对话时才添加用户消息
         if (!isContinue) {
             Memory.addMessage({
                 role: 'user',
                 content: userMessage
             });
-
-            // 标记用户消息为重要（如果包含个人信息或重要事件）
-            const importantKeywords = ['名字', '生日', '职业', '爱好', '喜欢', '讨厌', '重要', '纪念日', '生日'];
-            const isImportant = importantKeywords.some(keyword => 
-                userMessage.toLowerCase().includes(keyword)
-            );
-
-            if (isImportant) {
-                const messages = Memory.getMessages();
-                const lastMessage = messages[messages.length - 1];
-                if (lastMessage && lastMessage.role === 'user') {
-                    Memory.markAsImportant(lastMessage.id);
-                }
-            }
         }
 
-        const recentMessages = Memory.getRecentContext(10);
+        const recentMessages = Memory.getRecentContext(100);
         let systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
         
         // 如果是继续对话，添加特殊提示
@@ -216,7 +201,7 @@ const API = {
             content: userMessage
         });
 
-        const recentMessages = Memory.getRecentContext(10);
+        const recentMessages = Memory.getRecentContext(100);
         const systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
 
         // 添加用户消息到记忆系统

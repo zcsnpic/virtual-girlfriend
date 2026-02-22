@@ -540,11 +540,16 @@ const Memory = {
         }
 
         // 添加重要记忆
-        const importantMessages = this.getImportantMessages(5);
+        const importantMessages = this.getImportantMessages(100);
         if (importantMessages.length > 0) {
-            context += `\n重要记忆：\n`;
+            context += `\n【重要记忆说明】\n`;
+            context += `以下记忆来自对话记录，请根据消息来源理解：\n`;
+            context += `- [用户说] 中的"你"= 角色，"我"= 用户\n`;
+            context += `- [角色说] 中的"我"= 角色，"你"= 用户\n\n`;
+            context += `【重要记忆】\n`;
             importantMessages.forEach((msg, index) => {
-                context += `${index + 1}. ${msg.content}\n`;
+                const roleLabel = msg.role === 'user' ? '[用户说]' : '[角色说]';
+                context += `${index + 1}. ${roleLabel} ${msg.content}\n`;
             });
         }
 
