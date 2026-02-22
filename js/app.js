@@ -1,6 +1,8 @@
 const App = {
     isSending: false,
     autoSendTimer: null,
+    isComposing: false,
+    lastInputLength: 0,
 
     init: function() {
         this.loadSettings();
@@ -137,6 +139,27 @@ const App = {
             this.handleSmartAutoSend(e);
         });
 
+        messageInput.addEventListener('compositionstart', () => {
+            this.isComposing = true;
+            this.clearAutoSendTimer();
+        });
+
+        messageInput.addEventListener('compositionend', (e) => {
+            this.isComposing = false;
+            const input = document.getElementById('messageInput');
+            const currentLength = input.value.length;
+            const addedLength = currentLength - this.lastInputLength;
+            
+            if (addedLength > 5) {
+                this.clearAutoSendTimer();
+                console.log('[自动发送] 组合输入结束，新增字符>', addedLength, '，立即发送');
+                this.sendMessage();
+            } else {
+                this.lastInputLength = currentLength;
+                this.startAutoSendTimer();
+            }
+        });
+
         settingsBtn.addEventListener('click', () => {
             UI.showModal('settingsModal');
         });
@@ -194,24 +217,28 @@ const App = {
     },
 
     handleSmartAutoSend: function(e) {
+        if (this.isComposing) {
+            return;
+        }
+
         const input = document.getElementById('messageInput');
         const value = input.value;
         
         if (!value.trim()) {
             this.clearAutoSendTimer();
+            this.lastInputLength = 0;
             return;
         }
 
         const inputType = e.inputType || '';
-        
         const isPaste = inputType === 'insertFromPaste' || inputType === 'insertFromDrop';
-        const isVoiceInput = inputType === 'insertFromSpeech';
         
-        if (isPaste || isVoiceInput) {
+        if (isPaste) {
             this.clearAutoSendTimer();
-            console.log('[自动发送] 立即发送', { isPaste, isVoiceInput, inputType });
+            console.log('[自动发送] 粘贴输入，立即发送');
             this.sendMessage();
         } else {
+            this.lastInputLength = value.length;
             this.startAutoSendTimer();
         }
     },

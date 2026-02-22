@@ -1,5 +1,18 @@
 const API = {
     BASE_URL: 'https://api.deepseek.com',
+    abortController: null,
+    currentReader: null,
+
+    abort: function() {
+        if (this.abortController) {
+            this.abortController.abort();
+            this.abortController = null;
+        }
+        if (this.currentReader) {
+            this.currentReader.cancel();
+            this.currentReader = null;
+        }
+    },
 
     sendMessage: async function(userMessage, onStream, isContinue = false) {
         const settings = Memory.getSettings();
@@ -124,6 +137,8 @@ const API = {
         ];
 
         try {
+            this.abortController = new AbortController();
+            
             const response = await fetch(`${this.BASE_URL}/chat/completions`, {
                 method: 'POST',
                 headers: {
@@ -134,7 +149,8 @@ const API = {
                     model: settings.model,
                     messages: messages,
                     stream: true
-                })
+                }),
+                signal: this.abortController.signal
             });
 
             if (!response.ok) {
