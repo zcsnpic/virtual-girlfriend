@@ -422,12 +422,7 @@ const App = {
                         streamingElement.remove();
                     }
                     
-                    const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data') || '{}');
-                    const msgIndex = data.messages ? data.messages.findIndex(m => m.id === lastMsg.id) : -1;
-                    if (msgIndex !== -1) {
-                        data.messages[msgIndex].content = splitContents[0];
-                        localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
-                    }
+                    Memory.updateMessageContent(lastMsg.id, splitContents[0]);
                     
                     const firstMsg = { ...lastMsg, content: splitContents[0] };
                     const firstElement = UI.createMessageElement(firstMsg);

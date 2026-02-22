@@ -375,12 +375,24 @@ const Memory = {
             timestamp: new Date().toISOString(),
             recalled: false,
             important: message.important || false,
+            core: message.core || false,
             reviewCount: 0,
             lastReviewed: null
         };
         data.messages.push(newMessage);
         this.save(data);
         return newMessage;
+    },
+
+    updateMessageContent: function(messageId, newContent) {
+        const data = this.load();
+        const message = data.messages.find(m => m.id == messageId);
+        if (message) {
+            message.content = newContent;
+            this.save(data);
+            return true;
+        }
+        return false;
     },
 
     getMessages: function(limit) {
