@@ -1,7 +1,6 @@
 const UI = {
-    sceneQueue: [],
-    maxScenes: 8,
-    sceneIdCounter: 0,
+    currentScene: null,
+    sceneTimer: null,
 
     showScene: function(scene) {
         if (!scene) {
@@ -9,62 +8,40 @@ const UI = {
             return;
         }
 
+        const sceneDisplay = document.getElementById('sceneDisplay');
         const sceneList = document.getElementById('sceneList');
         
-        if (!sceneList) {
-            console.error('showScene: 找不到场景列表元素');
+        if (!sceneDisplay || !sceneList) {
+            console.error('showScene: 找不到场景元素');
             return;
         }
 
-        const sceneId = 'scene-' + (++this.sceneIdCounter);
-
-        const sceneItem = document.createElement('div');
-        sceneItem.className = 'scene-item';
-        sceneItem.id = sceneId;
-        sceneItem.innerHTML = `<span class="scene-icon">🌸</span><span class="scene-text">${scene}</span>`;
-
-        sceneList.appendChild(sceneItem);
-
-        this.sceneQueue.push({
-            id: sceneId,
-            text: scene,
-            timestamp: Date.now()
-        });
-
-        console.log('showScene: 添加场景', scene, '当前队列长度:', this.sceneQueue.length);
-
-        while (this.sceneQueue.length > this.maxScenes) {
-            this.hideOldestScene();
-        }
-    },
-
-    hideOldestScene: function() {
-        if (this.sceneQueue.length === 0) return;
-
-        const oldest = this.sceneQueue.shift();
-        const sceneItem = document.getElementById(oldest.id);
-
-        if (sceneItem) {
-            sceneItem.classList.add('fading');
-            setTimeout(() => {
-                if (sceneItem.parentNode) {
-                    sceneItem.parentNode.removeChild(sceneItem);
-                }
-            }, 500);
+        if (this.sceneTimer) {
+            clearTimeout(this.sceneTimer);
+            this.sceneTimer = null;
         }
 
-        console.log('hideOldestScene: 移除场景', oldest.text, '剩余:', this.sceneQueue.length);
+        sceneList.innerHTML = `<div class="scene-item"><span class="scene-icon">🌸</span><span class="scene-text">${scene}</span></div>`;
+        
+        sceneDisplay.classList.remove('hiding');
+        sceneDisplay.classList.add('active');
+        
+        this.currentScene = scene;
+        console.log('showScene: 显示场景', scene);
     },
 
     hideScene: function() {
+        const sceneDisplay = document.getElementById('sceneDisplay');
+        if (sceneDisplay && sceneDisplay.classList.contains('active')) {
+            sceneDisplay.classList.remove('active');
+            sceneDisplay.classList.add('hiding');
+            console.log('hideScene: 隐藏场景');
+        }
+        this.currentScene = null;
     },
 
     clearAllScenes: function() {
-        const sceneList = document.getElementById('sceneList');
-        if (sceneList) {
-            sceneList.innerHTML = '';
-        }
-        this.sceneQueue = [];
+        this.hideScene();
     },
 
     setPlayingState: function(messageId, isPlaying) {
