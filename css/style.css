@@ -1896,10 +1896,10 @@ input:checked + .slider:before {
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     position: fixed;
-    bottom: 126px;
+    bottom: 130px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 101;
+    z-index: 99;
     box-sizing: border-box;
 }
 
