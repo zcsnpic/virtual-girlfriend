@@ -220,8 +220,10 @@ const App = {
 
         const input = document.getElementById('messageInput');
         const message = input.value.trim();
-
-        if (!message) return;
+        
+        // 空输入时，让AI继续发消息
+        const isEmptyInput = !message;
+        const continuePrompt = isEmptyInput ? '（请继续说，或者主动发起一个新话题）' : message;
 
         const settings = Memory.getSettings();
         if (!settings.apiKey) {
@@ -237,10 +239,13 @@ const App = {
         
         Memory.recordInteraction();
 
-        const userMsg = Memory.addMessage({ role: 'user', content: message });
-        const msgElement = UI.createMessageElement(userMsg);
-        document.getElementById('messages').appendChild(msgElement);
-        UI.scrollToBottom();
+        // 只有非空输入才添加用户消息
+        if (!isEmptyInput) {
+            const userMsg = Memory.addMessage({ role: 'user', content: message });
+            const msgElement = UI.createMessageElement(userMsg);
+            document.getElementById('messages').appendChild(msgElement);
+            UI.scrollToBottom();
+        }
 
         UI.showTyping();
 
