@@ -1213,6 +1213,35 @@ input:checked + .slider:before {
     justify-content: flex-end;
 }
 
+.memory-card.core {
+    background-color: #fffbeb;
+    border-left: 3px solid #f59e0b;
+}
+
+.memory-card.core .memory-indicator {
+    color: #f59e0b;
+}
+
+.core-btn {
+    background-color: #f59e0b;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.uncore-btn {
+    background-color: #9ca3af;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
 .edit-btn, .delete-btn {
     padding: 6px 12px;
     border: 1px solid var(--border-color);

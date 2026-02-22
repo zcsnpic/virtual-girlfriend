@@ -422,6 +422,9 @@ const UI = {
             case 'add-to-memory':
                 this.addToMemory(messageId);
                 break;
+            case 'add-to-core':
+                this.addToCoreMemory(messageId);
+                break;
             case 'view-details':
                 this.viewMessageDetails(messageId);
                 break;
@@ -431,6 +434,27 @@ const UI = {
             case 'delete':
                 this.deleteMessage(messageId);
                 break;
+        }
+    },
+
+    addToCoreMemory: function(messageId) {
+        const success = Memory.markAsCore(messageId);
+        if (success) {
+            this.showToast('已设为核心记忆', 'success');
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.classList.add('important');
+                const bubble = messageElement.querySelector('.bubble');
+                if (bubble && !bubble.querySelector('.core-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'core-indicator';
+                    indicator.textContent = '⭐⭐';
+                    indicator.title = '核心记忆';
+                    bubble.appendChild(indicator);
+                }
+            }
+        } else {
+            this.showToast('核心记忆已达上限（最多10条）', 'error');
         }
     },
 
@@ -603,27 +627,34 @@ const UI = {
         const importantMemories = document.getElementById('importantMemories');
         if (!importantMemories) return;
         
-        // 获取所有重要记忆
-        const messages = Memory.getImportantMessages();
+        const messages = Memory.getImportantMessages(100);
         
         if (messages.length === 0) {
             importantMemories.innerHTML = '<div class="empty-memory">暂无重要记忆</div>';
             return;
         }
         
-        // 生成重要记忆HTML
         let html = '';
         messages.forEach(msg => {
+            const roleLabel = msg.role === 'user' ? '<span class="role-tag user">用户说</span>' : '<span class="role-tag assistant">角色说</span>';
+            const isCore = msg.core;
+            const coreClass = isCore ? 'core' : '';
+            const starIcon = isCore ? '⭐⭐' : '⭐';
+            const coreBtn = isCore 
+                ? `<button class="uncore-btn" onclick="UI.unmarkAsCore(${msg.id})">取消核心</button>`
+                : `<button class="core-btn" onclick="UI.markAsCore(${msg.id})">设为核心</button>`;
             html += `
-                <div class="memory-card">
+                <div class="memory-card ${coreClass}">
                     <div class="memory-header">
-                        <span class="memory-title">${this.getMemoryTitle(msg.content)}</span>
-                        <span class="memory-indicator">⭐</span>
+                        ${roleLabel}
+                        <span class="memory-title">${this.escapeHtml(this.getMemoryTitle(msg.content))}</span>
+                        <span class="memory-indicator">${starIcon}</span>
                     </div>
                     <div class="memory-body">
-                        <p>${msg.content}</p>
+                        <p>${this.escapeHtml(msg.content)}</p>
                     </div>
                     <div class="memory-footer">
+                        ${coreBtn}
                         <button class="edit-btn" onclick="UI.editMemory(${msg.id})">编辑</button>
                         <button class="delete-btn" onclick="UI.deleteMemory(${msg.id})">删除</button>
                     </div>
