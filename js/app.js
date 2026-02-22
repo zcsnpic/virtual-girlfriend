@@ -274,8 +274,6 @@ const App = {
     interruptSending: function() {
         console.log('[打断] 停止当前发送');
         
-        this.isPlayingSequence = false;
-        
         API.abort();
         
         this.messageTimers.forEach(timer => clearTimeout(timer));
@@ -480,11 +478,9 @@ const App = {
     },
 
     playMessagesSequentially: async function(messages, rate, sendId) {
-        this.isPlayingSequence = true;
-        
         for (let i = 0; i < messages.length; i++) {
-            if (!this.isPlayingSequence || (sendId && this.currentSendId !== sendId)) {
-                console.log('[打断] 停止播放序列');
+            if (sendId && this.currentSendId !== sendId) {
+                console.log('[打断] 停止播放序列，sendId不匹配');
                 return;
             }
             
@@ -498,7 +494,7 @@ const App = {
                 TTS.speak(msg.content, rate, msg.id);
                 await new Promise(resolve => {
                     const checkInterval = setInterval(() => {
-                        if (!TTS.isPlaying || !this.isPlayingSequence || (sendId && this.currentSendId !== sendId)) {
+                        if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
                             clearInterval(checkInterval);
                             resolve();
                         }
@@ -510,15 +506,13 @@ const App = {
                     }, 10000);
                 });
                 
-                if (!this.isPlayingSequence || (sendId && this.currentSendId !== sendId)) return;
+                if (sendId && this.currentSendId !== sendId) return;
                 
                 if (i < messages.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 300));
                 }
             }
         }
-        
-        this.isPlayingSequence = false;
     },
 
     saveSettings: function() {
