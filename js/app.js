@@ -4,6 +4,7 @@ const App = {
     isComposing: false,
     lastInputLength: 0,
     messageTimers: [],
+    isPlayingSequence: false,
 
     init: function() {
         this.loadSettings();
@@ -272,6 +273,8 @@ const App = {
     interruptSending: function() {
         console.log('[打断] 停止当前发送');
         
+        this.isPlayingSequence = false;
+        
         API.abort();
         
         TTS.stop();
@@ -468,7 +471,14 @@ const App = {
     },
 
     playMessagesSequentially: async function(messages, rate) {
+        this.isPlayingSequence = true;
+        
         for (let i = 0; i < messages.length; i++) {
+            if (!this.isPlayingSequence) {
+                console.log('[打断] 停止播放序列');
+                return;
+            }
+            
             const msg = messages[i];
             if (msg && msg.content) {
                 const speechContent = Memory.getSpeechContent(msg.content);
@@ -479,7 +489,7 @@ const App = {
                 TTS.speak(msg.content, rate, msg.id);
                 await new Promise(resolve => {
                     const checkInterval = setInterval(() => {
-                        if (!TTS.isPlaying) {
+                        if (!TTS.isPlaying || !this.isPlayingSequence) {
                             clearInterval(checkInterval);
                             resolve();
                         }
@@ -491,11 +501,15 @@ const App = {
                     }, 10000);
                 });
                 
+                if (!this.isPlayingSequence) return;
+                
                 if (i < messages.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 300));
                 }
             }
         }
+        
+        this.isPlayingSequence = false;
     },
 
     saveSettings: function() {
