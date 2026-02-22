@@ -80,35 +80,95 @@ const UI = {
     },
 
     splitMessages: function(content) {
+        console.log('UI.splitMessages 输入:', content);
         if (!content) return [content];
         
+        let messages = [];
+        
         if (content.includes('|||')) {
-            return content.split('|||').map(s => s.trim()).filter(s => s);
+            messages = content.split('|||').map(s => s.trim()).filter(s => s);
+            console.log('按|||拆分结果:', messages);
+        } else {
+            messages = [content];
         }
         
-        return [content];
+        messages = this.splitBySceneDescriptions(messages);
+        console.log('UI.splitMessages 输出:', messages);
+        
+        return messages;
     },
 
     splitBySceneDescriptions: function(messages) {
+        console.log('splitBySceneDescriptions 输入:', messages);
         const result = [];
         
         for (const msg of messages) {
-            if (msg.includes('|||')) {
-                result.push(msg);
-                continue;
-            }
-            
             const scenePattern = /\[([^\]]+)\]/g;
+            const speechPattern = /"([^"]+)"/g;
             const sceneMatches = [...msg.matchAll(scenePattern)];
+            const speechMatches = [...msg.matchAll(speechPattern)];
+            
+            console.log('消息:', msg, '场景数:', sceneMatches.length, '语音数:', speechMatches.length);
             
             if (sceneMatches.length <= 1) {
                 result.push(msg);
                 continue;
             }
             
-            result.push(msg);
+            if (sceneMatches.length === speechMatches.length) {
+                for (let i = 0; i < sceneMatches.length; i++) {
+                    const sceneContent = sceneMatches[i][0];
+                    const speechContent = speechMatches[i][0];
+                    result.push(`${sceneContent} ${speechContent}`);
+                }
+                console.log('按场景-语音配对拆分:', result);
+                continue;
+            }
+            
+            const parts = [];
+            let lastIndex = 0;
+            
+            for (let i = 0; i < sceneMatches.length; i++) {
+                const match = sceneMatches[i];
+                const sceneStart = match.index;
+                const sceneEnd = match.index + match[0].length;
+                
+                if (sceneStart > lastIndex) {
+                    const beforeScene = msg.substring(lastIndex, sceneStart).trim();
+                    if (beforeScene) {
+                        parts.push({ type: 'text', content: beforeScene });
+                    }
+                }
+                
+                parts.push({ type: 'scene', content: match[0] });
+                lastIndex = sceneEnd;
+            }
+            
+            if (lastIndex < msg.length) {
+                const remaining = msg.substring(lastIndex).trim();
+                if (remaining) {
+                    parts.push({ type: 'text', content: remaining });
+                }
+            }
+            
+            let currentMsg = '';
+            for (const part of parts) {
+                if (part.type === 'scene') {
+                    if (currentMsg.trim()) {
+                        result.push(currentMsg.trim());
+                        currentMsg = '';
+                    }
+                    result.push(part.content);
+                } else {
+                    currentMsg += part.content;
+                }
+            }
+            if (currentMsg.trim()) {
+                result.push(currentMsg.trim());
+            }
         }
         
+        console.log('splitBySceneDescriptions 输出:', result);
         return result.filter(s => s);
     },
 
@@ -375,9 +435,6 @@ const UI = {
             case 'add-to-memory':
                 this.addToMemory(messageId);
                 break;
-            case 'add-to-core':
-                this.addToCoreMemory(messageId);
-                break;
             case 'view-details':
                 this.viewMessageDetails(messageId);
                 break;
@@ -387,27 +444,6 @@ const UI = {
             case 'delete':
                 this.deleteMessage(messageId);
                 break;
-        }
-    },
-
-    addToCoreMemory: function(messageId) {
-        const success = Memory.markAsCore(messageId);
-        if (success) {
-            this.showToast('已设为核心记忆', 'success');
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.classList.add('important');
-                const bubble = messageElement.querySelector('.bubble');
-                if (bubble && !bubble.querySelector('.core-indicator')) {
-                    const indicator = document.createElement('span');
-                    indicator.className = 'core-indicator';
-                    indicator.textContent = '⭐⭐';
-                    indicator.title = '核心记忆';
-                    bubble.appendChild(indicator);
-                }
-            }
-        } else {
-            this.showToast('核心记忆已达上限（最多10条）', 'error');
         }
     },
 
@@ -590,24 +626,17 @@ const UI = {
         let html = '';
         messages.forEach(msg => {
             const roleLabel = msg.role === 'user' ? '<span class="role-tag user">用户说</span>' : '<span class="role-tag assistant">角色说</span>';
-            const isCore = msg.core;
-            const coreClass = isCore ? 'core' : '';
-            const starIcon = isCore ? '⭐⭐' : '⭐';
-            const coreBtn = isCore 
-                ? `<button class="uncore-btn" onclick="UI.unmarkAsCore(${msg.id})">取消核心</button>`
-                : `<button class="core-btn" onclick="UI.markAsCore(${msg.id})">设为核心</button>`;
             html += `
-                <div class="memory-card ${coreClass}">
+                <div class="memory-card">
                     <div class="memory-header">
                         ${roleLabel}
                         <span class="memory-title">${this.escapeHtml(this.getMemoryTitle(msg.content))}</span>
-                        <span class="memory-indicator">${starIcon}</span>
+                        <span class="memory-indicator">⭐</span>
                     </div>
                     <div class="memory-body">
                         <p>${this.escapeHtml(msg.content)}</p>
                     </div>
                     <div class="memory-footer">
-                        ${coreBtn}
                         <button class="edit-btn" onclick="UI.editMemory(${msg.id})">编辑</button>
                         <button class="delete-btn" onclick="UI.deleteMemory(${msg.id})">删除</button>
                     </div>
@@ -617,25 +646,8 @@ const UI = {
         
         importantMemories.innerHTML = html;
     },
-
-    markAsCore: function(messageId) {
-        const success = Memory.markAsCore(messageId);
-        if (success) {
-            this.showToast('已设为核心记忆', 'success');
-            this.loadImportantMemory();
-        } else {
-            this.showToast('核心记忆已达上限（最多10条）', 'error');
-        }
-    },
-
-    unmarkAsCore: function(messageId) {
-        const success = Memory.unmarkAsCore(messageId);
-        if (success) {
-            this.showToast('已取消核心记忆', 'success');
-            this.loadImportantMemory();
-        }
-    },
     
+    // 加载用户档案
     loadUserProfile: function() {
         const userProfile = document.getElementById('userProfile');
         if (!userProfile) return;

@@ -404,25 +404,22 @@ const App = {
             const messageDelay = settings.messageDelay || 600;
             
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
+            const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
-            if (multiMessageCount > 1 && lastMsg && lastMsg.content && hasSeparator) {
-                const allSplitContents = UI.splitMessages(lastMsg.content);
-                
-                let splitContents;
-                if (allSplitContents.length > multiMessageCount) {
-                    splitContents = allSplitContents.slice(0, multiMessageCount - 1);
-                    const remaining = allSplitContents.slice(multiMessageCount - 1).join(' ');
-                    splitContents.push(remaining);
-                } else {
-                    splitContents = allSplitContents;
-                }
+            if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
+                const splitContents = UI.splitMessages(lastMsg.content).slice(0, multiMessageCount);
                 
                 if (splitContents.length > 1) {
                     if (streamingElement) {
                         streamingElement.remove();
                     }
                     
-                    Memory.updateMessageContent(lastMsg.id, splitContents[0]);
+                    const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data') || '{}');
+                    const msgIndex = data.messages ? data.messages.findIndex(m => m.id === lastMsg.id) : -1;
+                    if (msgIndex !== -1) {
+                        data.messages[msgIndex].content = splitContents[0];
+                        localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
+                    }
                     
                     const firstMsg = { ...lastMsg, content: splitContents[0] };
                     const firstElement = UI.createMessageElement(firstMsg);
