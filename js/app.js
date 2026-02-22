@@ -5,6 +5,7 @@ const App = {
     lastInputLength: 0,
     messageTimers: [],
     isPlayingSequence: false,
+    currentSendId: 0,
 
     init: function() {
         this.loadSettings();
@@ -345,6 +346,9 @@ const App = {
             return;
         }
 
+        this.currentSendId++;
+        const mySendId = this.currentSendId;
+        
         this.isSending = true;
         document.getElementById('sendBtn').disabled = false;
         input.value = '';
@@ -364,6 +368,8 @@ const App = {
 
         try {
             await API.sendMessage(continuePrompt, (content) => {
+                if (self.currentSendId !== mySendId) return;
+                
                 if (!streamingElement) {
                     streamingElement = document.createElement('div');
                     streamingElement.className = 'message ai';
@@ -376,6 +382,8 @@ const App = {
                 streamingElement.appendChild(bubble);
                 UI.scrollToBottom();
             }, isEmptyInput);
+
+            if (self.currentSendId !== mySendId) return;
 
             const messages = Memory.getMessages();
             const lastMsg = messages[messages.length - 1];
@@ -413,7 +421,7 @@ const App = {
                             self.messageTimers.push(timer);
                         });
                         
-                        if (!self.isSending) return;
+                        if (self.currentSendId !== mySendId) return;
                         
                         const newMsg = Memory.addMessage({
                             role: 'assistant',
@@ -428,7 +436,7 @@ const App = {
                     
                     if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false) {
                         const allMessages = [firstMsg, ...additionalMessages];
-                        await this.playMessagesSequentially(allMessages, settings.ttsRate);
+                        await this.playMessagesSequentially(allMessages, settings.ttsRate, mySendId);
                     }
                 } else {
                     if (streamingElement) {
