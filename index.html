@@ -301,35 +301,10 @@
             </div>
             <div class="modal-body">
                 <div class="memory-tabs">
-                    <button class="tab-btn active" data-tab="timeline">时间轴</button>
-                    <button class="tab-btn" data-tab="important">重要记忆</button>
+                    <button class="tab-btn active" data-tab="important">重要记忆</button>
                     <button class="tab-btn" data-tab="profile">用户档案</button>
-                    <button class="tab-btn" data-tab="add">添加记忆</button>
                 </div>
-                <div class="tab-content active" id="timelineTab">
-                    <div class="memory-timeline" id="memoryTimeline">
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-time">今天</div>
-                                <div class="memory-card">
-                                    <div class="memory-header">
-                                        <span class="memory-title">初次见面</span>
-                                        <span class="memory-indicator">⭐</span>
-                                    </div>
-                                    <div class="memory-body">
-                                        <p>你好呀！今天过得怎么样？有什么想和我聊聊的吗？😊</p>
-                                    </div>
-                                    <div class="memory-footer">
-                                        <button class="edit-btn">编辑</button>
-                                        <button class="delete-btn">删除</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="importantTab">
+                <div class="tab-content active" id="importantTab">
                     <div class="important-memories" id="importantMemories">
                         <div class="memory-card">
                             <div class="memory-header">
@@ -372,29 +347,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="addTab">
-                    <div class="add-memory-form">
-                        <h3>添加新记忆</h3>
-                        <div class="form-group">
-                            <label>记忆标题</label>
-                            <input type="text" id="memoryTitle" placeholder="输入记忆标题">
-                        </div>
-                        <div class="form-group">
-                            <label>记忆内容</label>
-                            <textarea id="memoryContent" placeholder="输入记忆内容" rows="4"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>记忆分类</label>
-                            <select id="memoryCategory">
-                                <option value="personal">个人信息</option>
-                                <option value="preference">偏好</option>
-                                <option value="event">重要事件</option>
-                                <option value="other">其他</option>
-                            </select>
-                        </div>
-                        <button class="save-btn" id="saveMemory">保存记忆</button>
                     </div>
                 </div>
             </div>
