@@ -335,8 +335,8 @@ const TTS = {
         }
         this.isPlaying = false;
         this.currentUtterance = null;
+        // 场景隐藏由 app.js 控制，不在此处隐藏
         if (typeof UI !== 'undefined') {
-            UI.hideScene();
             UI.hideSubtitle();
         }
     },
