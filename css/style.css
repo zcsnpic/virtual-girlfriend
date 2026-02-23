@@ -2040,6 +2040,8 @@ input:checked + .slider:before {
     color: var(--text-color);
     line-height: 1.5;
     letter-spacing: 0.5px;
+    text-align: left;
+    width: 100%;
 }
 
 .subtitle-bar.hiding {
