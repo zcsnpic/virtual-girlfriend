@@ -616,7 +616,7 @@ const App = {
 
                 // 3. 播放语音（如果有）
                 if (speechContent && speechContent.trim() !== '') {
-                    console.log('[顺序播放] 开始播放语音');
+                    console.log('[顺序播放] 开始播放语音，长度:', speechContent.length);
                     TTS.speak(msg.content, rate, msg.id);
 
                     // 等待语音播放完成
@@ -629,16 +629,17 @@ const App = {
                             }
                         }, 25);
 
+                        // 增加超时时间到30秒，确保长语音能播放完
                         setTimeout(() => {
                             clearInterval(checkInterval);
-                            console.log('[顺序播放] 语音播放超时');
+                            console.log('[顺序播放] 语音播放超时（30秒）');
                             resolve();
-                        }, 10000);
+                        }, 30000);
                     });
                 } else {
-                    console.log('[顺序播放] 没有语音，等待300ms');
-                    // 没有语音时，短暂等待
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    console.log('[顺序播放] 没有语音，等待1秒让场景充分显示');
+                    // 没有语音时，等待1秒让场景充分显示
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
 
                 if (sendId && this.currentSendId !== sendId) {
@@ -646,17 +647,17 @@ const App = {
                     return;
                 }
 
-                // 4. 确保场景有足够显示时间（至少800ms）
+                // 4. 确保场景有足够显示时间（至少1.5秒）
                 if (i < messages.length - 1) {
-                    console.log('[顺序播放] 等待800ms后进入下一条');
+                    console.log('[顺序播放] 等待1.5秒后进入下一条');
                     // 语音完成后，等待一段时间让场景充分显示
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                 } else {
-                    console.log('[顺序播放] 最后一条，3秒后隐藏场景');
+                    console.log('[顺序播放] 最后一条，4秒后隐藏场景');
                     // 最后一条播放完后延迟隐藏场景
                     setTimeout(() => {
                         UI.hideScene();
-                    }, 3000);
+                    }, 4000);
                 }
             }
         }
