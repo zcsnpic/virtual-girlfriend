@@ -773,26 +773,42 @@ const UI = {
     loadImportantMemory: function() {
         const importantMemories = document.getElementById('importantMemories');
         if (!importantMemories) return;
-        
-        const messages = Memory.getImportantMessages(100);
-        
-        if (messages.length === 0) {
+
+        // 获取所有重要记忆（包括禁用的，用于显示）
+        const data = Memory.load();
+        const allImportantMessages = data.messages.filter(m => m.important).sort((a, b) => {
+            if (a.core !== b.core) {
+                return b.core ? 1 : -1;
+            }
+            if (b.reviewCount !== a.reviewCount) {
+                return b.reviewCount - a.reviewCount;
+            }
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        });
+
+        if (allImportantMessages.length === 0) {
             importantMemories.innerHTML = '<div class="empty-memory">暂无重要记忆</div>';
             return;
         }
-        
+
         let html = '';
-        messages.forEach(msg => {
+        allImportantMessages.forEach(msg => {
             const roleLabel = msg.role === 'user' ? '<span class="role-tag user">用户说</span>' : '<span class="role-tag assistant">角色说</span>';
             const isCore = msg.core;
+            const isEnabled = msg.enabled !== false;
             const coreClass = isCore ? 'core' : '';
+            const disabledClass = isEnabled ? '' : 'disabled';
             const starIcon = isCore ? '⭐⭐' : '⭐';
-            const coreBtn = isCore 
+            const coreBtn = isCore
                 ? `<button class="uncore-btn" onclick="UI.unmarkAsCore(${msg.id})">取消核心</button>`
                 : `<button class="core-btn" onclick="UI.markAsCore(${msg.id})">设为核心</button>`;
+            const checkedAttr = isEnabled ? 'checked' : '';
             html += `
-                <div class="memory-card ${coreClass}">
+                <div class="memory-card ${coreClass} ${disabledClass}">
                     <div class="memory-header">
+                        <label class="enable-checkbox">
+                            <input type="checkbox" ${checkedAttr} onchange="UI.toggleMemoryEnabled(${msg.id})" title="启用/禁用">
+                        </label>
                         ${roleLabel}
                         <span class="memory-title">${this.escapeHtml(this.getMemoryTitle(msg.content))}</span>
                         <span class="memory-indicator">${starIcon}</span>
@@ -808,8 +824,16 @@ const UI = {
                 </div>
             `;
         });
-        
+
         importantMemories.innerHTML = html;
+    },
+
+    // 切换记忆启用状态
+    toggleMemoryEnabled: function(messageId) {
+        const newState = Memory.toggleMessageEnabled(messageId);
+        if (newState !== null) {
+            this.loadImportantMemory();
+        }
     },
 
     // 清除对话上下文

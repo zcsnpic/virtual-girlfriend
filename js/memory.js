@@ -366,6 +366,7 @@ const Memory = {
             timestamp: new Date().toISOString(),
             recalled: false,
             important: message.important || false,
+            enabled: true,  // 默认启用
             reviewCount: 0,
             lastReviewed: null
         };
@@ -488,7 +489,8 @@ const Memory = {
 
     getImportantMessages: function(limit) {
         const data = this.load();
-        const importantMessages = data.messages.filter(m => m.important).sort((a, b) => {
+        // 只返回启用的重要记忆（enabled !== false）
+        const importantMessages = data.messages.filter(m => m.important && m.enabled !== false).sort((a, b) => {
             if (a.core !== b.core) {
                 return b.core ? 1 : -1;
             }
@@ -501,6 +503,19 @@ const Memory = {
             return importantMessages.slice(0, limit);
         }
         return importantMessages;
+    },
+
+    // 切换记忆启用状态
+    toggleMessageEnabled: function(messageId) {
+        const data = this.load();
+        // 使用 == 比较，兼容字符串和数字类型的 ID
+        const msgIndex = data.messages.findIndex(m => m.id == messageId);
+        if (msgIndex !== -1) {
+            data.messages[msgIndex].enabled = !data.messages[msgIndex].enabled;
+            this.save(data);
+            return data.messages[msgIndex].enabled;
+        }
+        return null;
     },
 
     getMessagesForReview: function(limit = 3) {
