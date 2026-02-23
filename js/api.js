@@ -28,13 +28,27 @@ const API = {
                 content: userMessage
             });
 
-            // 标记用户消息为重要（如果包含个人信息或重要事件）
-            const importantKeywords = ['名字', '生日', '职业', '爱好', '喜欢', '讨厌', '重要', '纪念日', '生日'];
-            const isImportant = importantKeywords.some(keyword => 
-                userMessage.toLowerCase().includes(keyword)
-            );
-
-            if (isImportant) {
+            // 智能判断消息重要性
+            const importantKeywords = {
+                high: ['名字', '生日', '职业', '爱好', '喜欢', '讨厌', '重要', '纪念日', '结婚', '分手', '告白', '第一次', '永远', '承诺', '约定'],
+                medium: ['记得', '忘记', '知道', '了解', '认识', '朋友', '家人', '工作', '学校', '公司', '住', '地址', '电话', '号码', '微信', 'QQ', '邮箱'],
+                low: ['今天', '昨天', '明天', '周末', '假期', '计划', '想', '希望', '梦想', '目标', '心情', '感觉', '开心', '难过', '生气']
+            };
+            
+            const checkImportance = (message) => {
+                const lowerMessage = message.toLowerCase();
+                const highMatch = importantKeywords.high.some(kw => lowerMessage.includes(kw));
+                const mediumMatch = importantKeywords.medium.some(kw => lowerMessage.includes(kw));
+                const lowMatch = importantKeywords.low.some(kw => lowerMessage.includes(kw));
+                
+                if (highMatch) return 3;
+                if (mediumMatch) return 2;
+                if (lowMatch) return 1;
+                return 0;
+            };
+            
+            const userImportance = checkImportance(userMessage);
+            if (userImportance >= 2) {
                 const messages = Memory.getMessages();
                 const lastMessage = messages[messages.length - 1];
                 if (lastMessage && lastMessage.role === 'user') {
@@ -43,7 +57,7 @@ const API = {
             }
         }
 
-        const recentMessages = Memory.getRecentContext(10);
+        const recentMessages = Memory.getRecentContext(100);
         let systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
         
         // 如果是继续对话，添加特殊提示
@@ -215,7 +229,7 @@ const API = {
             content: userMessage
         });
 
-        const recentMessages = Memory.getRecentContext(10);
+        const recentMessages = Memory.getRecentContext(100);
         const systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
 
         // 添加用户消息到记忆系统
