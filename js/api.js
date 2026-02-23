@@ -57,12 +57,12 @@ const API = {
             }
         }
 
-        const recentMessages = Memory.getRecentContext(100);
+        const recentMessages = Memory.getRecentContext(10);
         let systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
         
-        // 如果是继续对话，添加特殊提示
+        // 如果是继续对话（空输入），添加特殊提示
         if (isContinue) {
-            systemPrompt += '\n\n【继续对话提示】\n用户希望你继续说话。请主动发起话题、分享你的想法、或者延续之前的对话。可以是：\n- 分享你今天的心情或经历\n- 询问用户的情况\n- 提出一个有趣的话题\n- 继续之前未说完的内容\n\n请自然地开始说话，不要说"好的我继续"之类的话。';
+            systemPrompt += '\n\n【继续对话提示】\n用户没有输入具体内容，希望你主动说话。请根据对话上下文自然地回应，可以是：\n- 回应用户之前的话题\n- 分享你的想法或感受\n- 提出一个新的话题\n\n注意：不要重复之前说过的内容，保持对话的新鲜感。';
         }
 
         const multiMessageCount = parseInt(settings.multiMessageCount || '3');
