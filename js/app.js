@@ -441,35 +441,23 @@ const App = {
                     if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false) {
                         TTS.stop();
                         
+                        // 先创建所有消息（包括firstMsg和后续消息）
                         const allMessages = [firstMsg];
-                        const displayPromises = [];
                         
+                        // 立即创建后续消息（不等待定时器）
                         for (let i = 1; i < splitContents.length; i++) {
-                            const displayPromise = new Promise(resolve => {
-                                const timer = setTimeout(() => {
-                                    if (self.currentSendId !== mySendId) {
-                                        resolve();
-                                        return;
-                                    }
-                                    
-                                    const newMsg = Memory.addMessage({
-                                        role: 'assistant',
-                                        content: splitContents[i]
-                                    });
-                                    additionalMessages.push(newMsg);
-                                    allMessages.push(newMsg);
-                                    
-                                    const newElement = UI.createMessageElement(newMsg);
-                                    document.getElementById('messages').appendChild(newElement);
-                                    UI.scrollToBottom();
-                                    resolve();
-                                }, messageDelay * i);
-                                self.messageTimers.push(timer);
+                            const newMsg = Memory.addMessage({
+                                role: 'assistant',
+                                content: splitContents[i]
                             });
-                            displayPromises.push(displayPromise);
+                            additionalMessages.push(newMsg);
+                            allMessages.push(newMsg);
                         }
                         
-                        await this.playMessagesSequentiallyWithDisplay(allMessages, displayPromises, settings.ttsRate, mySendId);
+                        console.log('[连续消息调试] 所有消息已创建:', allMessages.length, '条');
+                        
+                        // 开始顺序播放
+                        await this.playMessagesSequentiallyWithDisplay(allMessages, [], settings.ttsRate, mySendId);
                     } else {
                         for (let i = 1; i < splitContents.length; i++) {
                             await new Promise(resolve => {
@@ -603,12 +591,20 @@ const App = {
 
             const msg = messages[i];
             console.log('[顺序播放] 处理第', i + 1, '条消息:', msg.content?.substring(0, 50));
-            
+
             if (msg && msg.content) {
                 const parsed = Memory.parseMessage(msg.content);
                 console.log('[顺序播放] 解析结果:', { hasScene: parsed.hasScene, scene: parsed.scene?.substring(0, 30), hasSpeech: parsed.hasSpeech });
 
-                // 1. 先显示场景（如果有）
+                // 1. 显示字幕（除了第一条已经在DOM中，其他需要添加）
+                if (i > 0) {
+                    const newElement = UI.createMessageElement(msg);
+                    document.getElementById('messages').appendChild(newElement);
+                    UI.scrollToBottom();
+                    console.log('[顺序播放] 添加字幕到DOM');
+                }
+
+                // 2. 先显示场景（如果有）
                 if (parsed.hasScene) {
                     console.log('[顺序播放] 显示场景:', parsed.scene);
                     UI.showScene(parsed.scene);
@@ -617,7 +613,7 @@ const App = {
                 const speechContent = Memory.getSpeechContent(msg.content);
                 console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
 
-                // 2. 播放语音（如果有）
+                // 3. 播放语音（如果有）
                 if (speechContent && speechContent.trim() !== '') {
                     console.log('[顺序播放] 开始播放语音');
                     TTS.speak(msg.content, rate, msg.id);
@@ -649,7 +645,7 @@ const App = {
                     return;
                 }
 
-                // 3. 确保场景有足够显示时间（至少800ms）
+                // 4. 确保场景有足够显示时间（至少800ms）
                 if (i < messages.length - 1) {
                     console.log('[顺序播放] 等待800ms后进入下一条');
                     // 语音完成后，等待一段时间让场景充分显示
