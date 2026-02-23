@@ -528,6 +528,16 @@ const UI = {
         }
     },
 
+    markAsCore: function(messageId) {
+        const success = Memory.markAsCore(messageId);
+        if (success) {
+            this.showToast('已设为核心记忆', 'success');
+            this.loadImportantMemory();
+        } else {
+            this.showToast('核心记忆已达上限（最多10条）', 'error');
+        }
+    },
+
     showAddMemoryModal: function() {
         const modal = document.createElement('div');
         modal.className = 'modal active';
