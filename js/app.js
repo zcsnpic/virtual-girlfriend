@@ -565,7 +565,7 @@ const App = {
                             clearInterval(checkInterval);
                             resolve();
                         }
-                    }, 100);
+                    }, 25);
                     
                     setTimeout(() => {
                         clearInterval(checkInterval);
@@ -580,8 +580,8 @@ const App = {
                 
                 // 不是最后一条消息时不隐藏场景，保持显示到下一条
                 if (i < messages.length - 1) {
-                    // 增加延迟，让场景显示更久
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    // 减少延迟，让语音更连续
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 } else {
                     // 最后一条消息播放完后延迟隐藏场景
                     setTimeout(() => {
@@ -625,7 +625,7 @@ const App = {
                             clearInterval(checkInterval);
                             resolve();
                         }
-                    }, 50);
+                    }, 25);
                     
                     setTimeout(() => {
                         clearInterval(checkInterval);
@@ -640,8 +640,8 @@ const App = {
                 
                 // 不是最后一条消息时不隐藏场景，保持显示到下一条
                 if (i < messages.length - 1) {
-                    // 增加延迟，让场景显示更久
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    // 减少延迟，让语音更连续
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 } else {
                     // 最后一条消息播放完后延迟隐藏场景
                     setTimeout(() => {
