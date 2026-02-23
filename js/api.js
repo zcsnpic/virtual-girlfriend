@@ -57,7 +57,7 @@ const API = {
             }
         }
 
-        const recentMessages = Memory.getRecentContext(10);
+        const recentMessages = Memory.getRecentContext(100);
         let systemPrompt = Memory.buildEnhancedContext(recentMessages, userMessage);
         
         // 如果是继续对话（空输入），添加特殊提示
