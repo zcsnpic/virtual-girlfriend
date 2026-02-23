@@ -981,6 +981,8 @@ const UI = {
         if (memoryBtn) {
             memoryBtn.addEventListener('click', function() {
                 UI.showModal('memoryModal');
+                UI.loadImportantMemory();
+                UI.loadUserProfile();
             });
         }
 
