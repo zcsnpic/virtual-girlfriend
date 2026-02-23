@@ -593,6 +593,7 @@ const App = {
     },
 
     playMessagesSequentiallyWithDisplay: async function(messages, displayPromises, rate, sendId) {
+        console.log('[顺序播放] 开始播放', messages.length, '条消息');
         for (let i = 0; i < messages.length; i++) {
             if (sendId && this.currentSendId !== sendId) {
                 console.log('[打断] 停止播放序列，sendId不匹配');
@@ -601,18 +602,24 @@ const App = {
             }
 
             const msg = messages[i];
+            console.log('[顺序播放] 处理第', i + 1, '条消息:', msg.content?.substring(0, 50));
+            
             if (msg && msg.content) {
                 const parsed = Memory.parseMessage(msg.content);
+                console.log('[顺序播放] 解析结果:', { hasScene: parsed.hasScene, scene: parsed.scene?.substring(0, 30), hasSpeech: parsed.hasSpeech });
 
                 // 1. 先显示场景（如果有）
                 if (parsed.hasScene) {
+                    console.log('[顺序播放] 显示场景:', parsed.scene);
                     UI.showScene(parsed.scene);
                 }
 
                 const speechContent = Memory.getSpeechContent(msg.content);
+                console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
 
                 // 2. 播放语音（如果有）
                 if (speechContent && speechContent.trim() !== '') {
+                    console.log('[顺序播放] 开始播放语音');
                     TTS.speak(msg.content, rate, msg.id);
 
                     // 等待语音播放完成
@@ -620,16 +627,19 @@ const App = {
                         const checkInterval = setInterval(() => {
                             if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
                                 clearInterval(checkInterval);
+                                console.log('[顺序播放] 语音播放完成');
                                 resolve();
                             }
                         }, 25);
 
                         setTimeout(() => {
                             clearInterval(checkInterval);
+                            console.log('[顺序播放] 语音播放超时');
                             resolve();
                         }, 10000);
                     });
                 } else {
+                    console.log('[顺序播放] 没有语音，等待300ms');
                     // 没有语音时，短暂等待
                     await new Promise(resolve => setTimeout(resolve, 300));
                 }
@@ -641,9 +651,11 @@ const App = {
 
                 // 3. 确保场景有足够显示时间（至少800ms）
                 if (i < messages.length - 1) {
+                    console.log('[顺序播放] 等待800ms后进入下一条');
                     // 语音完成后，等待一段时间让场景充分显示
                     await new Promise(resolve => setTimeout(resolve, 800));
                 } else {
+                    console.log('[顺序播放] 最后一条，3秒后隐藏场景');
                     // 最后一条播放完后延迟隐藏场景
                     setTimeout(() => {
                         UI.hideScene();
@@ -651,6 +663,7 @@ const App = {
                 }
             }
         }
+        console.log('[顺序播放] 播放完成');
     },
 
     saveSettings: function() {
