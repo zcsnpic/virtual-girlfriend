@@ -501,8 +501,16 @@ const App = {
             
             const msg = messages[i];
             if (msg && msg.content) {
+                const parsed = Memory.parseMessage(msg.content);
+                
+                if (parsed.hasScene) {
+                    UI.showScene(parsed.scene);
+                }
+                
                 const speechContent = Memory.getSpeechContent(msg.content);
                 if (!speechContent || speechContent.trim() === '') {
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    UI.hideScene();
                     continue;
                 }
                 
