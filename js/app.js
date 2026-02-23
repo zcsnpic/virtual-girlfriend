@@ -599,51 +599,53 @@ const App = {
                 UI.hideScene();
                 return;
             }
-            
+
             const msg = messages[i];
             if (msg && msg.content) {
                 const parsed = Memory.parseMessage(msg.content);
-                
+
+                // 1. 先显示场景（如果有）
                 if (parsed.hasScene) {
                     UI.showScene(parsed.scene);
                 }
-                
-                const speechContent = Memory.getSpeechContent(msg.content);
-                if (!speechContent || speechContent.trim() === '') {
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    // 不是最后一条消息时不隐藏场景，保持显示到下一条
-                    if (i === messages.length - 1) {
-                        UI.hideScene();
-                    }
-                    continue;
+
+                // 2. 等待字幕显示（确保字幕先出现）
+                if (displayPromises && displayPromises[i - 1]) {
+                    await displayPromises[i - 1];
                 }
-                
-                TTS.speak(msg.content, rate, msg.id);
-                await new Promise(resolve => {
-                    const checkInterval = setInterval(() => {
-                        if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+
+                const speechContent = Memory.getSpeechContent(msg.content);
+
+                // 3. 播放语音（如果有）
+                if (speechContent && speechContent.trim() !== '') {
+                    TTS.speak(msg.content, rate, msg.id);
+
+                    // 等待语音播放完成
+                    await new Promise(resolve => {
+                        const checkInterval = setInterval(() => {
+                            if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+                                clearInterval(checkInterval);
+                                resolve();
+                            }
+                        }, 25);
+
+                        setTimeout(() => {
                             clearInterval(checkInterval);
                             resolve();
-                        }
-                    }, 25);
-                    
-                    setTimeout(() => {
-                        clearInterval(checkInterval);
-                        resolve();
-                    }, 10000);
-                });
-                
+                        }, 10000);
+                    });
+                }
+
                 if (sendId && this.currentSendId !== sendId) {
                     UI.hideScene();
                     return;
                 }
-                
-                // 不是最后一条消息时不隐藏场景，保持显示到下一条
+
+                // 4. 语音完成后，短暂间隔（50ms）进入下一条
                 if (i < messages.length - 1) {
-                    // 减少延迟，让语音更连续
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 } else {
-                    // 最后一条消息播放完后延迟隐藏场景
+                    // 最后一条播放完后延迟隐藏场景
                     setTimeout(() => {
                         UI.hideScene();
                     }, 2500);
