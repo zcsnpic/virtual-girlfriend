@@ -596,14 +596,17 @@ const App = {
                 const parsed = Memory.parseMessage(msg.content);
                 console.log('[顺序播放] 解析结果:', { hasScene: parsed.hasScene, scene: parsed.scene?.substring(0, 30), hasSpeech: parsed.hasSpeech });
 
+                const speechContent = Memory.getSpeechContent(msg.content);
+                console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
+
                 // 1. 先显示场景（如果有）
                 if (parsed.hasScene) {
                     console.log('[顺序播放] 显示场景:', parsed.scene);
                     UI.showScene(parsed.scene);
+                    // 等待2秒让用户看清楚场景文字
+                    console.log('[顺序播放] 等待2秒让用户看清楚场景');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
-
-                const speechContent = Memory.getSpeechContent(msg.content);
-                console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
 
                 // 2. 显示字幕 + 播放语音（同步进行）
                 if (i > 0) {
