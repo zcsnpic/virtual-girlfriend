@@ -844,6 +844,14 @@ const UI = {
         return content.substring(0, 10) + '...';
     },
     
+    // 转义HTML字符
+    escapeHtml: function(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+    
     // 编辑记忆
     editMemory: function(messageId) {
         const messages = Memory.getMessages();
