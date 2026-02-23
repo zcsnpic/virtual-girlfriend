@@ -426,29 +426,58 @@ const App = {
                     UI.scrollToBottom();
                     
                     const additionalMessages = [];
-                    for (let i = 1; i < splitContents.length; i++) {
-                        await new Promise(resolve => {
-                            const timer = setTimeout(resolve, messageDelay);
-                            self.messageTimers.push(timer);
-                        });
-                        
-                        if (self.currentSendId !== mySendId) return;
-                        
-                        const newMsg = Memory.addMessage({
-                            role: 'assistant',
-                            content: splitContents[i]
-                        });
-                        additionalMessages.push(newMsg);
-                        
-                        const newElement = UI.createMessageElement(newMsg);
-                        document.getElementById('messages').appendChild(newElement);
-                        UI.scrollToBottom();
-                    }
                     
                     if (settings.ttsAutoPlay !== false && settings.ttsEnabled !== false) {
                         TTS.stop();
-                        const allMessages = [firstMsg, ...additionalMessages];
-                        await this.playMessagesSequentially(allMessages, settings.ttsRate, mySendId);
+                        
+                        const allMessages = [firstMsg];
+                        const displayPromises = [];
+                        
+                        for (let i = 1; i < splitContents.length; i++) {
+                            const displayPromise = new Promise(resolve => {
+                                const timer = setTimeout(() => {
+                                    if (self.currentSendId !== mySendId) {
+                                        resolve();
+                                        return;
+                                    }
+                                    
+                                    const newMsg = Memory.addMessage({
+                                        role: 'assistant',
+                                        content: splitContents[i]
+                                    });
+                                    additionalMessages.push(newMsg);
+                                    allMessages.push(newMsg);
+                                    
+                                    const newElement = UI.createMessageElement(newMsg);
+                                    document.getElementById('messages').appendChild(newElement);
+                                    UI.scrollToBottom();
+                                    resolve();
+                                }, messageDelay * i);
+                                self.messageTimers.push(timer);
+                            });
+                            displayPromises.push(displayPromise);
+                        }
+                        
+                        await this.playMessagesSequentiallyWithDisplay(allMessages, displayPromises, settings.ttsRate, mySendId);
+                    } else {
+                        for (let i = 1; i < splitContents.length; i++) {
+                            await new Promise(resolve => {
+                                const timer = setTimeout(resolve, messageDelay);
+                                self.messageTimers.push(timer);
+                            });
+                            
+                            if (self.currentSendId !== mySendId) return;
+                            
+                            const newMsg = Memory.addMessage({
+                                role: 'assistant',
+                                content: splitContents[i]
+                            });
+                            additionalMessages.push(newMsg);
+                            
+                            const newElement = UI.createMessageElement(newMsg);
+                            document.getElementById('messages').appendChild(newElement);
+                            UI.scrollToBottom();
+                        }
                     }
                 } else {
                     if (streamingElement) {
@@ -509,7 +538,7 @@ const App = {
                 
                 const speechContent = Memory.getSpeechContent(msg.content);
                 if (!speechContent || speechContent.trim() === '') {
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    await new Promise(resolve => setTimeout(resolve, 800));
                     UI.hideScene();
                     continue;
                 }
@@ -532,7 +561,53 @@ const App = {
                 if (sendId && this.currentSendId !== sendId) return;
                 
                 if (i < messages.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                }
+            }
+        }
+    },
+
+    playMessagesSequentiallyWithDisplay: async function(messages, displayPromises, rate, sendId) {
+        for (let i = 0; i < messages.length; i++) {
+            if (sendId && this.currentSendId !== sendId) {
+                console.log('[打断] 停止播放序列，sendId不匹配');
+                return;
+            }
+            
+            const msg = messages[i];
+            if (msg && msg.content) {
+                const parsed = Memory.parseMessage(msg.content);
+                
+                if (parsed.hasScene) {
+                    UI.showScene(parsed.scene);
+                }
+                
+                const speechContent = Memory.getSpeechContent(msg.content);
+                if (!speechContent || speechContent.trim() === '') {
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    UI.hideScene();
+                    continue;
+                }
+                
+                TTS.speak(msg.content, rate, msg.id);
+                await new Promise(resolve => {
+                    const checkInterval = setInterval(() => {
+                        if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 100);
+                    
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }, 10000);
+                });
+                
+                if (sendId && this.currentSendId !== sendId) return;
+                
+                if (i < messages.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 150));
                 }
             }
         }
