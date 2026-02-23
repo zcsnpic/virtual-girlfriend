@@ -811,7 +811,19 @@ const UI = {
         
         importantMemories.innerHTML = html;
     },
-    
+
+    // 清除对话上下文
+    clearContext: function() {
+        if (confirm('确定要清除对话上下文吗？\n\n这将删除所有普通对话消息，但会保留重要记忆和核心记忆。')) {
+            const result = Memory.clearContext();
+            if (result.success) {
+                alert(`对话上下文已清除！\n删除了 ${result.clearedCount} 条普通消息\n保留了 ${result.keptCount} 条重要记忆`);
+                // 刷新消息列表
+                UI.loadMessages();
+            }
+        }
+    },
+
     // 加载用户档案
     loadUserProfile: function() {
         const userProfile = document.getElementById('userProfile');

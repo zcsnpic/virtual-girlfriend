@@ -1502,5 +1502,20 @@ const Memory = {
         const result = matches && matches.length > 1;
         console.log('hasMultipleSceneDescriptions:', result, 'matches:', matches ? matches.length : 0);
         return result;
+    },
+
+    // 清除对话上下文（保留重要记忆）
+    clearContext: function() {
+        const data = this.load();
+        const beforeCount = data.messages.length;
+        // 只保留重要消息（important: true）
+        data.messages = data.messages.filter(m => m.important);
+        const afterCount = data.messages.length;
+        this.save(data);
+        return {
+            success: true,
+            clearedCount: beforeCount - afterCount,
+            keptCount: afterCount
+        };
     }
 };
