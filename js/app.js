@@ -641,14 +641,15 @@ const App = {
                     return;
                 }
 
-                // 4. 语音完成后，短暂间隔（50ms）进入下一条
+                // 4. 确保场景有足够显示时间（至少800ms）
                 if (i < messages.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                    // 语音完成后，等待一段时间让场景充分显示
+                    await new Promise(resolve => setTimeout(resolve, 800));
                 } else {
                     // 最后一条播放完后延迟隐藏场景
                     setTimeout(() => {
                         UI.hideScene();
-                    }, 2500);
+                    }, 3000);
                 }
             }
         }
