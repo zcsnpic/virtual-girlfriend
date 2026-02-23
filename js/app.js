@@ -599,13 +599,13 @@ const App = {
                 const speechContent = Memory.getSpeechContent(msg.content);
                 console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
 
-                // 1. 先显示场景（如果有），显示1秒后淡出
+                // 1. 先显示场景（如果有），显示800ms后淡出
                 if (parsed.hasScene) {
                     console.log('[顺序播放] 显示场景:', parsed.scene);
                     UI.showScene(parsed.scene);
-                    // 等待1秒
-                    console.log('[顺序播放] 场景显示1秒');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    // 等待800ms
+                    console.log('[顺序播放] 场景显示800ms');
+                    await new Promise(resolve => setTimeout(resolve, 800));
                     // 淡出场景
                     console.log('[顺序播放] 场景淡出');
                     UI.hideScene();
@@ -643,9 +643,9 @@ const App = {
                         }, 30000);
                     });
                 } else {
-                    console.log('[顺序播放] 没有语音，等待500ms');
+                    console.log('[顺序播放] 没有语音，等待300ms');
                     // 没有语音时，短暂等待
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
 
                 if (sendId && this.currentSendId !== sendId) {
@@ -654,8 +654,8 @@ const App = {
 
                 // 4. 进入下一条前的短暂间隔
                 if (i < messages.length - 1) {
-                    console.log('[顺序播放] 等待500ms后进入下一条');
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    console.log('[顺序播放] 等待200ms后进入下一条');
+                    await new Promise(resolve => setTimeout(resolve, 200));
                 } else {
                     console.log('[顺序播放] 最后一条播放完成');
                 }
