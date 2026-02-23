@@ -246,8 +246,10 @@ const TTS = {
                 UI.setPlayingState(messageId, false);
             }
             if (typeof UI !== 'undefined') {
-                UI.hideScene();
                 UI.hideSubtitle();
+                setTimeout(() => {
+                    UI.hideScene();
+                }, 2500);
             }
         };
 
@@ -258,8 +260,10 @@ const TTS = {
                 UI.setPlayingState(messageId, false);
             }
             if (typeof UI !== 'undefined') {
-                UI.hideScene();
                 UI.hideSubtitle();
+                setTimeout(() => {
+                    UI.hideScene();
+                }, 2500);
             }
         };
 
@@ -311,8 +315,10 @@ const TTS = {
                     this.isPlaying = false;
                     this.currentAudio = null;
                     if (typeof UI !== 'undefined') {
-                        UI.hideScene();
                         UI.hideSubtitle();
+                        setTimeout(() => {
+                            UI.hideScene();
+                        }, 2500);
                     }
                 };
             } else {

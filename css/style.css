@@ -1949,7 +1949,7 @@ input:checked + .slider:before {
 /* 场景展示区样式 */
 .scene-bar {
     width: 100%;
-    height: 44px;
+    height: 54px;
     padding: 10px 16px;
     background: var(--card-bg);
     border-top: 1px solid var(--border-color);
@@ -1997,7 +1997,7 @@ input:checked + .slider:before {
 
 /* 字幕区样式 */
 .subtitle-bar {
-    height: 72px;
+    height: 82px;
     padding: 8px 16px;
     background: rgba(255, 255, 255, 0.95);
     text-align: center;
