@@ -599,13 +599,16 @@ const App = {
                 const speechContent = Memory.getSpeechContent(msg.content);
                 console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
 
-                // 1. 先显示场景（如果有）
+                // 1. 先显示场景（如果有），显示1秒后淡出
                 if (parsed.hasScene) {
                     console.log('[顺序播放] 显示场景:', parsed.scene);
                     UI.showScene(parsed.scene);
-                    // 等待2秒让用户看清楚场景文字
-                    console.log('[顺序播放] 等待2秒让用户看清楚场景');
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    // 等待1秒
+                    console.log('[顺序播放] 场景显示1秒');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    // 淡出场景
+                    console.log('[顺序播放] 场景淡出');
+                    UI.hideScene();
                 }
 
                 // 2. 显示字幕 + 播放语音（同步进行）
@@ -640,27 +643,21 @@ const App = {
                         }, 30000);
                     });
                 } else {
-                    console.log('[顺序播放] 没有语音，等待1秒让场景充分显示');
-                    // 没有语音时，等待1秒让场景充分显示
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    console.log('[顺序播放] 没有语音，等待500ms');
+                    // 没有语音时，短暂等待
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
 
                 if (sendId && this.currentSendId !== sendId) {
-                    UI.hideScene();
                     return;
                 }
 
-                // 4. 确保场景有足够显示时间（至少1.5秒）
+                // 4. 进入下一条前的短暂间隔
                 if (i < messages.length - 1) {
-                    console.log('[顺序播放] 等待1.5秒后进入下一条');
-                    // 语音完成后，等待一段时间让场景充分显示
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    console.log('[顺序播放] 等待500ms后进入下一条');
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 } else {
-                    console.log('[顺序播放] 最后一条，4秒后隐藏场景');
-                    // 最后一条播放完后延迟隐藏场景
-                    setTimeout(() => {
-                        UI.hideScene();
-                    }, 4000);
+                    console.log('[顺序播放] 最后一条播放完成');
                 }
             }
         }
