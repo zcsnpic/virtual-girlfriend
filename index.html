@@ -49,7 +49,7 @@
                     <div class="header-info">
                             <div class="name" id="charName">小雪</div>
                             <div class="status">在线</div>
-                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.60</div>
+                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v3.61</div>
                         </div>
                 </div>
                 <div class="header-right">
@@ -219,9 +219,9 @@
                     </div>
                     <div class="form-group">
                         <label>消息间隔时间</label>
-                        <input type="range" id="messageDelay" min="300" max="1500" step="100" value="600">
-                        <span id="messageDelayValue">0.6秒</span>
-                        <small class="setting-hint">多条消息之间的显示间隔</small>
+                        <input type="range" id="messageDelay" min="50" max="500" step="50" value="150">
+                        <span id="messageDelayValue">0.15秒</span>
+                        <small class="setting-hint">多条消息之间的显示间隔（已大幅压缩）</small>
                     </div>
                     <div class="form-group">
                         <label>自动发送延迟</label>
@@ -428,6 +428,11 @@
                         <div class="changelog-version">v3.6</div>
                         <div class="changelog-date">2025-02-23</div>
                         <ul class="changelog-changes">
+                            <li>v3.61 大幅压缩对话节奏延迟</li>
+                            <li>          消息间隔从600ms压缩到150ms</li>
+                            <li>          纯场景等待从800ms压缩到300ms</li>
+                            <li>          消息间延迟从150ms压缩到50ms</li>
+                            <li>          TTS检查间隔从100ms压缩到50ms</li>
                             <li>v3.60 优化连续消息提示词，AI会发送更接近设置值的消息数量</li>
                         </ul>
                     </div>

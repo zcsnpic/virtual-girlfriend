@@ -91,11 +91,11 @@ const App = {
             document.getElementById('multiMessageCount').value = settings.multiMessageCount || '3';
         }
         if (document.getElementById('messageDelay')) {
-            document.getElementById('messageDelay').value = settings.messageDelay || 600;
+            document.getElementById('messageDelay').value = settings.messageDelay || 150;
         }
         if (document.getElementById('messageDelayValue')) {
-            const delay = settings.messageDelay || 600;
-            document.getElementById('messageDelayValue').textContent = (delay / 1000).toFixed(1) + '秒';
+            const delay = settings.messageDelay || 150;
+            document.getElementById('messageDelayValue').textContent = (delay / 1000).toFixed(2) + '秒';
         }
 
         if (document.getElementById('autoSendDelay')) {
@@ -402,7 +402,7 @@ const App = {
             const lastMsg = messages[messages.length - 1];
             
             const multiMessageCount = parseInt(settings.multiMessageCount || '3');
-            const messageDelay = settings.messageDelay || 600;
+            const messageDelay = settings.messageDelay || 150;
             
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
             const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
@@ -549,7 +549,7 @@ const App = {
                 
                 const speechContent = Memory.getSpeechContent(msg.content);
                 if (!speechContent || speechContent.trim() === '') {
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    await new Promise(resolve => setTimeout(resolve, 300));
                     UI.hideScene();
                     continue;
                 }
@@ -572,7 +572,7 @@ const App = {
                 if (sendId && this.currentSendId !== sendId) return;
                 
                 if (i < messages.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 150));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 }
             }
         }
@@ -595,7 +595,7 @@ const App = {
                 
                 const speechContent = Memory.getSpeechContent(msg.content);
                 if (!speechContent || speechContent.trim() === '') {
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    await new Promise(resolve => setTimeout(resolve, 300));
                     UI.hideScene();
                     continue;
                 }
@@ -607,7 +607,7 @@ const App = {
                             clearInterval(checkInterval);
                             resolve();
                         }
-                    }, 100);
+                    }, 50);
                     
                     setTimeout(() => {
                         clearInterval(checkInterval);
@@ -618,7 +618,7 @@ const App = {
                 if (sendId && this.currentSendId !== sendId) return;
                 
                 if (i < messages.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 150));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 }
             }
         }
@@ -668,7 +668,7 @@ const App = {
             ttsCustomHeaders: document.getElementById('ttsCustomHeaders')?.value || '',
             ttsCustomBody: document.getElementById('ttsCustomBody')?.value || '',
             multiMessageCount: document.getElementById('multiMessageCount')?.value || '3',
-            messageDelay: parseInt(document.getElementById('messageDelay')?.value || 600),
+            messageDelay: parseInt(document.getElementById('messageDelay')?.value || 150),
             autoSendDelay: parseFloat(document.getElementById('autoSendDelay')?.value || 2.5)
         };
 

@@ -31,7 +31,7 @@ const Memory = {
                 ttsCustomHeaders: '',
                 ttsCustomBody: '',
                 multiMessageCount: '8',
-                messageDelay: 600,
+                messageDelay: 150,
                 autoSendDelay: 2.5
             },
             userInfo: {
@@ -293,7 +293,8 @@ const Memory = {
             if (existingData.hasOwnProperty(key)) {
                 if (existingData[key] !== null && typeof existingData[key] === 'object' && !Array.isArray(existingData[key])) {
                     merged[key] = this.mergeData(existingData[key], defaultData[key] || {});
-                } else {
+                } else if (existingData[key] !== undefined) {
+                    // 只合并非 undefined 的值，undefined 使用默认值
                     merged[key] = existingData[key];
                 }
             }
