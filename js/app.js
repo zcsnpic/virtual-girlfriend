@@ -609,14 +609,9 @@ const App = {
                     UI.showScene(parsed.scene);
                 }
 
-                // 2. 等待字幕显示（确保字幕先出现）
-                if (displayPromises && displayPromises[i - 1]) {
-                    await displayPromises[i - 1];
-                }
-
                 const speechContent = Memory.getSpeechContent(msg.content);
 
-                // 3. 播放语音（如果有）
+                // 2. 播放语音（如果有）
                 if (speechContent && speechContent.trim() !== '') {
                     TTS.speak(msg.content, rate, msg.id);
 
@@ -634,6 +629,9 @@ const App = {
                             resolve();
                         }, 10000);
                     });
+                } else {
+                    // 没有语音时，短暂等待
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
 
                 if (sendId && this.currentSendId !== sendId) {
@@ -641,7 +639,7 @@ const App = {
                     return;
                 }
 
-                // 4. 确保场景有足够显示时间（至少800ms）
+                // 3. 确保场景有足够显示时间（至少800ms）
                 if (i < messages.length - 1) {
                     // 语音完成后，等待一段时间让场景充分显示
                     await new Promise(resolve => setTimeout(resolve, 800));
