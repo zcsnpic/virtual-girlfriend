@@ -351,6 +351,8 @@ const App = {
         const continuePrompt = isEmptyInput ? '（请继续说，或者主动发起一个新话题）' : message;
 
         const settings = Memory.getSettings();
+        console.log('[连续消息调试] 完整设置:', settings);
+        console.log('[连续消息调试] multiMessageCount 设置值:', settings.multiMessageCount);
         if (!settings.apiKey) {
             UI.showToast('请先在设置中配置 DeepSeek API 密钥', 'error');
             UI.showModal('settingsModal');
@@ -405,8 +407,9 @@ const App = {
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
             const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
+            console.log('[连续消息调试] settings.multiMessageCount:', settings.multiMessageCount);
             console.log('[连续消息调试] multiMessageCount:', multiMessageCount);
-            console.log('[连续消息调试] lastMsg:', lastMsg);
+            console.log('[连续消息调试] lastMsg.content:', lastMsg ? lastMsg.content : 'null');
             console.log('[连续消息调试] hasSeparator:', hasSeparator);
             console.log('[连续消息调试] hasMultipleScenes:', hasMultipleScenes);
             console.log('[连续消息调试] 触发条件:', multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes));
