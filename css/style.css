@@ -1949,7 +1949,7 @@ input:checked + .slider:before {
 /* 场景展示区样式 */
 .scene-bar {
     width: 100%;
-    min-height: 44px;
+    height: 44px;
     padding: 10px 16px;
     background: var(--card-bg);
     border-top: 1px solid var(--border-color);
@@ -1960,6 +1960,7 @@ input:checked + .slider:before {
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .scene-bar.active {
@@ -1996,7 +1997,7 @@ input:checked + .slider:before {
 
 /* 字幕区样式 */
 .subtitle-bar {
-    min-height: 36px;
+    height: 72px;
     padding: 8px 16px;
     background: rgba(255, 255, 255, 0.95);
     text-align: center;
@@ -2005,6 +2006,11 @@ input:checked + .slider:before {
     transition: all 0.3s ease;
     pointer-events: none;
     border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .subtitle-bar.active {
