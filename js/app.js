@@ -536,6 +536,7 @@ const App = {
         for (let i = 0; i < messages.length; i++) {
             if (sendId && this.currentSendId !== sendId) {
                 console.log('[打断] 停止播放序列，sendId不匹配');
+                UI.hideScene();
                 return;
             }
             
@@ -550,7 +551,10 @@ const App = {
                 const speechContent = Memory.getSpeechContent(msg.content);
                 if (!speechContent || speechContent.trim() === '') {
                     await new Promise(resolve => setTimeout(resolve, 300));
-                    UI.hideScene();
+                    // 不是最后一条消息时不隐藏场景，保持显示到下一条
+                    if (i === messages.length - 1) {
+                        UI.hideScene();
+                    }
                     continue;
                 }
                 
@@ -569,10 +573,19 @@ const App = {
                     }, 10000);
                 });
                 
-                if (sendId && this.currentSendId !== sendId) return;
+                if (sendId && this.currentSendId !== sendId) {
+                    UI.hideScene();
+                    return;
+                }
                 
+                // 不是最后一条消息时不隐藏场景，保持显示到下一条
                 if (i < messages.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 50));
+                } else {
+                    // 最后一条消息播放完后延迟隐藏场景
+                    setTimeout(() => {
+                        UI.hideScene();
+                    }, 2500);
                 }
             }
         }
@@ -582,6 +595,7 @@ const App = {
         for (let i = 0; i < messages.length; i++) {
             if (sendId && this.currentSendId !== sendId) {
                 console.log('[打断] 停止播放序列，sendId不匹配');
+                UI.hideScene();
                 return;
             }
             
@@ -596,7 +610,10 @@ const App = {
                 const speechContent = Memory.getSpeechContent(msg.content);
                 if (!speechContent || speechContent.trim() === '') {
                     await new Promise(resolve => setTimeout(resolve, 300));
-                    UI.hideScene();
+                    // 不是最后一条消息时不隐藏场景，保持显示到下一条
+                    if (i === messages.length - 1) {
+                        UI.hideScene();
+                    }
                     continue;
                 }
                 
@@ -615,10 +632,19 @@ const App = {
                     }, 10000);
                 });
                 
-                if (sendId && this.currentSendId !== sendId) return;
+                if (sendId && this.currentSendId !== sendId) {
+                    UI.hideScene();
+                    return;
+                }
                 
+                // 不是最后一条消息时不隐藏场景，保持显示到下一条
                 if (i < messages.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 50));
+                } else {
+                    // 最后一条消息播放完后延迟隐藏场景
+                    setTimeout(() => {
+                        UI.hideScene();
+                    }, 2500);
                 }
             }
         }
