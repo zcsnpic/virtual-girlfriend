@@ -241,6 +241,9 @@ const TTS = {
             if (messageId && typeof UI !== 'undefined') {
                 UI.setPlayingState(messageId, false);
             }
+            if (typeof UI !== 'undefined') {
+                UI.hideScene();
+            }
         };
 
         utterance.onerror = (e) => {
@@ -248,6 +251,9 @@ const TTS = {
             this.isPlaying = false;
             if (messageId && typeof UI !== 'undefined') {
                 UI.setPlayingState(messageId, false);
+            }
+            if (typeof UI !== 'undefined') {
+                UI.hideScene();
             }
         };
 
@@ -288,6 +294,9 @@ const TTS = {
                 result.audio.onended = () => {
                     this.isPlaying = false;
                     this.currentAudio = null;
+                    if (typeof UI !== 'undefined') {
+                        UI.hideScene();
+                    }
                 };
             } else {
                 console.error('外部TTS调用失败:', result.error);
@@ -309,6 +318,9 @@ const TTS = {
         }
         this.isPlaying = false;
         this.currentUtterance = null;
+        if (typeof UI !== 'undefined') {
+            UI.hideScene();
+        }
     },
 
     pause: function() {
