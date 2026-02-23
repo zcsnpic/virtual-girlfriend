@@ -405,8 +405,16 @@ const App = {
             const hasSeparator = lastMsg && lastMsg.content && lastMsg.content.includes('|||');
             const hasMultipleScenes = Memory.hasMultipleSceneDescriptions(lastMsg ? lastMsg.content : '');
             
+            console.log('[连续消息调试] multiMessageCount:', multiMessageCount);
+            console.log('[连续消息调试] lastMsg:', lastMsg);
+            console.log('[连续消息调试] hasSeparator:', hasSeparator);
+            console.log('[连续消息调试] hasMultipleScenes:', hasMultipleScenes);
+            console.log('[连续消息调试] 触发条件:', multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes));
+            
             if (multiMessageCount > 1 && lastMsg && lastMsg.content && (hasSeparator || hasMultipleScenes)) {
+                console.log('[连续消息调试] 条件满足，开始拆分消息');
                 const splitContents = UI.splitMessages(lastMsg.content).slice(0, multiMessageCount);
+                console.log('[连续消息调试] splitContents:', splitContents);
                 
                 if (splitContents.length > 1) {
                     if (streamingElement) {
