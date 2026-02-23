@@ -104,7 +104,7 @@ const API = {
 - 分隔符"|||"只用于分割消息，不要在其他地方使用`;
         }
 
-        const importantMessages = Memory.getImportantMessages(5);
+        const importantMessages = Memory.getImportantMessages(30);
         const importantContext = importantMessages.map(m => ({
             role: m.role,
             content: m.content
