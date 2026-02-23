@@ -214,6 +214,10 @@ const TTS = {
             UI.setPlayingState(messageId, true);
         }
 
+        if (typeof UI !== 'undefined') {
+            UI.showSubtitle(speechContent);
+        }
+
         const utterance = new SpeechSynthesisUtterance(speechContent);
         
         const emotionParams = this.getEmotionParams(speechContent, settings);
@@ -243,6 +247,7 @@ const TTS = {
             }
             if (typeof UI !== 'undefined') {
                 UI.hideScene();
+                UI.hideSubtitle();
             }
         };
 
@@ -254,6 +259,7 @@ const TTS = {
             }
             if (typeof UI !== 'undefined') {
                 UI.hideScene();
+                UI.hideSubtitle();
             }
         };
 
@@ -263,6 +269,12 @@ const TTS = {
 
     speakExternal: async function(text) {
         const settings = Memory.getSettings();
+        const parsed = Memory.parseMessage(text);
+        
+        if (parsed.hasScene && typeof UI !== 'undefined') {
+            UI.showScene(parsed.scene);
+        }
+
         const speechContent = Memory.getSpeechContent(text);
         
         if (!speechContent || speechContent.trim() === '') {
@@ -271,6 +283,10 @@ const TTS = {
         }
 
         this.stop();
+
+        if (typeof UI !== 'undefined') {
+            UI.showSubtitle(speechContent);
+        }
 
         try {
             const result = await TTSProvider.speak(speechContent, {
@@ -296,6 +312,7 @@ const TTS = {
                     this.currentAudio = null;
                     if (typeof UI !== 'undefined') {
                         UI.hideScene();
+                        UI.hideSubtitle();
                     }
                 };
             } else {
@@ -320,6 +337,7 @@ const TTS = {
         this.currentUtterance = null;
         if (typeof UI !== 'undefined') {
             UI.hideScene();
+            UI.hideSubtitle();
         }
     },
 

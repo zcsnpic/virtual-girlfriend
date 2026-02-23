@@ -1994,6 +1994,49 @@ input:checked + .slider:before {
     opacity: 0;
 }
 
+/* 字幕区样式 */
+.subtitle-bar {
+    min-height: 36px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.95);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    border-top: 1px solid var(--border-color);
+}
+
+.subtitle-bar.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.subtitle-bar .subtitle-text {
+    font-size: 16px;
+    color: var(--text-color);
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+}
+
+.subtitle-bar.hiding {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* 打字光标效果 */
+.subtitle-bar .subtitle-text.typing::after {
+    content: '|';
+    animation: blink 0.7s infinite;
+    margin-left: 2px;
+    color: var(--primary-color);
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
 /* 消息播放状态 */
 .message.playing {
     animation: messagePlaying 1s ease-in-out infinite;

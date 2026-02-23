@@ -1,5 +1,6 @@
 const UI = {
     currentScene: null,
+    subtitleTimer: null,
 
     showScene: function(scene) {
         if (!scene) {
@@ -40,6 +41,61 @@ const UI = {
 
     clearAllScenes: function() {
         this.hideScene();
+    },
+
+    showSubtitle: function(text) {
+        if (!text) return;
+        
+        const subtitleBar = document.getElementById('subtitleBar');
+        const subtitleText = document.getElementById('subtitleText');
+        
+        if (!subtitleBar || !subtitleText) return;
+        
+        if (this.subtitleTimer) {
+            clearInterval(this.subtitleTimer);
+            this.subtitleTimer = null;
+        }
+        
+        subtitleText.textContent = '';
+        subtitleText.classList.add('typing');
+        subtitleBar.classList.remove('hiding');
+        subtitleBar.classList.add('active');
+        
+        let index = 0;
+        const chars = text.split('');
+        const charDelay = Math.max(30, Math.min(50, 2000 / chars.length));
+        
+        this.subtitleTimer = setInterval(() => {
+            if (index < chars.length) {
+                subtitleText.textContent += chars[index];
+                index++;
+            } else {
+                clearInterval(this.subtitleTimer);
+                this.subtitleTimer = null;
+                subtitleText.classList.remove('typing');
+            }
+        }, charDelay);
+    },
+
+    hideSubtitle: function() {
+        const subtitleBar = document.getElementById('subtitleBar');
+        const subtitleText = document.getElementById('subtitleText');
+        
+        if (this.subtitleTimer) {
+            clearInterval(this.subtitleTimer);
+            this.subtitleTimer = null;
+        }
+        
+        if (subtitleBar && subtitleBar.classList.contains('active')) {
+            subtitleBar.classList.add('hiding');
+            setTimeout(() => {
+                subtitleBar.classList.remove('active', 'hiding');
+                if (subtitleText) {
+                    subtitleText.textContent = '';
+                    subtitleText.classList.remove('typing');
+                }
+            }, 300);
+        }
     },
 
     setPlayingState: function(messageId, isPlaying) {
