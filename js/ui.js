@@ -24,10 +24,14 @@ const UI = {
 
     hideScene: function() {
         const sceneBar = document.getElementById('sceneBar');
+        const sceneText = document.getElementById('sceneText');
         if (sceneBar && sceneBar.classList.contains('active')) {
             sceneBar.classList.add('hiding');
             setTimeout(() => {
                 sceneBar.classList.remove('active', 'hiding');
+                if (sceneText) {
+                    sceneText.textContent = '';
+                }
             }, 400);
             console.log('hideScene: 隐藏场景');
         }

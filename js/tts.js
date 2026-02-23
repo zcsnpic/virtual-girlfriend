@@ -188,15 +188,6 @@ const TTS = {
             return this.speakExternal(text);
         }
 
-        const speechContent = Memory.getSpeechContent(text);
-        
-        if (!speechContent || speechContent.trim() === '') {
-            console.log('没有可播放的说话内容');
-            return;
-        }
-
-        this.stop();
-
         const parsed = Memory.parseMessage(text);
         console.log('TTS.speak - 解析结果:', {
             hasScene: parsed.hasScene,
@@ -209,6 +200,15 @@ const TTS = {
             console.log('TTS.speak - 准备展示场景:', parsed.scene);
             UI.showScene(parsed.scene);
         }
+
+        const speechContent = Memory.getSpeechContent(text);
+        
+        if (!speechContent || speechContent.trim() === '') {
+            console.log('没有可播放的说话内容，仅展示场景');
+            return;
+        }
+
+        this.stop();
 
         if (messageId && typeof UI !== 'undefined') {
             UI.setPlayingState(messageId, true);
