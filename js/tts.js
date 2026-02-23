@@ -245,11 +245,9 @@ const TTS = {
             if (messageId && typeof UI !== 'undefined') {
                 UI.setPlayingState(messageId, false);
             }
+            // 场景隐藏由 app.js 控制，不在此处隐藏
             if (typeof UI !== 'undefined') {
                 UI.hideSubtitle();
-                setTimeout(() => {
-                    UI.hideScene();
-                }, 2500);
             }
         };
 
@@ -259,11 +257,9 @@ const TTS = {
             if (messageId && typeof UI !== 'undefined') {
                 UI.setPlayingState(messageId, false);
             }
+            // 场景隐藏由 app.js 控制，不在此处隐藏
             if (typeof UI !== 'undefined') {
                 UI.hideSubtitle();
-                setTimeout(() => {
-                    UI.hideScene();
-                }, 2500);
             }
         };
 
@@ -314,11 +310,9 @@ const TTS = {
                 result.audio.onended = () => {
                     this.isPlaying = false;
                     this.currentAudio = null;
+                    // 场景隐藏由 app.js 控制，不在此处隐藏
                     if (typeof UI !== 'undefined') {
                         UI.hideSubtitle();
-                        setTimeout(() => {
-                            UI.hideScene();
-                        }, 2500);
                     }
                 };
             } else {
