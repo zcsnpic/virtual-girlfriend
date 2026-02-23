@@ -596,15 +596,7 @@ const App = {
                 const parsed = Memory.parseMessage(msg.content);
                 console.log('[顺序播放] 解析结果:', { hasScene: parsed.hasScene, scene: parsed.scene?.substring(0, 30), hasSpeech: parsed.hasSpeech });
 
-                // 1. 显示字幕（除了第一条已经在DOM中，其他需要添加）
-                if (i > 0) {
-                    const newElement = UI.createMessageElement(msg);
-                    document.getElementById('messages').appendChild(newElement);
-                    UI.scrollToBottom();
-                    console.log('[顺序播放] 添加字幕到DOM');
-                }
-
-                // 2. 先显示场景（如果有）
+                // 1. 先显示场景（如果有）
                 if (parsed.hasScene) {
                     console.log('[顺序播放] 显示场景:', parsed.scene);
                     UI.showScene(parsed.scene);
@@ -612,6 +604,15 @@ const App = {
 
                 const speechContent = Memory.getSpeechContent(msg.content);
                 console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
+
+                // 2. 显示字幕 + 播放语音（同步进行）
+                if (i > 0) {
+                    // 添加字幕到DOM
+                    const newElement = UI.createMessageElement(msg);
+                    document.getElementById('messages').appendChild(newElement);
+                    UI.scrollToBottom();
+                    console.log('[顺序播放] 添加字幕到DOM');
+                }
 
                 // 3. 播放语音（如果有）
                 if (speechContent && speechContent.trim() !== '') {
