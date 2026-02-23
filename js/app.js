@@ -348,7 +348,7 @@ const App = {
         const message = input.value.trim();
         
         const isEmptyInput = !message;
-        const continuePrompt = isEmptyInput ? '（请继续说，或者主动发起一个新话题）' : message;
+        const continuePrompt = isEmptyInput ? '（用户没有说话，请继续你刚才的话题，或者自然地延续对话）' : message;
 
         const settings = Memory.getSettings();
         console.log('[连续消息调试] 完整设置:', settings);
