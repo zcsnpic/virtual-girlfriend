@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - develop
 
 permissions:
   contents: read
@@ -17,35 +16,22 @@ concurrency:
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
-      - name: Deploy Main
-        if: github.ref == 'refs/heads/main'
-        uses: actions/deploy-pages@v4
-        with:
-          path: ./
-
-      - name: Deploy Develop
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          mkdir -p dev
-          cp -r * dev/ 2>/dev/null || true
-          rm -rf dev/dev
-          rm -rf dev/.git
-          rm -rf dev/.github
-
-      - name: Upload Develop Artifact
-        if: github.ref == 'refs/heads/develop'
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dev
+          path: '.'
 
-      - name: Deploy Develop to Pages
-        if: github.ref == 'refs/heads/develop'
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
