@@ -1,7 +1,7 @@
 {
   "name": "virtual-girlfriend",
-  "version": "2.3.1",
-  "description": "智能虚拟聊天应用 v2.31 - 语音与场景分离",
+  "version": "4.0.0",
+  "description": "智能虚拟聊天应用 v4.0.0 - 语音与场景分离",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
