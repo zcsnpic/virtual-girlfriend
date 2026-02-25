@@ -974,7 +974,6 @@ const UI = {
                     localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
                     UI.showToast('记忆已更新', 'success');
                     // 刷新记忆列表
-                    UI.loadTimelineMemory();
                     UI.loadImportantMemory();
                 }
             }
@@ -988,13 +987,12 @@ const UI = {
             const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data'));
             const messageIndex = data.messages.findIndex(m => m.id === messageId);
             if (messageIndex !== -1) {
-                data.messages.splice(messageIndex, 1);
-                localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
-                UI.showToast('记忆已删除', 'success');
-                // 刷新记忆列表
-                UI.loadTimelineMemory();
-                UI.loadImportantMemory();
-            }
+                    data.messages.splice(messageIndex, 1);
+                    localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
+                    UI.showToast('记忆已删除', 'success');
+                    // 刷新记忆列表
+                    UI.loadImportantMemory();
+                }
         }
     },
     
