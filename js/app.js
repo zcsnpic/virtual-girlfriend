@@ -149,33 +149,13 @@ const App = {
 
         messageInput.addEventListener('compositionend', (e) => {
             this.isComposing = false;
-            const input = document.getElementById('messageInput');
-            const value = input.value;
-            
-            if (!value.trim()) {
-                this.clearAutoSendTimer();
-                this.lastInputLength = 0;
-                return;
-            }
-            
-            // 检查最后一个字符是否为空格
-            const lastChar = value[value.length - 1];
-            const isLastCharSpace = lastChar === ' ';
-            
-            if (isLastCharSpace) {
-                // 最后一个字符是空格，不自动发送
-                this.clearAutoSendTimer();
-                console.log('[自动发送] 最后一个字符是空格，取消自动发送');
-            } else {
-                // 最后一个字符不是空格，等待0.5秒发送
-                this.lastInputLength = value.length;
-                this.startAutoSendTimer();
-            }
+            // 调用统一的自动发送处理函数
+            this.handleSmartAutoSend(e);
         });
 
         const toggleBubblesBtn = document.getElementById('toggleBubblesBtn');
         if (toggleBubblesBtn) {
-            const showBubbles = localStorage.getItem('showChatBubbles') !== 'false';
+            const showBubbles = localStorage.getItem('showChatBubbles') === 'true';
             if (!showBubbles) {
                 document.body.classList.add('hide-chat-bubbles');
                 toggleBubblesBtn.classList.remove('active');
@@ -246,63 +226,85 @@ const App = {
 
     handleSmartAutoSend: function(e) {
         if (this.isComposing) {
+            console.log('[自动发送] 正在组合输入，跳过');
             return;
         }
 
         const input = document.getElementById('messageInput');
         const value = input.value;
         
+        console.log('[自动发送] 输入事件，value:', value);
+        
         if (!value.trim()) {
             this.clearAutoSendTimer();
             this.lastInputLength = 0;
+            console.log('[自动发送] 输入为空，清除计时器');
             return;
         }
 
-        const inputType = e.inputType || '';
-        const isPaste = inputType === 'insertFromPaste' || inputType === 'insertFromDrop';
+        // 检查最后一个字符是否为空格
+        const lastChar = value[value.length - 1];
+        const isLastCharSpace = lastChar === ' ';
         
-        if (isPaste) {
+        console.log('[自动发送] 最后一个字符:', lastChar, '，是否为空格:', isLastCharSpace);
+        
+        if (isLastCharSpace) {
+            // 最后一个字符是空格，不自动发送，等待用户继续输入
             this.clearAutoSendTimer();
-            console.log('[自动发送] 粘贴输入，立即发送');
-            this.sendMessage();
+            console.log('[自动发送] 最后一个字符是空格，取消自动发送，等待继续输入');
         } else {
-            // 检查最后一个字符是否为空格
-            const lastChar = value[value.length - 1];
-            const isLastCharSpace = lastChar === ' ';
+            // 最后一个字符不是空格，等待0.5秒发送
+            // 每次输入都重置计时器，确保用户停止输入后才开始计时
+            this.lastInputLength = value.length;
+            // 确保清除之前的计时器
+            this.clearAutoSendTimer();
             
-            if (isLastCharSpace) {
-                // 最后一个字符是空格，不自动发送
-                this.clearAutoSendTimer();
-                console.log('[自动发送] 最后一个字符是空格，取消自动发送');
-            } else {
-                // 最后一个字符不是空格，等待0.5秒发送
-                this.lastInputLength = value.length;
-                this.startAutoSendTimer();
-            }
+            console.log('[自动发送] 准备启动计时器');
+            
+            // 获取自动发送延迟设置（秒）
+            const settings = Memory.getSettings();
+            const autoSendDelay = parseFloat(settings.autoSendDelay || 2.5);
+            const delayMs = autoSendDelay * 1000;
+            
+            // 保存this的引用，确保在setTimeout中正确使用
+            const self = this;
+            
+            // 重新启动计时器
+            this.autoSendTimer = setTimeout(function() {
+                console.log('[自动发送] 计时器触发！');
+                
+                const currentInput = document.getElementById('messageInput');
+                const currentValue = currentInput.value;
+                
+                console.log('[自动发送] 计时器触发，当前value:', currentValue);
+                
+                if (!currentValue.trim()) {
+                    console.log('[自动发送] 输入为空，不发送');
+                    return;
+                }
+                
+                // 再次检查最后一个字符是否为空格，确保用户没有在延迟期间添加空格
+                const currentLastChar = currentValue[currentValue.length - 1];
+                const currentIsLastCharSpace = currentLastChar === ' ';
+                
+                console.log('[自动发送] 触发时最后一个字符:', currentLastChar, '，是否为空格:', currentIsLastCharSpace);
+                
+                if (!currentIsLastCharSpace) {
+                    console.log('[自动发送] 条件满足，发送消息');
+                    // 使用保存的self引用调用sendMessage
+                    self.sendMessage();
+                } else {
+                    console.log('[自动发送] 最后一个字符是空格，不发送');
+                }
+            }, delayMs);
+            
+            console.log('[自动发送] 计时器已启动，等待', autoSendDelay, '秒');
         }
     },
 
     startAutoSendTimer: function() {
-        this.clearAutoSendTimer();
-        
-        // 固定使用0.5秒延迟，不使用用户设置的延迟时间
-        const delayMs = 500;
-        
-        console.log('[自动发送] 启动计时器: 0.5秒');
-        
-        this.autoSendTimer = setTimeout(() => {
-            const input = document.getElementById('messageInput');
-            const value = input.value;
-            
-            // 再次检查最后一个字符是否为空格，确保用户没有在延迟期间添加空格
-            const lastChar = value[value.length - 1];
-            const isLastCharSpace = lastChar === ' ';
-            
-            if (value.trim() && !this.isSending && !isLastCharSpace) {
-                console.log('[自动发送] 计时器触发，发送消息');
-                this.sendMessage();
-            }
-        }, delayMs);
+        // 这个函数现在不再使用，所有计时器逻辑都在handleSmartAutoSend中处理
+        console.log('[自动发送] startAutoSendTimer 被调用');
     },
 
     clearAutoSendTimer: function() {
@@ -405,9 +407,15 @@ const App = {
         let streamingElement = null;
         const self = this;
 
+        // 显示"思考中……"字幕
+        UI.showSubtitle('思考中……');
+
         try {
             await API.sendMessage(continuePrompt, (content) => {
                 if (self.currentSendId !== mySendId) return;
+                
+                // 收到内容后隐藏"思考中……"字幕
+                UI.hideSubtitle();
                 
                 if (!streamingElement) {
                     streamingElement = document.createElement('div');
@@ -423,6 +431,9 @@ const App = {
             }, isEmptyInput);
 
             if (self.currentSendId !== mySendId) return;
+            
+            // API 调用结束后确保隐藏字幕
+            UI.hideSubtitle();
 
             const messages = Memory.getMessages();
             const lastMsg = messages[messages.length - 1];
