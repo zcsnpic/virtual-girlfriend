@@ -150,15 +150,25 @@ const App = {
         messageInput.addEventListener('compositionend', (e) => {
             this.isComposing = false;
             const input = document.getElementById('messageInput');
-            const currentLength = input.value.length;
-            const addedLength = currentLength - this.lastInputLength;
+            const value = input.value;
             
-            if (addedLength > 5) {
+            if (!value.trim()) {
                 this.clearAutoSendTimer();
-                console.log('[自动发送] 组合输入结束，新增字符>', addedLength, '，立即发送');
-                this.sendMessage();
+                this.lastInputLength = 0;
+                return;
+            }
+            
+            // 检查最后一个字符是否为空格
+            const lastChar = value[value.length - 1];
+            const isLastCharSpace = lastChar === ' ';
+            
+            if (isLastCharSpace) {
+                // 最后一个字符是空格，不自动发送
+                this.clearAutoSendTimer();
+                console.log('[自动发送] 最后一个字符是空格，取消自动发送');
             } else {
-                this.lastInputLength = currentLength;
+                // 最后一个字符不是空格，等待0.5秒发送
+                this.lastInputLength = value.length;
                 this.startAutoSendTimer();
             }
         });
@@ -256,23 +266,39 @@ const App = {
             console.log('[自动发送] 粘贴输入，立即发送');
             this.sendMessage();
         } else {
-            this.lastInputLength = value.length;
-            this.startAutoSendTimer();
+            // 检查最后一个字符是否为空格
+            const lastChar = value[value.length - 1];
+            const isLastCharSpace = lastChar === ' ';
+            
+            if (isLastCharSpace) {
+                // 最后一个字符是空格，不自动发送
+                this.clearAutoSendTimer();
+                console.log('[自动发送] 最后一个字符是空格，取消自动发送');
+            } else {
+                // 最后一个字符不是空格，等待0.5秒发送
+                this.lastInputLength = value.length;
+                this.startAutoSendTimer();
+            }
         }
     },
 
     startAutoSendTimer: function() {
         this.clearAutoSendTimer();
         
-        const settings = Memory.getSettings();
-        const delaySeconds = parseFloat(settings.autoSendDelay || 2.5);
-        const delayMs = delaySeconds * 1000;
+        // 固定使用0.5秒延迟，不使用用户设置的延迟时间
+        const delayMs = 500;
         
-        console.log('[自动发送] 启动计时器:', delaySeconds, '秒');
+        console.log('[自动发送] 启动计时器: 0.5秒');
         
         this.autoSendTimer = setTimeout(() => {
             const input = document.getElementById('messageInput');
-            if (input.value.trim() && !this.isSending) {
+            const value = input.value;
+            
+            // 再次检查最后一个字符是否为空格，确保用户没有在延迟期间添加空格
+            const lastChar = value[value.length - 1];
+            const isLastCharSpace = lastChar === ' ';
+            
+            if (value.trim() && !this.isSending && !isLastCharSpace) {
                 console.log('[自动发送] 计时器触发，发送消息');
                 this.sendMessage();
             }
