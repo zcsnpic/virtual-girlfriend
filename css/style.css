@@ -279,7 +279,6 @@ body {
     display: flex;
     flex-direction: column;
     max-width: 80%;
-    animation: messageSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes messageSlideIn {
@@ -296,7 +295,6 @@ body {
 .message.user {
     align-self: flex-end;
     align-items: flex-end;
-    animation-delay: 0.1s;
 }
 
 .message.ai {
@@ -2023,7 +2021,6 @@ input:checked + .slider:before {
     align-items: center;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
     flex-shrink: 0;
     overflow: hidden;
 }
@@ -2045,19 +2042,12 @@ input:checked + .slider:before {
     line-height: 1.5;
     text-align: left;
     letter-spacing: 0.5px;
-    transform: scale(0.8);
-    opacity: 0;
-    transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
 .scene-bar.active .scene-text {
-    transform: scale(1);
-    opacity: 1;
 }
 
 .scene-bar.hiding .scene-text {
-    transform: scale(0.8);
-    opacity: 0;
 }
 
 /* 字幕区样式 */

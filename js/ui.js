@@ -56,25 +56,10 @@ const UI = {
             this.subtitleTimer = null;
         }
         
-        subtitleText.textContent = '';
-        subtitleText.classList.add('typing');
+        // 直接显示完整文本，移除打字效果
+        subtitleText.textContent = text;
         subtitleBar.classList.remove('hiding');
         subtitleBar.classList.add('active');
-        
-        let index = 0;
-        const chars = text.split('');
-        const charDelay = Math.max(30, Math.min(50, 2000 / chars.length));
-        
-        this.subtitleTimer = setInterval(() => {
-            if (index < chars.length) {
-                subtitleText.textContent += chars[index];
-                index++;
-            } else {
-                clearInterval(this.subtitleTimer);
-                this.subtitleTimer = null;
-                subtitleText.classList.remove('typing');
-            }
-        }, charDelay);
     },
 
     hideSubtitle: function() {
@@ -543,33 +528,33 @@ const UI = {
         modal.className = 'modal active';
         modal.id = 'addMemoryModal';
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
                     <h2>添加重要记忆</h2>
                     <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>记忆内容</label>
-                        <textarea id="addMemoryContent" rows="3" placeholder="请输入记忆内容..."></textarea>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px;">记忆内容</label>
+                        <textarea id="addMemoryContent" rows="6" style="width: 100%; padding: 10px; resize: vertical; font-family: inherit; font-size: 14px; border: 1px solid #ddd; border-radius: 4px;" placeholder="请输入记忆内容..."></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>消息来源</label>
-                        <select id="addMemoryRole">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px;">消息来源</label>
+                        <select id="addMemoryRole" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                             <option value="user">用户说（"你"=角色，"我"=用户）</option>
                             <option value="assistant">角色说（"我"=角色，"你"=用户）</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom: 20px;">
                         <label>
                             <input type="checkbox" id="addMemoryCore">
                             设为核心记忆（最高优先级，最多10条）
                         </label>
                     </div>
-                    <button class="save-btn" onclick="UI.saveNewMemory()">保存</button>
+                    <button class="save-btn" onclick="UI.saveNewMemory()" style="width: 100%; padding: 10px; border: 1px solid #4CAF50; border-radius: 4px; background: #4CAF50; color: white; font-size: 14px; cursor: pointer;">保存</button>
                 </div>
             </div>
-        `;
+        `
         
         document.body.appendChild(modal);
         
@@ -964,20 +949,59 @@ const UI = {
         const msg = messages.find(m => m.id === messageId);
         
         if (msg) {
-            const newContent = prompt('编辑记忆内容:', msg.content);
-            if (newContent && newContent !== msg.content) {
-                // 更新记忆内容
-                const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data'));
-                const messageIndex = data.messages.findIndex(m => m.id === messageId);
-                if (messageIndex !== -1) {
-                    data.messages[messageIndex].content = newContent;
-                    localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
-                    UI.showToast('记忆已更新', 'success');
-                    // 刷新记忆列表
-                    UI.loadImportantMemory();
+            // 创建自定义模态框
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'editMemoryModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2>编辑记忆内容</h2>
+                        <button class="close-btn" onclick="document.getElementById('editMemoryModal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="memoryContent" rows="10" style="width: 100%; padding: 10px; resize: vertical; font-family: inherit; font-size: 14px;">${this.escapeHtml(msg.content)}</textarea>
+                    </div>
+                    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                        <button class="cancel-btn" style="padding: 8px 16px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5; cursor: pointer;" onclick="document.getElementById('editMemoryModal').remove()">取消</button>
+                        <button class="confirm-btn" style="padding: 8px 16px; border: 1px solid #4CAF50; border-radius: 4px; background: #4CAF50; color: white; cursor: pointer;" onclick="UI.saveEditedMemory(${messageId})">确定</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 点击模态框外部关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
                 }
+            });
+        }
+    },
+
+    // 保存编辑后的记忆
+    saveEditedMemory: function(messageId) {
+        const newContent = document.getElementById('memoryContent').value;
+        if (newContent) {
+            const data = JSON.parse(localStorage.getItem('virtual_girlfriend_data'));
+            const messageIndex = data.messages.findIndex(m => m.id === messageId);
+            if (messageIndex !== -1) {
+                data.messages[messageIndex].content = newContent;
+                localStorage.setItem('virtual_girlfriend_data', JSON.stringify(data));
+                UI.showToast('记忆已更新', 'success');
+                // 刷新记忆列表
+                UI.loadImportantMemory();
             }
         }
+        // 关闭模态框
+        document.getElementById('editMemoryModal').remove();
+    },
+
+    // HTML转义
+    escapeHtml: function(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     },
     
     // 删除记忆
