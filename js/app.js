@@ -253,7 +253,7 @@ const App = {
             this.clearAutoSendTimer();
             console.log('[自动发送] 最后一个字符是空格，取消自动发送，等待继续输入');
         } else {
-            // 最后一个字符不是空格，等待0.5秒发送
+            // 最后一个字符不是空格，等待用户停止输入后发送
             // 每次输入都重置计时器，确保用户停止输入后才开始计时
             this.lastInputLength = value.length;
             // 确保清除之前的计时器
