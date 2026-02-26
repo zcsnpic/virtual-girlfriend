@@ -1,10 +1,16 @@
-FROM nginx:alpine
+FROM node:18-alpine
 
-# 复制项目文件到Nginx的默认目录
-COPY . /usr/share/nginx/html/
+WORKDIR /app
 
-# 暴露80端口
-EXPOSE 80
+COPY . .
 
-# 启动Nginx
-CMD ["nginx", "-g", "daemon off;"]
+RUN npm install --prefix server
+
+EXPOSE 8000 3000
+
+RUN cp server/.env.example server/.env
+
+# 创建启动脚本
+RUN echo -e "#!/bin/sh\npython3 -m http.server 8000 &\ncd server && npm start" > start.sh && chmod +x start.sh
+
+CMD ["./start.sh"]

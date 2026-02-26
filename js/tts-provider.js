@@ -419,73 +419,43 @@ const TTSProvider = {
 
     speakViaProxy: function(text, config, preset) {
         return new Promise((resolve, reject) => {
-            const proxyUrl = config.proxyUrl || 'ws://localhost:3000';
-            const socket = new WebSocket(proxyUrl);
+            const proxyUrl = config.proxyUrl || 'http://localhost:3000/api/tts-proxy';
             
-            let hasResolved = false;
-            const timeout = setTimeout(() => {
-                if (!hasResolved) {
-                    socket.close();
-                    resolve({ success: false, error: '连接超时' });
+            fetch(proxyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: text,
+                    voice: config.voice || 'BV700_streaming'
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            }, 30000);
-
-            socket.onopen = () => {
-                clearTimeout(timeout);
-                socket.send(JSON.stringify({
-                    type: 'config',
-                    voice: config.voice || 'zh_female_cancan_mars_bigtts'
-                }));
-                
-                socket.send(JSON.stringify({
-                    type: 'text',
-                    text: text
-                }));
-            };
-
-            socket.onmessage = (event) => {
-                try {
-                    const message = JSON.parse(event.data);
-                    
-                    if (message.type === 'status' && message.status === 'connected') {
-                        console.log('Proxy connected');
-                    } else if (message.type === 'audio') {
-                        hasResolved = true;
-                        socket.close();
-                        
-                        const binaryString = atob(message.data);
-                        const bytes = new Uint8Array(binaryString.length);
-                        for (let i = 0; i < binaryString.length; i++) {
-                            bytes[i] = binaryString.charCodeAt(i);
-                        }
-                        const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        const audio = new Audio(audioUrl);
-                        audio.onended = () => URL.revokeObjectURL(audioUrl);
-                        resolve({ success: true, audio });
-                    } else if (message.type === 'error') {
-                        hasResolved = true;
-                        socket.close();
-                        resolve({ success: false, error: message.error.message || '代理服务器错误' });
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const binaryString = atob(data.data);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
                     }
-                } catch (e) {
-                    console.error('Parse proxy message error:', e);
+                    const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.onended = () => URL.revokeObjectURL(audioUrl);
+                    resolve({ success: true, audio });
+                } else {
+                    resolve({ success: false, error: data.error || '代理服务器错误' });
                 }
-            };
-
-            socket.onerror = (error) => {
-                clearTimeout(timeout);
-                if (!hasResolved) {
-                    resolve({ success: false, error: '代理服务器连接失败，请确保后端服务已启动' });
-                }
-            };
-
-            socket.onclose = () => {
-                clearTimeout(timeout);
-                if (!hasResolved) {
-                    resolve({ success: false, error: '连接已关闭' });
-                }
-            };
+            })
+            .catch(error => {
+                resolve({ success: false, error: error.message || '代理服务器连接失败' });
+            });
         });
     },
 

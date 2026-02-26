@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: virtual-girlfriend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: virtual-girlfriend
+  template:
+    metadata:
+      labels:
+        app: virtual-girlfriend
+    spec:
+      containers:
+      - name: virtual-girlfriend
+        image: virtual-girlfriend:latest
+        ports:
+        - containerPort: 8000
+        - containerPort: 3000
+        env:
+        - name: VOLCENGINE_APP_ID
+          value: "4052318732"
+        - name: VOLCENGINE_ACCESS_KEY
+          value: "ge7FWnorBe-iZq5Q1ISfjmwrHw8gjX5c"
+        - name: VOLCENGINE_RESOURCE_ID
+          value: "volc.service_type.10029"
+        - name: PORT
+          value: "3000"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: virtual-girlfriend
+  namespace: default
+spec:
+  selector:
+    app: virtual-girlfriend
+  ports:
+  - port: 8000
+    targetPort: 8000
+    nodePort: 30080
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30030
+  type: NodePort
