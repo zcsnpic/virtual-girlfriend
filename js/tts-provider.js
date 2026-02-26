@@ -431,6 +431,8 @@ const TTSProvider = {
                 proxyUrl = window.location.origin + proxyUrl;
             }
             
+            console.log('Proxy URL:', proxyUrl);
+            
             fetch(proxyUrl, {
                 method: 'POST',
                 headers: {
@@ -442,12 +444,14 @@ const TTSProvider = {
                 })
             })
             .then(response => {
+                console.log('Proxy response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Proxy response data:', data);
                 if (data.success) {
                     const binaryString = atob(data.data);
                     const bytes = new Uint8Array(binaryString.length);
@@ -464,6 +468,7 @@ const TTSProvider = {
                 }
             })
             .catch(error => {
+                console.error('Proxy error:', error);
                 resolve({ success: false, error: error.message || '代理服务器连接失败' });
             });
         });
