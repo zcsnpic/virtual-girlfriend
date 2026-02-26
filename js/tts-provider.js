@@ -419,7 +419,17 @@ const TTSProvider = {
 
     speakViaProxy: function(text, config, preset) {
         return new Promise((resolve, reject) => {
-            const proxyUrl = config.proxyUrl || '/api/tts-proxy';
+            let proxyUrl = config.proxyUrl || '/api/tts-proxy';
+            
+            // 转换WebSocket URL为HTTP URL
+            if (proxyUrl.startsWith('ws://')) {
+                proxyUrl = proxyUrl.replace('ws://', 'http://') + '/api/tts-proxy';
+            } else if (proxyUrl.startsWith('wss://')) {
+                proxyUrl = proxyUrl.replace('wss://', 'https://') + '/api/tts-proxy';
+            } else if (!proxyUrl.startsWith('http')) {
+                // 确保URL是完整的
+                proxyUrl = window.location.origin + proxyUrl;
+            }
             
             fetch(proxyUrl, {
                 method: 'POST',
