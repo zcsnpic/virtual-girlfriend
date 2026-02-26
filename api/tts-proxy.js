@@ -1,102 +1,86 @@
-const https = require('https');
+export const config = {
+  runtime: 'edge',
+};
 
-export default function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export default async function handler(req) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return new Response(null, { status: 200, headers });
   }
 
   if (req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      try {
-        const data = JSON.parse(body);
-        callVolcengineTTS(data.text, data.voice)
-          .then(audioData => {
-            res.status(200).json({ success: true, data: audioData });
-          })
-          .catch(error => {
-            res.status(500).json({ success: false, error: error.message });
-          });
-      } catch (error) {
-        res.status(400).json({ success: false, error: 'Invalid request body' });
-      }
-    });
+    try {
+      const data = await req.json();
+      const audioData = await callVolcengineTTS(data.text, data.voice);
+      return new Response(JSON.stringify({ success: true, data: audioData }), {
+        status: 200,
+        headers: { ...headers, 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({ success: false, error: error.message }), {
+        status: 500,
+        headers: { ...headers, 'Content-Type': 'application/json' }
+      });
+    }
   } else {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return new Response(JSON.stringify({ success: false, error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...headers, 'Content-Type': 'application/json' }
+    });
   }
 }
 
-function callVolcengineTTS(text, voice) {
-  return new Promise((resolve, reject) => {
-    const endpoint = 'https://openspeech.bytedance.com/api/v1/tts';
-    const data = JSON.stringify({
-      app: {
-        appid: process.env.VOLCENGINE_APP_ID,
-        token: process.env.VOLCENGINE_ACCESS_KEY,
-        cluster: 'volcano_tts'
-      },
-      user: {
-        uid: 'user_' + Date.now()
-      },
-      audio: {
-        voice_type: voice || 'BV700_streaming',
-        encoding: 'mp3',
-        rate: 24000,
-        speed_ratio: 1.0,
-        volume_ratio: 1.0,
-        pitch_ratio: 1.0
-      },
-      request: {
-        reqid: generateUUID(),
-        text: text,
-        text_type: 'plain',
-        operation: 'query'
-      }
-    });
+async function callVolcengineTTS(text, voice) {
+  const endpoint = 'https://openspeech.bytedance.com/api/v1/tts';
+  const data = {
+    app: {
+      appid: process.env.VOLCENGINE_APP_ID,
+      token: process.env.VOLCENGINE_ACCESS_KEY,
+      cluster: 'volcano_tts'
+    },
+    user: {
+      uid: 'user_' + Date.now()
+    },
+    audio: {
+      voice_type: voice || 'BV700_streaming',
+      encoding: 'mp3',
+      rate: 24000,
+      speed_ratio: 1.0,
+      volume_ratio: 1.0,
+      pitch_ratio: 1.0
+    },
+    request: {
+      reqid: generateUUID(),
+      text: text,
+      text_type: 'plain',
+      operation: 'query'
+    }
+  };
 
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data),
-        'Authorization': `Bearer;${process.env.VOLCENGINE_ACCESS_KEY}`
-      }
-    };
-
-    const req = https.request(endpoint, options, (res) => {
-      let responseData = '';
-      res.on('data', (chunk) => {
-        responseData += chunk;
-      });
-      res.on('end', () => {
-        try {
-          const jsonData = JSON.parse(responseData);
-          if (jsonData.code === 3000) {
-            resolve(jsonData.data);
-          } else {
-            reject(new Error(`Volcengine error: ${jsonData.message}`));
-          }
-        } catch (e) {
-          reject(new Error(`Failed to parse response: ${e.message}`));
-        }
-      });
-    });
-
-    req.on('error', (error) => {
-      reject(new Error(`Request error: ${error.message}`));
-    });
-
-    req.write(data);
-    req.end();
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer;${process.env.VOLCENGINE_ACCESS_KEY}`
+    },
+    body: JSON.stringify(data)
   });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const jsonData = await response.json();
+  if (jsonData.code === 3000) {
+    return jsonData.data;
+  } else {
+    throw new Error(`Volcengine error: ${jsonData.message}`);
+  }
 }
 
 function generateUUID() {
