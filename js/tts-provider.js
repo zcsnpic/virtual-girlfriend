@@ -140,7 +140,29 @@ const TTS_PRESETS = {
         ],
         extraConfig: [
             { key: 'appId', label: 'AppId', type: 'text' },
-            { key: 'token', label: 'Token', type: 'password' }
+            { key: 'token', label: 'Token', type: 'password' },
+            { key: 'proxyUrl', label: '代理服务器地址', type: 'text', default: 'ws://localhost:3000' }
+        ]
+    },
+
+    volcengineProxy: {
+        name: '火山引擎 TTS (代理)',
+        description: '通过后端代理调用，安全稳定',
+        endpoint: '',
+        method: 'PROXY',
+        authType: 'proxy',
+        headers: {},
+        bodyTemplate: 'proxy',
+        responseParser: 'proxy',
+        voices: [
+            { id: 'BV001_streaming', name: '通用女声' },
+            { id: 'BV002_streaming', name: '通用男声' },
+            { id: 'BV700_streaming', name: '灿灿（女声）' },
+            { id: 'BV701_streaming', name: '梓梓（女声）' },
+            { id: 'BV702_streaming', name: '燃燃（女声）' }
+        ],
+        extraConfig: [
+            { key: 'proxyUrl', label: '代理服务器地址', type: 'text', default: 'ws://localhost:3000' }
         ]
     },
 
@@ -226,6 +248,10 @@ const TTSProvider = {
         
         if (!preset) {
             return { success: false, error: '未知的TTS提供商' };
+        }
+
+        if (preset.method === 'PROXY') {
+            return this.speakViaProxy(text, config, preset);
         }
 
         if (preset.method === 'WEBSOCKET') {
@@ -389,6 +415,78 @@ const TTSProvider = {
             success: false, 
             error: 'WebSocket TTS暂不支持，请使用其他平台或浏览器原生TTS' 
         };
+    },
+
+    speakViaProxy: function(text, config, preset) {
+        return new Promise((resolve, reject) => {
+            const proxyUrl = config.proxyUrl || 'ws://localhost:3000';
+            const socket = new WebSocket(proxyUrl);
+            
+            let hasResolved = false;
+            const timeout = setTimeout(() => {
+                if (!hasResolved) {
+                    socket.close();
+                    resolve({ success: false, error: '连接超时' });
+                }
+            }, 30000);
+
+            socket.onopen = () => {
+                clearTimeout(timeout);
+                socket.send(JSON.stringify({
+                    type: 'config',
+                    voice: config.voice || 'zh_female_cancan_mars_bigtts'
+                }));
+                
+                socket.send(JSON.stringify({
+                    type: 'text',
+                    text: text
+                }));
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    
+                    if (message.type === 'status' && message.status === 'connected') {
+                        console.log('Proxy connected');
+                    } else if (message.type === 'audio') {
+                        hasResolved = true;
+                        socket.close();
+                        
+                        const binaryString = atob(message.data);
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audio = new Audio(audioUrl);
+                        audio.onended = () => URL.revokeObjectURL(audioUrl);
+                        resolve({ success: true, audio });
+                    } else if (message.type === 'error') {
+                        hasResolved = true;
+                        socket.close();
+                        resolve({ success: false, error: message.error.message || '代理服务器错误' });
+                    }
+                } catch (e) {
+                    console.error('Parse proxy message error:', e);
+                }
+            };
+
+            socket.onerror = (error) => {
+                clearTimeout(timeout);
+                if (!hasResolved) {
+                    resolve({ success: false, error: '代理服务器连接失败，请确保后端服务已启动' });
+                }
+            };
+
+            socket.onclose = () => {
+                clearTimeout(timeout);
+                if (!hasResolved) {
+                    resolve({ success: false, error: '连接已关闭' });
+                }
+            };
+        });
     },
 
     testConnection: async function(config) {
