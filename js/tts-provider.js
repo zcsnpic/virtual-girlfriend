@@ -132,11 +132,11 @@ const TTS_PRESETS = {
         bodyTemplate: 'volcengine',
         responseParser: 'json_base64',
         voices: [
-            { id: 'BV001_streaming', name: '通用女声' },
-            { id: 'BV002_streaming', name: '通用男声' },
             { id: 'BV700_streaming', name: '灿灿（女声）' },
             { id: 'BV701_streaming', name: '梓梓（女声）' },
-            { id: 'BV702_streaming', name: '燃燃（女声）' }
+            { id: 'BV702_streaming', name: '燃燃（女声）' },
+            { id: 'BV001_streaming', name: '通用男声' },
+            { id: 'BV002_streaming', name: '通用男声' }
         ],
         extraConfig: [
             { key: 'appId', label: 'AppId', type: 'text' },
@@ -155,11 +155,11 @@ const TTS_PRESETS = {
         bodyTemplate: 'proxy',
         responseParser: 'proxy',
         voices: [
-            { id: 'BV001_streaming', name: '通用女声' },
-            { id: 'BV002_streaming', name: '通用男声' },
             { id: 'BV700_streaming', name: '灿灿（女声）' },
             { id: 'BV701_streaming', name: '梓梓（女声）' },
-            { id: 'BV702_streaming', name: '燃燃（女声）' }
+            { id: 'BV702_streaming', name: '燃燃（女声）' },
+            { id: 'BV001_streaming', name: '通用男声' },
+            { id: 'BV002_streaming', name: '通用男声' }
         ],
         extraConfig: [
             { key: 'proxyUrl', label: '代理服务器地址', type: 'text', default: 'ws://localhost:3000' }
@@ -439,11 +439,27 @@ const TTSProvider = {
             
             console.log('Proxy URL:', proxyUrl);
             
-            // 添加超时设置
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+            // 检查浏览器兼容性
+            if (!window.fetch) {
+                console.error('Fetch API not supported');
+                resolve({ success: false, error: '浏览器不支持Fetch API' });
+                return;
+            }
             
-            fetch(proxyUrl, {
+            // 添加超时设置
+            let timeoutId;
+            let controller;
+            
+            try {
+                controller = new AbortController();
+                timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+            } catch (e) {
+                console.error('AbortController not supported:', e);
+                // 不使用AbortController
+                controller = null;
+            }
+            
+            const fetchOptions = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -451,11 +467,18 @@ const TTSProvider = {
                 body: JSON.stringify({
                     text: text,
                     voice: config.voice || 'BV700_streaming'
-                }),
-                signal: controller.signal
-            })
+                })
+            };
+            
+            if (controller) {
+                fetchOptions.signal = controller.signal;
+            }
+            
+            fetch(proxyUrl, fetchOptions)
             .then(response => {
-                clearTimeout(timeoutId);
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
                 console.log('Proxy response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -485,7 +508,9 @@ const TTSProvider = {
                 }
             })
             .catch(error => {
-                clearTimeout(timeoutId);
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
                 console.error('Proxy error:', error);
                 if (error.name === 'AbortError') {
                     resolve({ success: false, error: '请求超时，请检查网络连接' });
