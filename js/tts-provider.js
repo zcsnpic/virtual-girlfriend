@@ -427,11 +427,21 @@ const TTSProvider = {
             } else if (proxyUrl.startsWith('wss://')) {
                 proxyUrl = proxyUrl.replace('wss://', 'https://') + '/api/tts-proxy';
             } else if (!proxyUrl.startsWith('http')) {
-                // 确保URL是完整的
-                proxyUrl = window.location.origin + proxyUrl;
+                // 确保URL是完整的，添加兼容性处理
+                try {
+                    proxyUrl = window.location.origin + proxyUrl;
+                } catch (e) {
+                    console.error('Error getting origin:', e);
+                    // 回退到相对路径
+                    proxyUrl = '/api/tts-proxy';
+                }
             }
             
             console.log('Proxy URL:', proxyUrl);
+            
+            // 添加超时设置
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
             
             fetch(proxyUrl, {
                 method: 'POST',
@@ -441,9 +451,11 @@ const TTSProvider = {
                 body: JSON.stringify({
                     text: text,
                     voice: config.voice || 'BV700_streaming'
-                })
+                }),
+                signal: controller.signal
             })
             .then(response => {
+                clearTimeout(timeoutId);
                 console.log('Proxy response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -453,23 +465,33 @@ const TTSProvider = {
             .then(data => {
                 console.log('Proxy response data:', data);
                 if (data.success) {
-                    const binaryString = atob(data.data);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
+                    try {
+                        const binaryString = atob(data.data);
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audio = new Audio(audioUrl);
+                        audio.onended = () => URL.revokeObjectURL(audioUrl);
+                        resolve({ success: true, audio });
+                    } catch (e) {
+                        console.error('Error processing audio data:', e);
+                        resolve({ success: false, error: '音频处理失败' });
                     }
-                    const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    const audio = new Audio(audioUrl);
-                    audio.onended = () => URL.revokeObjectURL(audioUrl);
-                    resolve({ success: true, audio });
                 } else {
                     resolve({ success: false, error: data.error || '代理服务器错误' });
                 }
             })
             .catch(error => {
+                clearTimeout(timeoutId);
                 console.error('Proxy error:', error);
-                resolve({ success: false, error: error.message || '代理服务器连接失败' });
+                if (error.name === 'AbortError') {
+                    resolve({ success: false, error: '请求超时，请检查网络连接' });
+                } else {
+                    resolve({ success: false, error: error.message || '代理服务器连接失败' });
+                }
             });
         });
     },
