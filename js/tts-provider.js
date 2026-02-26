@@ -438,6 +438,7 @@ const TTSProvider = {
             }
             
             console.log('Proxy URL:', proxyUrl);
+            console.log('Selected voice:', config.voice || 'BV700_streaming');
             
             // 检查浏览器兼容性
             if (!window.fetch) {
@@ -469,6 +470,9 @@ const TTSProvider = {
                     voice: config.voice || 'BV700_streaming'
                 })
             };
+            
+            console.log('Sending request to:', proxyUrl);
+            console.log('Request body:', fetchOptions.body);
             
             if (controller) {
                 fetchOptions.signal = controller.signal;
