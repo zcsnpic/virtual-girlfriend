@@ -419,7 +419,7 @@ const TTSProvider = {
 
     speakViaProxy: function(text, config, preset) {
         return new Promise((resolve, reject) => {
-            const proxyUrl = config.proxyUrl || 'http://localhost:3000/api/tts-proxy';
+            const proxyUrl = config.proxyUrl || '/api/tts-proxy';
             
             fetch(proxyUrl, {
                 method: 'POST',
