@@ -2,10 +2,5 @@
   "buildCommand": "echo \"Build completed\"",
   "outputDirectory": ".",
   "devCommand": "python -m http.server 8000",
-  "framework": null,
-  "functions": {
-    "api/tts-proxy.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  "framework": null
 }
