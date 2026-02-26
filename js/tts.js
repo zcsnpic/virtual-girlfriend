@@ -300,7 +300,8 @@ const TTS = {
                 region: settings.ttsRegion,
                 endpoint: settings.ttsEndpoint,
                 customHeaders: settings.ttsCustomHeaders,
-                customBody: settings.ttsCustomBody
+                customBody: settings.ttsCustomBody,
+                proxyUrl: settings.ttsProxyUrl || 'ws://localhost:3000'
             });
 
             if (result.success) {
@@ -315,6 +316,12 @@ const TTS = {
                         UI.hideSubtitle();
                     }
                 };
+                
+                result.audio.play().catch(error => {
+                    console.error('音频播放失败:', error);
+                    this.isPlaying = false;
+                    this.currentAudio = null;
+                });
             } else {
                 console.error('外部TTS调用失败:', result.error);
                 this.speak(text);

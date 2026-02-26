@@ -86,6 +86,9 @@ const App = {
         if (document.getElementById('ttsCustomBody')) {
             document.getElementById('ttsCustomBody').value = settings.ttsCustomBody || '';
         }
+        if (document.getElementById('ttsProxyUrl')) {
+            document.getElementById('ttsProxyUrl').value = settings.ttsProxyUrl || 'ws://localhost:3000';
+        }
 
         if (document.getElementById('multiMessageCount')) {
             document.getElementById('multiMessageCount').value = settings.multiMessageCount || '3';
@@ -744,6 +747,7 @@ const App = {
             ttsEndpoint: document.getElementById('ttsEndpoint')?.value || '',
             ttsCustomHeaders: document.getElementById('ttsCustomHeaders')?.value || '',
             ttsCustomBody: document.getElementById('ttsCustomBody')?.value || '',
+            ttsProxyUrl: document.getElementById('ttsProxyUrl')?.value || 'ws://localhost:3000',
             multiMessageCount: document.getElementById('multiMessageCount')?.value || '3',
             messageDelay: parseInt(document.getElementById('messageDelay')?.value || 150),
             autoSendDelay: parseFloat(document.getElementById('autoSendDelay')?.value || 2.5)

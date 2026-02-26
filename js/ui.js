@@ -1461,7 +1461,8 @@ const UI = {
                     region: document.getElementById('ttsRegion')?.value || 'eastasia',
                     endpoint: document.getElementById('ttsEndpoint')?.value || '',
                     customHeaders: document.getElementById('ttsCustomHeaders')?.value || '',
-                    customBody: document.getElementById('ttsCustomBody')?.value || ''
+                    customBody: document.getElementById('ttsCustomBody')?.value || '',
+                    proxyUrl: document.getElementById('ttsProxyUrl')?.value || 'ws://localhost:3000'
                 };
 
                 const result = await TTSProvider.testConnection(config);
