@@ -237,7 +237,8 @@ const TTS = {
         }
 
         utterance.onstart = () => {
-            this.isPlaying = true;
+            // onstart 已经在下面设置，这里是备用
+            console.log('[TTS] 语音开始播放');
         };
 
         utterance.onend = () => {
@@ -264,6 +265,8 @@ const TTS = {
         };
 
         this.currentUtterance = utterance;
+        // 在 speak 之前就设置 isPlaying，确保调用者能立即检测到
+        this.isPlaying = true;
         this.synth.speak(utterance);
     },
 
