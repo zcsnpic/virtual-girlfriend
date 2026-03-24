@@ -1,7 +1,7 @@
 {
   "name": "virtual-girlfriend",
-  "version": "4.1.3",
-  "description": "智能虚拟聊天应用 v4.1.3 - 性能优化与Bug修复",
+  "version": "4.1.4",
+  "description": "智能虚拟聊天应用 v4.1.4 - 性能优化默认开启",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
