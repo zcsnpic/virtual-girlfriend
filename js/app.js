@@ -703,9 +703,10 @@ const App = {
                         // 4. 等待语音播放完成
                         await new Promise(resolve => {
                             const checkInterval = setInterval(() => {
+                                console.log('[并行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                 if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
                                     clearInterval(checkInterval);
-                                    console.log('[并行模式] 语音播放完成');
+                                    console.log('[并行模式] 语音播放完成或被打断');
                                     resolve();
                                 }
                             }, 25);
@@ -749,9 +750,10 @@ const App = {
                         // 等待语音播放完成
                         await new Promise(resolve => {
                             const checkInterval = setInterval(() => {
+                                console.log('[串行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                 if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
                                     clearInterval(checkInterval);
-                                    console.log('[串行模式] 语音播放完成');
+                                    console.log('[串行模式] 语音播放完成或被打断');
                                     resolve();
                                 }
                             }, 25);
