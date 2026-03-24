@@ -1,0 +1,6 @@
+{
+  "buildCommand": "echo \"Build completed\"",
+  "outputDirectory": ".",
+  "devCommand": "python -m http.server 8000",
+  "framework": null
+}
