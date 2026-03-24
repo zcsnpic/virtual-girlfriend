@@ -730,7 +730,7 @@ const App = {
                 // === 原有串行逻辑（安全备份） ===
                 } else {
                     console.log('[顺序播放] 使用原有串行模式');
-                    
+
                     // 1. 先显示场景（如果有），显示800ms后淡出
                     if (parsed.hasScene) {
                         console.log('[串行模式] 显示场景:', parsed.scene);
