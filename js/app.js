@@ -695,9 +695,9 @@ const App = {
 
                         // 3. 300ms 后淡出场景（语音已开始，用户注意力转移到语音）
                         if (parsed.hasScene) {
-                            await new Promise(resolve => setTimeout(resolve, 300));
+                            await new Promise(resolve => setTimeout(resolve, 200));
                             UI.hideScene();
-                            console.log('[并行模式] 300ms后淡出场景');
+                            console.log('[并行模式] 200ms后淡出场景');
                         }
 
                         // 4. 等待语音播放完成
