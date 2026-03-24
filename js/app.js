@@ -693,11 +693,11 @@ const App = {
                         TTS.speak(speechContent, rate, msg.id);
                         console.log('[并行模式] 开始播放语音，长度:', speechContent.length, '内容:', speechContent.substring(0, 50));
 
-                        // 3. 400ms 后淡出场景（语音已开始，用户注意力转移到语音）
+                        // 3. 300ms 后淡出场景（语音已开始，用户注意力转移到语音）
                         if (parsed.hasScene) {
-                            await new Promise(resolve => setTimeout(resolve, 400));
+                            await new Promise(resolve => setTimeout(resolve, 300));
                             UI.hideScene();
-                            console.log('[并行模式] 400ms后淡出场景');
+                            console.log('[并行模式] 300ms后淡出场景');
                         }
 
                         // 4. 等待语音播放完成
