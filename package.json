@@ -1,0 +1,22 @@
+{
+  "name": "virtual-girlfriend",
+  "version": "4.1.1",
+  "description": "智能虚拟聊天应用 v4.1.0 - 语音与场景分离",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"Build completed\"",
+    "cap": "npx cap"
+  },
+  "keywords": ["virtual-girlfriend", "ai", "chat"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.0",
+    "@capacitor/core": "^6.1.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.0"
+  }
+}
