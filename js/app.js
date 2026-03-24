@@ -7,6 +7,9 @@ const App = {
     isPlayingSequence: false,
     currentSendId: 0,
 
+    // 性能优化开关：false=原有逻辑（安全），true=新优化逻辑
+    useParallelSceneAndSpeech: false,
+
     init: function() {
         this.loadSettings();
         this.loadMessages();
@@ -648,7 +651,8 @@ const App = {
     },
 
     playMessagesSequentiallyWithDisplay: async function(messages, displayPromises, rate, sendId) {
-        console.log('[顺序播放] 开始播放', messages.length, '条消息');
+        console.log('[顺序播放] 开始播放', messages.length, '条消息，模式:', this.useParallelSceneAndSpeech ? '并行优化' : '原有串行');
+        
         for (let i = 0; i < messages.length; i++) {
             if (sendId && this.currentSendId !== sendId) {
                 console.log('[打断] 停止播放序列，sendId不匹配');
@@ -666,53 +670,102 @@ const App = {
                 const speechContent = Memory.getSpeechContent(msg.content);
                 console.log('[顺序播放] 语音内容:', speechContent?.substring(0, 30));
 
-                // 1. 先显示场景（如果有），显示800ms后淡出
-                if (parsed.hasScene) {
-                    console.log('[顺序播放] 显示场景:', parsed.scene);
-                    UI.showScene(parsed.scene);
-                    // 等待800ms
-                    console.log('[顺序播放] 场景显示800ms');
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                    // 淡出场景
-                    console.log('[顺序播放] 场景淡出');
-                    UI.hideScene();
-                }
-
-                // 2. 显示字幕 + 播放语音（同步进行）
+                // 显示字幕
                 if (i > 0) {
-                    // 添加字幕到DOM
                     const newElement = UI.createMessageElement(msg);
                     document.getElementById('messages').appendChild(newElement);
                     UI.scrollToBottom();
                     console.log('[顺序播放] 添加字幕到DOM');
                 }
 
-                // 3. 播放语音（如果有）
-                if (speechContent && speechContent.trim() !== '') {
-                    console.log('[顺序播放] 开始播放语音，长度:', speechContent.length);
-                    TTS.speak(msg.content, rate, msg.id);
+                // === 性能优化：场景与语音并行 ===
+                if (this.useParallelSceneAndSpeech) {
+                    console.log('[顺序播放] 使用并行模式');
+                    
+                    // 1. 显示场景并立即开始播放语音
+                    if (parsed.hasScene) {
+                        UI.showScene(parsed.scene);
+                        console.log('[并行模式] 显示场景并立即开始播放语音');
+                    }
 
-                    // 等待语音播放完成
-                    await new Promise(resolve => {
-                        const checkInterval = setInterval(() => {
-                            if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+                    // 2. 播放语音（如果有）
+                    if (speechContent && speechContent.trim() !== '') {
+                        TTS.speak(msg.content, rate, msg.id);
+                        console.log('[并行模式] 开始播放语音，长度:', speechContent.length);
+
+                        // 3. 400ms 后淡出场景（语音已开始，用户注意力转移到语音）
+                        if (parsed.hasScene) {
+                            await new Promise(resolve => setTimeout(resolve, 400));
+                            UI.hideScene();
+                            console.log('[并行模式] 400ms后淡出场景');
+                        }
+
+                        // 4. 等待语音播放完成
+                        await new Promise(resolve => {
+                            const checkInterval = setInterval(() => {
+                                if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+                                    clearInterval(checkInterval);
+                                    console.log('[并行模式] 语音播放完成');
+                                    resolve();
+                                }
+                            }, 25);
+
+                            setTimeout(() => {
                                 clearInterval(checkInterval);
-                                console.log('[顺序播放] 语音播放完成');
+                                console.log('[并行模式] 语音播放超时（30秒）');
                                 resolve();
-                            }
-                        }, 25);
+                            }, 30000);
+                        });
+                    } else {
+                        console.log('[并行模式] 没有语音');
+                        // 纯场景，短暂显示后淡出
+                        if (parsed.hasScene) {
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            UI.hideScene();
+                        }
+                        // 纯语音消息，短暂等待
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
 
-                        // 增加超时时间到30秒，确保长语音能播放完
-                        setTimeout(() => {
-                            clearInterval(checkInterval);
-                            console.log('[顺序播放] 语音播放超时（30秒）');
-                            resolve();
-                        }, 30000);
-                    });
+                // === 原有串行逻辑（安全备份） ===
                 } else {
-                    console.log('[顺序播放] 没有语音，等待300ms');
-                    // 没有语音时，短暂等待
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    console.log('[顺序播放] 使用原有串行模式');
+                    
+                    // 1. 先显示场景（如果有），显示800ms后淡出
+                    if (parsed.hasScene) {
+                        console.log('[串行模式] 显示场景:', parsed.scene);
+                        UI.showScene(parsed.scene);
+                        console.log('[串行模式] 场景显示800ms');
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                        console.log('[串行模式] 场景淡出');
+                        UI.hideScene();
+                    }
+
+                    // 2. 播放语音（如果有）
+                    if (speechContent && speechContent.trim() !== '') {
+                        console.log('[串行模式] 开始播放语音，长度:', speechContent.length);
+                        TTS.speak(msg.content, rate, msg.id);
+
+                        // 等待语音播放完成
+                        await new Promise(resolve => {
+                            const checkInterval = setInterval(() => {
+                                if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+                                    clearInterval(checkInterval);
+                                    console.log('[串行模式] 语音播放完成');
+                                    resolve();
+                                }
+                            }, 25);
+
+                            setTimeout(() => {
+                                clearInterval(checkInterval);
+                                console.log('[串行模式] 语音播放超时（30秒）');
+                                resolve();
+                            }, 30000);
+                        });
+                    } else {
+                        console.log('[串行模式] 没有语音，等待300ms');
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    }
                 }
 
                 if (sendId && this.currentSendId !== sendId) {
