@@ -690,8 +690,8 @@ const App = {
 
                     // 2. 播放语音（如果有）
                     if (speechContent && speechContent.trim() !== '') {
-                        TTS.speak(msg.content, rate, msg.id);
-                        console.log('[并行模式] 开始播放语音，长度:', speechContent.length);
+                        TTS.speak(speechContent, rate, msg.id);
+                        console.log('[并行模式] 开始播放语音，长度:', speechContent.length, '内容:', speechContent.substring(0, 50));
 
                         // 3. 400ms 后淡出场景（语音已开始，用户注意力转移到语音）
                         if (parsed.hasScene) {
@@ -744,8 +744,8 @@ const App = {
 
                     // 2. 播放语音（如果有）
                     if (speechContent && speechContent.trim() !== '') {
-                        console.log('[串行模式] 开始播放语音，长度:', speechContent.length);
-                        TTS.speak(msg.content, rate, msg.id);
+                        console.log('[串行模式] 开始播放语音，长度:', speechContent.length, '内容:', speechContent.substring(0, 50));
+                        TTS.speak(speechContent, rate, msg.id);
 
                         // 等待语音播放完成
                         await new Promise(resolve => {
