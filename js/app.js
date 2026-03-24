@@ -8,7 +8,7 @@ const App = {
     currentSendId: 0,
 
     // 性能优化开关：false=原有逻辑（安全），true=新优化逻辑
-    useParallelSceneAndSpeech: false,
+    useParallelSceneAndSpeech: true,
 
     init: function() {
         this.loadSettings();
