@@ -237,11 +237,12 @@ const TTS = {
         }
 
         utterance.onstart = () => {
-            // onstart 已经在下面设置，这里是备用
-            console.log('[TTS] 语音开始播放');
+            this.isPlaying = true;
+            console.log('[TTS] 语音开始播放，isPlaying已设为true');
         };
 
         utterance.onend = () => {
+            console.log('[TTS] 语音播放结束，isPlaying已设为false');
             this.isPlaying = false;
             if (messageId && typeof UI !== 'undefined') {
                 UI.setPlayingState(messageId, false);
@@ -253,7 +254,8 @@ const TTS = {
         };
 
         utterance.onerror = (e) => {
-            console.error('TTS播放错误:', e);
+            console.error('[TTS] 播放错误:', e);
+            console.error('[TTS] 错误详情 - name:', e.name, 'error:', e.error, 'message:', e.message);
             this.isPlaying = false;
             if (messageId && typeof UI !== 'undefined') {
                 UI.setPlayingState(messageId, false);
