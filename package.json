@@ -1,6 +1,6 @@
 {
   "name": "virtual-girlfriend",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "智能虚拟聊天应用 v4.1.0 - 语音与场景分离",
   "main": "index.js",
   "scripts": {

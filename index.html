@@ -49,7 +49,7 @@
                     <div class="header-info">
                             <div class="name" id="charName">小雪</div>
                             <div class="status">在线</div>
-                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v4.1.0</div>
+                            <div class="version" onclick="openChangelog()" style="cursor: pointer;">v4.1.1</div>
                         </div>
                 </div>
                 <div class="header-right">
@@ -224,6 +224,14 @@
                         <small class="setting-hint">多条消息之间的显示间隔（已大幅压缩）</small>
                     </div>
                     <div class="form-group">
+                        <label>启用自动发送</label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoSendEnabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <small class="setting-hint">手打输入停止后自动发送，粘贴/语音立即发送</small>
+                    </div>
+                    <div class="form-group" id="autoSendDelayGroup">
                         <label>自动发送延迟</label>
                         <input type="range" id="autoSendDelay" min="0.5" max="3" step="0.1" value="1.0">
                         <span id="autoSendDelayValue">1.0秒</span>
@@ -426,6 +434,15 @@
             </div>
             <div class="modal-body">
                 <div class="changelog-list">
+                    <div class="changelog-item">
+                        <div class="changelog-version">v4.1.1</div>
+                        <div class="changelog-date">2026-03-24</div>
+                        <ul class="changelog-changes">
+                            <li>✨ 新增自动发送功能开关，可开启/关闭自动发送</li>
+                            <li>🎨 优化设置界面，关闭开关时自动隐藏延迟设置</li>
+                            <li>🔧 改进用户体验，用户可根据需求选择是否启用自动发送</li>
+                        </ul>
+                    </div>
                     <div class="changelog-item">
                         <div class="changelog-version">v4.1</div>
                         <div class="changelog-date">2026-02-25</div>

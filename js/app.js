@@ -108,6 +108,16 @@ const App = {
             document.getElementById('autoSendDelayValue').textContent = (settings.autoSendDelay || 2.5) + '秒';
         }
 
+        // 加载自动发送开关状态
+        if (document.getElementById('autoSendEnabled')) {
+            document.getElementById('autoSendEnabled').checked = settings.autoSendEnabled !== false;
+            // 根据开关状态控制延迟设置的显示/隐藏
+            const autoSendDelayGroup = document.getElementById('autoSendDelayGroup');
+            if (autoSendDelayGroup) {
+                autoSendDelayGroup.style.display = settings.autoSendEnabled !== false ? 'block' : 'none';
+            }
+        }
+
         UI.applyTheme(settings.theme || 'blue');
         UI.updateCharName(settings.charName || '小雪');
         console.log('loadSettings - settings.avatar:', settings.avatar ? settings.avatar.substring(0, 50) + '...' : '空');
@@ -204,6 +214,16 @@ const App = {
             });
         }
 
+        const autoSendEnabled = document.getElementById('autoSendEnabled');
+        if (autoSendEnabled) {
+            autoSendEnabled.addEventListener('change', (e) => {
+                const autoSendDelayGroup = document.getElementById('autoSendDelayGroup');
+                if (autoSendDelayGroup) {
+                    autoSendDelayGroup.style.display = e.target.checked ? 'block' : 'none';
+                }
+            });
+        }
+
         document.getElementById('settingsModal').addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
                 UI.hideModal('settingsModal');
@@ -228,6 +248,13 @@ const App = {
     },
 
     handleSmartAutoSend: function(e) {
+        // 检查自动发送功能是否启用
+        const settings = Memory.getSettings();
+        if (settings.autoSendEnabled === false) {
+            console.log('[自动发送] 功能已关闭，跳过自动发送逻辑');
+            return;
+        }
+
         if (this.isComposing) {
             console.log('[自动发送] 正在组合输入，跳过');
             return;
@@ -235,7 +262,7 @@ const App = {
 
         const input = document.getElementById('messageInput');
         const value = input.value;
-        
+
         console.log('[自动发送] 输入事件，value:', value);
         
         if (!value.trim()) {
@@ -750,7 +777,8 @@ const App = {
             ttsProxyUrl: document.getElementById('ttsProxyUrl')?.value || 'ws://localhost:3000',
             multiMessageCount: document.getElementById('multiMessageCount')?.value || '3',
             messageDelay: parseInt(document.getElementById('messageDelay')?.value || 150),
-            autoSendDelay: parseFloat(document.getElementById('autoSendDelay')?.value || 2.5)
+            autoSendDelay: parseFloat(document.getElementById('autoSendDelay')?.value || 2.5),
+            autoSendEnabled: document.getElementById('autoSendEnabled')?.checked !== false
         };
 
         Memory.saveSettings(settings);
