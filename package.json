@@ -1,7 +1,7 @@
 {
   "name": "virtual-girlfriend",
-  "version": "4.1.5",
-  "description": "智能虚拟聊天应用 v4.1.5 - 场景显示时间优化",
+  "version": "4.1.7",
+  "description": "智能虚拟聊天应用 v4.1.7 - 全新温暖系 UI 设计重构",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
