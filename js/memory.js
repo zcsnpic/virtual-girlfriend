@@ -1499,10 +1499,8 @@ const Memory = {
 
     getSpeechContent: function(content) {
         if (!content) return '';
-        const scenePattern = /\[([^\]]+)\]/g;
-        let speech = content.replace(scenePattern, '').trim();
-        speech = speech.replace(/\|\|\|/g, ' ').trim();
-        return speech || '';
+        const parsed = this.parseMessage(content);
+        return parsed.speech || '';
     },
 
     getSceneDescription: function(content) {
