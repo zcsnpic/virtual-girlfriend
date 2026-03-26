@@ -111,6 +111,13 @@ const App = {
             document.getElementById('autoSendDelayValue').textContent = (settings.autoSendDelay || 2.5) + '秒';
         }
 
+        if (document.getElementById('voiceInterval')) {
+            document.getElementById('voiceInterval').value = settings.voiceInterval || 0.2;
+        }
+        if (document.getElementById('voiceIntervalValue')) {
+            document.getElementById('voiceIntervalValue').textContent = (settings.voiceInterval || 0.2) + '秒';
+        }
+
         // 加载自动发送开关状态
         if (document.getElementById('autoSendEnabled')) {
             document.getElementById('autoSendEnabled').checked = settings.autoSendEnabled !== false;
@@ -214,6 +221,13 @@ const App = {
         if (autoSendDelay) {
             autoSendDelay.addEventListener('input', (e) => {
                 document.getElementById('autoSendDelayValue').textContent = parseFloat(e.target.value).toFixed(1) + '秒';
+            });
+        }
+
+        const voiceInterval = document.getElementById('voiceInterval');
+        if (voiceInterval) {
+            voiceInterval.addEventListener('input', (e) => {
+                document.getElementById('voiceIntervalValue').textContent = parseFloat(e.target.value).toFixed(1) + '秒';
             });
         }
 
@@ -1145,10 +1159,12 @@ const App = {
                     return;
                 }
 
-                // 4. 进入下一条前的短暂间隔
+                // 4. 进入下一条前的间隔，使用设置的间隔时间
                 if (i < messages.length - 1) {
-                    console.log('[顺序播放] 等待200ms后进入下一条');
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    const settings = Memory.getSettings();
+                    const voiceInterval = parseFloat(settings.voiceInterval || 0.2) * 1000; // 转换为毫秒
+                    console.log(`[顺序播放] 等待${voiceInterval}ms后进入下一条`);
+                    await new Promise(resolve => setTimeout(resolve, voiceInterval));
                 } else {
                     console.log('[顺序播放] 最后一条播放完成');
                 }
@@ -1204,7 +1220,8 @@ const App = {
             multiMessageCount: document.getElementById('multiMessageCount')?.value || '3',
             messageDelay: parseInt(document.getElementById('messageDelay')?.value || 150),
             autoSendDelay: parseFloat(document.getElementById('autoSendDelay')?.value || 2.5),
-            autoSendEnabled: document.getElementById('autoSendEnabled')?.checked !== false
+            autoSendEnabled: document.getElementById('autoSendEnabled')?.checked !== false,
+            voiceInterval: parseFloat(document.getElementById('voiceInterval')?.value || 0.2)
         };
 
         Memory.saveSettings(settings);
