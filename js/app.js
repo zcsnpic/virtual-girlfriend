@@ -935,8 +935,8 @@ const App = {
                                     resolve();
                                 }, 30000);
                             } else {
-                                // 如果没有音频元素，使用定时器检查TTS.isPlaying
-                                console.log('[并行模式] 没有音频元素，使用定时器检查');
+                                // 对于浏览器原生TTS，使用定时器检查TTS.isPlaying
+                                console.log('[并行模式] 使用浏览器原生TTS，等待isPlaying变为false');
                                 const checkInterval = setInterval(() => {
                                     console.log('[并行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                     if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
@@ -1218,8 +1218,8 @@ const App = {
                                     resolve();
                                 }, 30000);
                             } else {
-                                // 如果没有音频元素，使用原有的定时器检查
-                                console.log('[串行模式] 没有音频元素，使用定时器检查');
+                                // 对于浏览器原生TTS，使用定时器检查TTS.isPlaying
+                                console.log('[串行模式] 使用浏览器原生TTS，等待isPlaying变为false');
                                 const checkInterval = setInterval(() => {
                                     console.log('[串行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                     if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
