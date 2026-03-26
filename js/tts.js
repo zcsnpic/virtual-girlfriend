@@ -322,18 +322,39 @@ const TTS = {
                     }
                 };
                 
+                result.audio.onerror = () => {
+                    console.error('音频播放错误');
+                    this.isPlaying = false;
+                    this.currentAudio = null;
+                    if (typeof UI !== 'undefined') {
+                        UI.hideSubtitle();
+                    }
+                };
+                
                 result.audio.play().catch(error => {
                     console.error('音频播放失败:', error);
                     this.isPlaying = false;
                     this.currentAudio = null;
+                    if (typeof UI !== 'undefined') {
+                        UI.hideSubtitle();
+                    }
+                    // 不回退到浏览器TTS，避免循环
                 });
             } else {
                 console.error('外部TTS调用失败:', result.error);
-                this.speak(text);
+                this.isPlaying = false;
+                if (typeof UI !== 'undefined') {
+                    UI.hideSubtitle();
+                }
+                // 不回退到浏览器TTS，避免循环
             }
         } catch (error) {
             console.error('外部TTS异常:', error);
-            this.speak(text);
+            this.isPlaying = false;
+            if (typeof UI !== 'undefined') {
+                UI.hideSubtitle();
+            }
+            // 不回退到浏览器TTS，避免循环
         }
     },
 
