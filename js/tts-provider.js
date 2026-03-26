@@ -419,109 +419,82 @@ const TTSProvider = {
 
     speakViaProxy: function(text, config, preset) {
         return new Promise((resolve, reject) => {
-            let proxyUrl = config.proxyUrl || '/api/tts-proxy';
+            let proxyUrl = config.proxyUrl || 'ws://localhost:3000';
             
-            // 转换WebSocket URL为HTTP URL
-            if (proxyUrl.startsWith('ws://')) {
-                proxyUrl = proxyUrl.replace('ws://', 'http://') + '/api/tts-proxy';
-            } else if (proxyUrl.startsWith('wss://')) {
-                proxyUrl = proxyUrl.replace('wss://', 'https://') + '/api/tts-proxy';
-            } else if (!proxyUrl.startsWith('http')) {
-                // 确保URL是完整的，添加兼容性处理
-                try {
-                    proxyUrl = window.location.origin + proxyUrl;
-                } catch (e) {
-                    console.error('Error getting origin:', e);
-                    // 回退到相对路径
-                    proxyUrl = '/api/tts-proxy';
-                }
-            }
-            
-            console.log('Proxy URL:', proxyUrl);
+            console.log('Proxy WebSocket URL:', proxyUrl);
             console.log('Selected voice:', config.voice || 'BV700_streaming');
             
             // 检查浏览器兼容性
-            if (!window.fetch) {
-                console.error('Fetch API not supported');
-                resolve({ success: false, error: '浏览器不支持Fetch API' });
+            if (!window.WebSocket) {
+                console.error('WebSocket not supported');
+                resolve({ success: false, error: '浏览器不支持WebSocket' });
                 return;
             }
             
             // 添加超时设置
-            let timeoutId;
-            let controller;
+            const timeoutId = setTimeout(() => {
+                ws.close();
+                resolve({ success: false, error: 'WebSocket连接超时' });
+            }, 10000); // 10秒超时
             
-            try {
-                controller = new AbortController();
-                timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
-            } catch (e) {
-                console.error('AbortController not supported:', e);
-                // 不使用AbortController
-                controller = null;
-            }
+            const ws = new WebSocket(proxyUrl);
             
-            const fetchOptions = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                // 发送文本数据
+                ws.send(JSON.stringify({
+                    type: 'text',
                     text: text,
                     voice: config.voice || 'BV700_streaming'
-                })
+                }));
             };
             
-            console.log('Sending request to:', proxyUrl);
-            console.log('Request body:', fetchOptions.body);
-            
-            if (controller) {
-                fetchOptions.signal = controller.signal;
-            }
-            
-            fetch(proxyUrl, fetchOptions)
-            .then(response => {
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
-                console.log('Proxy response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Proxy response data:', data);
-                if (data.success) {
-                    try {
-                        const binaryString = atob(data.data);
-                        const bytes = new Uint8Array(binaryString.length);
-                        for (let i = 0; i < binaryString.length; i++) {
-                            bytes[i] = binaryString.charCodeAt(i);
+            ws.onmessage = (event) => {
+                clearTimeout(timeoutId);
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('WebSocket message:', data);
+                    
+                    if (data.type === 'audio' && data.data) {
+                        try {
+                            const binaryString = atob(data.data);
+                            const bytes = new Uint8Array(binaryString.length);
+                            for (let i = 0; i < binaryString.length; i++) {
+                                bytes[i] = binaryString.charCodeAt(i);
+                            }
+                            const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            const audio = new Audio(audioUrl);
+                            audio.onended = () => URL.revokeObjectURL(audioUrl);
+                            ws.close();
+                            resolve({ success: true, audio });
+                        } catch (e) {
+                            console.error('Error processing audio data:', e);
+                            ws.close();
+                            resolve({ success: false, error: '音频处理失败' });
                         }
-                        const audioBlob = new Blob([bytes], { type: 'audio/mp3' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        const audio = new Audio(audioUrl);
-                        audio.onended = () => URL.revokeObjectURL(audioUrl);
-                        resolve({ success: true, audio });
-                    } catch (e) {
-                        console.error('Error processing audio data:', e);
-                        resolve({ success: false, error: '音频处理失败' });
+                    } else if (data.type === 'error') {
+                        ws.close();
+                        resolve({ success: false, error: data.error.message || '代理服务器错误' });
                     }
-                } else {
-                    resolve({ success: false, error: data.error || '代理服务器错误' });
-                }
-            })
-            .catch(error => {
-                if (timeoutId) {
+                } catch (e) {
                     clearTimeout(timeoutId);
+                    console.error('Error parsing WebSocket message:', e);
+                    ws.close();
+                    resolve({ success: false, error: '消息解析失败' });
                 }
-                console.error('Proxy error:', error);
-                if (error.name === 'AbortError') {
-                    resolve({ success: false, error: '请求超时，请检查网络连接' });
-                } else {
-                    resolve({ success: false, error: error.message || '代理服务器连接失败' });
-                }
-            });
+            };
+            
+            ws.onerror = (error) => {
+                clearTimeout(timeoutId);
+                console.error('WebSocket error:', error);
+                resolve({ success: false, error: 'WebSocket连接错误' });
+            };
+            
+            ws.onclose = () => {
+                clearTimeout(timeoutId);
+                console.log('WebSocket disconnected');
+            };
         });
     },
 

@@ -627,6 +627,7 @@ const App = {
                     
                     setTimeout(() => {
                         clearInterval(checkInterval);
+                        TTS.stop();
                         resolve();
                     }, 10000);
                 });
@@ -714,6 +715,7 @@ const App = {
                             setTimeout(() => {
                                 clearInterval(checkInterval);
                                 console.log('[并行模式] 语音播放超时（30秒）');
+                                TTS.stop();
                                 resolve();
                             }, 30000);
                         });
@@ -761,6 +763,7 @@ const App = {
                             setTimeout(() => {
                                 clearInterval(checkInterval);
                                 console.log('[串行模式] 语音播放超时（30秒）');
+                                TTS.stop();
                                 resolve();
                             }, 30000);
                         });
