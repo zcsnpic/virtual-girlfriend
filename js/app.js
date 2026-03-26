@@ -839,13 +839,12 @@ const App = {
                             }
                         }
 
-                        // 3. 场景文字快速显示后淡出，以语音为主
+                        // 3. 场景文字显示，与语音播放同步
                         if (parsed.hasScene) {
-                            // 场景文字显示固定的短时间（800ms），确保用户能看到但不影响语音播放
-                            console.log('[并行模式] 场景快速显示800ms后淡出，以语音为主');
-                            await new Promise(resolve => setTimeout(resolve, 800));
-                            UI.hideScene();
-                            console.log('[并行模式] 场景淡出');
+                            console.log('[并行模式] 场景显示，与语音播放同步');
+                            // 场景文字显示到语音播放完成
+                            // 不再单独设置场景淡出，而是在语音播放完成后统一处理
+                            console.log('[并行模式] 场景将在语音播放完成后淡出');
                         }
                         
                         // 4. 等待语音播放完成
@@ -856,11 +855,21 @@ const App = {
                                 console.log('[并行模式] 等待音频ended事件');
                                 const onEnded = () => {
                                     console.log('[并行模式] 音频ended事件触发');
+                                    // 语音播放完成后淡出场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] 语音播放完成，场景淡出');
+                                    }
                                     resolve();
                                 };
                                 
                                 const onError = () => {
                                     console.log('[并行模式] 音频错误事件触发');
+                                    // 音频错误时也淡出场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] 音频错误，场景淡出');
+                                    }
                                     resolve();
                                 };
                                 
@@ -874,6 +883,11 @@ const App = {
                                         clearInterval(checkInterval);
                                         audioElement.removeEventListener('ended', onEnded);
                                         audioElement.removeEventListener('error', onError);
+                                        // 定时器检查触发时也淡出场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[并行模式] 语音播放完成或被打断，场景淡出');
+                                        }
                                         console.log('[并行模式] 语音播放完成或被打断');
                                         resolve();
                                     }
@@ -883,6 +897,11 @@ const App = {
                                     clearInterval(checkInterval);
                                     audioElement.removeEventListener('ended', onEnded);
                                     audioElement.removeEventListener('error', onError);
+                                    // 超时后淡出场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] 语音播放超时，场景淡出');
+                                    }
                                     console.log('[并行模式] 语音播放超时（30秒）');
                                     TTS.stop();
                                     resolve();
@@ -890,6 +909,11 @@ const App = {
                             } else {
                                 // 如果没有音频元素，直接解析
                                 console.log('[并行模式] 没有音频元素，直接解析');
+                                // 没有音频时也淡出场景
+                                if (parsed.hasScene) {
+                                    UI.hideScene();
+                                    console.log('[并行模式] 没有音频元素，场景淡出');
+                                }
                                 resolve();
                             }
                         });
@@ -908,14 +932,14 @@ const App = {
                 } else {
                     console.log('[顺序播放] 使用原有串行模式');
 
-                    // 1. 先显示场景（如果有），快速显示后淡出
+                    // 1. 显示场景（如果有），与语音播放同步
                     if (parsed.hasScene) {
                         console.log('[串行模式] 显示场景:', parsed.scene);
                         UI.showScene(parsed.scene);
-                        console.log('[串行模式] 场景快速显示600ms');
-                        await new Promise(resolve => setTimeout(resolve, 600));
-                        console.log('[串行模式] 场景淡出');
-                        UI.hideScene();
+                        console.log('[串行模式] 场景显示，与语音播放同步');
+                        // 场景文字显示到语音播放完成
+                        // 不再单独设置场景淡出，而是在语音播放完成后统一处理
+                        console.log('[串行模式] 场景将在语音播放完成后淡出');
                     }
 
                     // 2. 播放语音（如果有）- 确保语音完整播放
@@ -1076,11 +1100,21 @@ const App = {
                                 console.log('[串行模式] 等待音频ended事件');
                                 const onEnded = () => {
                                     console.log('[串行模式] 音频ended事件触发');
+                                    // 语音播放完成后淡出场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 语音播放完成，场景淡出');
+                                    }
                                     resolve();
                                 };
                                 
                                 const onError = () => {
                                     console.log('[串行模式] 音频错误事件触发');
+                                    // 音频错误时也淡出场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 音频错误，场景淡出');
+                                    }
                                     resolve();
                                 };
                                 
@@ -1094,6 +1128,11 @@ const App = {
                                         clearInterval(checkInterval);
                                         audioElement.removeEventListener('ended', onEnded);
                                         audioElement.removeEventListener('error', onError);
+                                        // 定时器检查触发时也淡出场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[串行模式] 语音播放完成或被打断，场景淡出');
+                                        }
                                         console.log('[串行模式] 语音播放完成或被打断');
                                         resolve();
                                     }
@@ -1103,6 +1142,11 @@ const App = {
                                     clearInterval(checkInterval);
                                     audioElement.removeEventListener('ended', onEnded);
                                     audioElement.removeEventListener('error', onError);
+                                    // 超时后淡出场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 语音播放超时，场景淡出');
+                                    }
                                     console.log('[串行模式] 语音播放超时（30秒）');
                                     TTS.stop();
                                     resolve();
@@ -1114,6 +1158,11 @@ const App = {
                                     console.log('[串行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                     if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
                                         clearInterval(checkInterval);
+                                        // 定时器检查触发时也淡出场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[串行模式] 语音播放完成或被打断，场景淡出');
+                                        }
                                         console.log('[串行模式] 语音播放完成或被打断');
                                         resolve();
                                     }
@@ -1121,6 +1170,11 @@ const App = {
 
                                 setTimeout(() => {
                                     clearInterval(checkInterval);
+                                    // 超时后淡出场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 语音播放超时，场景淡出');
+                                    }
                                     console.log('[串行模式] 语音播放超时（30秒）');
                                     TTS.stop();
                                     resolve();
