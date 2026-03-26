@@ -697,15 +697,10 @@ const App = {
                 if (this.useParallelSceneAndSpeech) {
                     console.log('[顺序播放] 使用并行模式');
                     
-                    // 1. 显示场景（如果有），设置固定显示时间
+                    // 1. 显示场景（如果有）
                     if (parsed.hasScene) {
                         UI.showScene(parsed.scene);
-                        console.log('[并行模式] 显示场景，设置固定显示时间');
-                        // 场景文字显示固定时间，不受语音影响
-                        setTimeout(() => {
-                            UI.hideScene();
-                            console.log('[并行模式] 场景显示时间结束，自动淡出');
-                        }, 3000); // 场景显示3秒
+                        console.log('[并行模式] 显示场景');
                     }
 
                     // 2. 播放语音（如果有）
@@ -754,6 +749,11 @@ const App = {
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
                                         }
+                                        // 语音播放完成后隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[并行模式] 语音播放完成，场景淡出');
+                                        }
                                     };
                                     
                                     result.audio.onerror = () => {
@@ -765,6 +765,11 @@ const App = {
                                         }
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
+                                        }
+                                        // 音频错误时也隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[并行模式] 音频错误，场景淡出');
                                         }
                                     };
                                     
@@ -788,6 +793,11 @@ const App = {
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
                                         }
+                                        // 音频播放失败时也隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[并行模式] 音频播放失败，场景淡出');
+                                        }
                                     });
                                     } else {
                                         console.error('外部TTS调用失败:', result.error);
@@ -798,6 +808,11 @@ const App = {
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
                                         }
+                                        // TTS调用失败时也隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[并行模式] TTS调用失败，场景淡出');
+                                        }
                                     }
                                 } catch (error) {
                                     console.error('外部TTS异常:', error);
@@ -807,6 +822,11 @@ const App = {
                                     }
                                     if (typeof UI !== 'undefined') {
                                         UI.hideSubtitle();
+                                    }
+                                    // 异常时也隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] TTS异常，场景淡出');
                                     }
                                 }
                             } else {
@@ -841,6 +861,11 @@ const App = {
                                     if (typeof UI !== 'undefined') {
                                         UI.hideSubtitle();
                                     }
+                                    // 语音播放完成后隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] 语音播放完成，场景淡出');
+                                    }
                                 };
                                 
                                 utterance.onerror = (e) => {
@@ -852,6 +877,11 @@ const App = {
                                     if (typeof UI !== 'undefined') {
                                         UI.hideSubtitle();
                                     }
+                                    // 播放错误时也隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] 语音播放错误，场景淡出');
+                                    }
                                 };
                                 
                                 TTS.currentUtterance = utterance;
@@ -860,7 +890,7 @@ const App = {
                             }
                         }
 
-                        // 3. 等待语音播放完成，场景显示时间已独立设置
+                        // 3. 等待语音播放完成
                         await new Promise(resolve => {
                             // 直接监听音频的ended事件，更可靠
                             const audioElement = TTS.currentAudio;
@@ -897,12 +927,41 @@ const App = {
                                     audioElement.removeEventListener('error', onError);
                                     console.log('[并行模式] 语音播放超时（30秒）');
                                     TTS.stop();
+                                    // 超时后隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] 语音播放超时，场景淡出');
+                                    }
                                     resolve();
                                 }, 30000);
                             } else {
-                                // 如果没有音频元素，直接解析
-                                console.log('[并行模式] 没有音频元素，直接解析');
-                                resolve();
+                                // 如果没有音频元素，使用定时器检查TTS.isPlaying
+                                console.log('[并行模式] 没有音频元素，使用定时器检查');
+                                const checkInterval = setInterval(() => {
+                                    console.log('[并行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
+                                    if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+                                        clearInterval(checkInterval);
+                                        // 播放完成后隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[并行模式] 语音播放完成，场景淡出');
+                                        }
+                                        console.log('[并行模式] 语音播放完成或被打断');
+                                        resolve();
+                                    }
+                                }, 100);
+
+                                setTimeout(() => {
+                                    clearInterval(checkInterval);
+                                    console.log('[并行模式] 语音播放超时（30秒）');
+                                    TTS.stop();
+                                    // 超时后隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[并行模式] 语音播放超时，场景淡出');
+                                    }
+                                    resolve();
+                                }, 30000);
                             }
                         });
                     } else {
@@ -920,16 +979,11 @@ const App = {
                 } else {
                     console.log('[顺序播放] 使用原有串行模式');
 
-                    // 1. 显示场景（如果有），设置固定显示时间
+                    // 1. 显示场景（如果有）
                     if (parsed.hasScene) {
                         console.log('[串行模式] 显示场景:', parsed.scene);
                         UI.showScene(parsed.scene);
-                        console.log('[串行模式] 场景显示，设置固定显示时间');
-                        // 场景文字显示固定时间，不受语音影响
-                        setTimeout(() => {
-                            UI.hideScene();
-                            console.log('[串行模式] 场景显示时间结束，自动淡出');
-                        }, 3000); // 场景显示3秒
+                        console.log('[串行模式] 显示场景');
                     }
 
                     // 2. 播放语音（如果有）- 确保语音完整播放
@@ -978,6 +1032,11 @@ const App = {
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
                                         }
+                                        // 语音播放完成后隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[串行模式] 语音播放完成，场景淡出');
+                                        }
                                     };
                                     
                                     result.audio.onerror = () => {
@@ -989,6 +1048,11 @@ const App = {
                                         }
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
+                                        }
+                                        // 音频错误时也隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[串行模式] 音频错误，场景淡出');
                                         }
                                     };
                                     
@@ -1012,6 +1076,11 @@ const App = {
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
                                         }
+                                        // 音频播放失败时也隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[串行模式] 音频播放失败，场景淡出');
+                                        }
                                     });
                                     } else {
                                         console.error('外部TTS调用失败:', result.error);
@@ -1022,6 +1091,11 @@ const App = {
                                         if (typeof UI !== 'undefined') {
                                             UI.hideSubtitle();
                                         }
+                                        // TTS调用失败时也隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[串行模式] TTS调用失败，场景淡出');
+                                        }
                                     }
                                 } catch (error) {
                                     console.error('外部TTS异常:', error);
@@ -1031,6 +1105,11 @@ const App = {
                                     }
                                     if (typeof UI !== 'undefined') {
                                         UI.hideSubtitle();
+                                    }
+                                    // 异常时也隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] TTS异常，场景淡出');
                                     }
                                 }
                             } else {
@@ -1065,6 +1144,11 @@ const App = {
                                     if (typeof UI !== 'undefined') {
                                         UI.hideSubtitle();
                                     }
+                                    // 语音播放完成后隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 语音播放完成，场景淡出');
+                                    }
                                 };
                                 
                                 utterance.onerror = (e) => {
@@ -1076,6 +1160,11 @@ const App = {
                                     if (typeof UI !== 'undefined') {
                                         UI.hideSubtitle();
                                     }
+                                    // 播放错误时也隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 语音播放错误，场景淡出');
+                                    }
                                 };
                                 
                                 TTS.currentUtterance = utterance;
@@ -1084,7 +1173,7 @@ const App = {
                             }
                         }
 
-                        // 等待语音播放完成，场景显示时间已独立设置
+                        // 等待语音播放完成
                         await new Promise(resolve => {
                             // 直接监听音频的ended事件，更可靠
                             const audioElement = TTS.currentAudio;
@@ -1121,6 +1210,11 @@ const App = {
                                     audioElement.removeEventListener('error', onError);
                                     console.log('[串行模式] 语音播放超时（30秒）');
                                     TTS.stop();
+                                    // 超时后隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 语音播放超时，场景淡出');
+                                    }
                                     resolve();
                                 }, 30000);
                             } else {
@@ -1130,6 +1224,11 @@ const App = {
                                     console.log('[串行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                     if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
                                         clearInterval(checkInterval);
+                                        // 播放完成后隐藏场景
+                                        if (parsed.hasScene) {
+                                            UI.hideScene();
+                                            console.log('[串行模式] 语音播放完成，场景淡出');
+                                        }
                                         console.log('[串行模式] 语音播放完成或被打断');
                                         resolve();
                                     }
@@ -1139,6 +1238,11 @@ const App = {
                                     clearInterval(checkInterval);
                                     console.log('[串行模式] 语音播放超时（30秒）');
                                     TTS.stop();
+                                    // 超时后隐藏场景
+                                    if (parsed.hasScene) {
+                                        UI.hideScene();
+                                        console.log('[串行模式] 语音播放超时，场景淡出');
+                                    }
                                     resolve();
                                 }, 30000);
                             }
