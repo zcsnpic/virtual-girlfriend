@@ -683,10 +683,15 @@ const App = {
                 if (this.useParallelSceneAndSpeech) {
                     console.log('[顺序播放] 使用并行模式');
                     
-                    // 1. 显示场景（如果有）
+                    // 1. 显示场景（如果有），设置固定显示时间
                     if (parsed.hasScene) {
                         UI.showScene(parsed.scene);
-                        console.log('[并行模式] 显示场景');
+                        console.log('[并行模式] 显示场景，设置固定显示时间');
+                        // 场景文字显示固定时间，不受语音影响
+                        setTimeout(() => {
+                            UI.hideScene();
+                            console.log('[并行模式] 场景显示时间结束，自动淡出');
+                        }, 3000); // 场景显示3秒
                     }
 
                     // 2. 播放语音（如果有）
@@ -700,9 +705,10 @@ const App = {
                         if (speechContentOnly && speechContentOnly.trim() !== '') {
                             if (settings.ttsApiEnabled && settings.ttsProvider && settings.ttsProvider !== 'browser') {
                                 // 直接使用TTSProvider.speak，避免调用TTS.speakExternal中的stop()
-                                if (typeof UI !== 'undefined') {
-                                    UI.showSubtitle(speechContentOnly);
-                                }
+                                // 不再显示语音文字在bar上
+                                // if (typeof UI !== 'undefined') {
+                                //     UI.showSubtitle(speechContentOnly);
+                                // }
                                 
                                 try {
                                     const result = await TTSProvider.speak(speechContentOnly, {
@@ -791,9 +797,10 @@ const App = {
                                 }
                             } else {
                                 // 直接创建utterance并播放，不调用stop()
-                                if (typeof UI !== 'undefined') {
-                                    UI.showSubtitle(speechContentOnly);
-                                }
+                                // 不再显示语音文字在bar上
+                                // if (typeof UI !== 'undefined') {
+                                //     UI.showSubtitle(speechContentOnly);
+                                // }
                                 
                                 const utterance = new SpeechSynthesisUtterance(speechContentOnly);
                                 const emotionParams = TTS.getEmotionParams(speechContentOnly, settings);
@@ -839,15 +846,7 @@ const App = {
                             }
                         }
 
-                        // 3. 场景文字显示，与语音播放同步
-                        if (parsed.hasScene) {
-                            console.log('[并行模式] 场景显示，与语音播放同步');
-                            // 场景文字显示到语音播放完成
-                            // 不再单独设置场景淡出，而是在语音播放完成后统一处理
-                            console.log('[并行模式] 场景将在语音播放完成后淡出');
-                        }
-                        
-                        // 4. 等待语音播放完成
+                        // 3. 等待语音播放完成，场景显示时间已独立设置
                         await new Promise(resolve => {
                             // 直接监听音频的ended事件，更可靠
                             const audioElement = TTS.currentAudio;
@@ -855,21 +854,11 @@ const App = {
                                 console.log('[并行模式] 等待音频ended事件');
                                 const onEnded = () => {
                                     console.log('[并行模式] 音频ended事件触发');
-                                    // 语音播放完成后淡出场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[并行模式] 语音播放完成，场景淡出');
-                                    }
                                     resolve();
                                 };
                                 
                                 const onError = () => {
                                     console.log('[并行模式] 音频错误事件触发');
-                                    // 音频错误时也淡出场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[并行模式] 音频错误，场景淡出');
-                                    }
                                     resolve();
                                 };
                                 
@@ -883,11 +872,6 @@ const App = {
                                         clearInterval(checkInterval);
                                         audioElement.removeEventListener('ended', onEnded);
                                         audioElement.removeEventListener('error', onError);
-                                        // 定时器检查触发时也淡出场景
-                                        if (parsed.hasScene) {
-                                            UI.hideScene();
-                                            console.log('[并行模式] 语音播放完成或被打断，场景淡出');
-                                        }
                                         console.log('[并行模式] 语音播放完成或被打断');
                                         resolve();
                                     }
@@ -897,11 +881,6 @@ const App = {
                                     clearInterval(checkInterval);
                                     audioElement.removeEventListener('ended', onEnded);
                                     audioElement.removeEventListener('error', onError);
-                                    // 超时后淡出场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[并行模式] 语音播放超时，场景淡出');
-                                    }
                                     console.log('[并行模式] 语音播放超时（30秒）');
                                     TTS.stop();
                                     resolve();
@@ -909,11 +888,6 @@ const App = {
                             } else {
                                 // 如果没有音频元素，直接解析
                                 console.log('[并行模式] 没有音频元素，直接解析');
-                                // 没有音频时也淡出场景
-                                if (parsed.hasScene) {
-                                    UI.hideScene();
-                                    console.log('[并行模式] 没有音频元素，场景淡出');
-                                }
                                 resolve();
                             }
                         });
@@ -921,7 +895,7 @@ const App = {
                         console.log('[并行模式] 没有语音');
                         // 纯场景，显示足够时间后淡出
                         if (parsed.hasScene) {
-                            await new Promise(resolve => setTimeout(resolve, 1500));
+                            await new Promise(resolve => setTimeout(resolve, 3000)); // 场景显示3秒
                             UI.hideScene();
                         }
                         // 纯文本消息，短暂等待
@@ -932,14 +906,16 @@ const App = {
                 } else {
                     console.log('[顺序播放] 使用原有串行模式');
 
-                    // 1. 显示场景（如果有），与语音播放同步
+                    // 1. 显示场景（如果有），设置固定显示时间
                     if (parsed.hasScene) {
                         console.log('[串行模式] 显示场景:', parsed.scene);
                         UI.showScene(parsed.scene);
-                        console.log('[串行模式] 场景显示，与语音播放同步');
-                        // 场景文字显示到语音播放完成
-                        // 不再单独设置场景淡出，而是在语音播放完成后统一处理
-                        console.log('[串行模式] 场景将在语音播放完成后淡出');
+                        console.log('[串行模式] 场景显示，设置固定显示时间');
+                        // 场景文字显示固定时间，不受语音影响
+                        setTimeout(() => {
+                            UI.hideScene();
+                            console.log('[串行模式] 场景显示时间结束，自动淡出');
+                        }, 3000); // 场景显示3秒
                     }
 
                     // 2. 播放语音（如果有）- 确保语音完整播放
@@ -953,9 +929,10 @@ const App = {
                         if (speechContentOnly && speechContentOnly.trim() !== '') {
                             if (settings.ttsApiEnabled && settings.ttsProvider && settings.ttsProvider !== 'browser') {
                                 // 直接使用TTSProvider.speak，避免调用TTS.speakExternal中的stop()
-                                if (typeof UI !== 'undefined') {
-                                    UI.showSubtitle(speechContentOnly);
-                                }
+                                // 不再显示语音文字在bar上
+                                // if (typeof UI !== 'undefined') {
+                                //     UI.showSubtitle(speechContentOnly);
+                                // }
                                 
                                 try {
                                     const result = await TTSProvider.speak(speechContentOnly, {
@@ -1044,9 +1021,10 @@ const App = {
                                 }
                             } else {
                                 // 直接创建utterance并播放，不调用stop()
-                                if (typeof UI !== 'undefined') {
-                                    UI.showSubtitle(speechContentOnly);
-                                }
+                                // 不再显示语音文字在bar上
+                                // if (typeof UI !== 'undefined') {
+                                //     UI.showSubtitle(speechContentOnly);
+                                // }
                                 
                                 const utterance = new SpeechSynthesisUtterance(speechContentOnly);
                                 const emotionParams = TTS.getEmotionParams(speechContentOnly, settings);
@@ -1092,7 +1070,7 @@ const App = {
                             }
                         }
 
-                        // 等待语音播放完成
+                        // 等待语音播放完成，场景显示时间已独立设置
                         await new Promise(resolve => {
                             // 直接监听音频的ended事件，更可靠
                             const audioElement = TTS.currentAudio;
@@ -1100,21 +1078,11 @@ const App = {
                                 console.log('[串行模式] 等待音频ended事件');
                                 const onEnded = () => {
                                     console.log('[串行模式] 音频ended事件触发');
-                                    // 语音播放完成后淡出场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[串行模式] 语音播放完成，场景淡出');
-                                    }
                                     resolve();
                                 };
                                 
                                 const onError = () => {
                                     console.log('[串行模式] 音频错误事件触发');
-                                    // 音频错误时也淡出场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[串行模式] 音频错误，场景淡出');
-                                    }
                                     resolve();
                                 };
                                 
@@ -1128,11 +1096,6 @@ const App = {
                                         clearInterval(checkInterval);
                                         audioElement.removeEventListener('ended', onEnded);
                                         audioElement.removeEventListener('error', onError);
-                                        // 定时器检查触发时也淡出场景
-                                        if (parsed.hasScene) {
-                                            UI.hideScene();
-                                            console.log('[串行模式] 语音播放完成或被打断，场景淡出');
-                                        }
                                         console.log('[串行模式] 语音播放完成或被打断');
                                         resolve();
                                     }
@@ -1142,11 +1105,6 @@ const App = {
                                     clearInterval(checkInterval);
                                     audioElement.removeEventListener('ended', onEnded);
                                     audioElement.removeEventListener('error', onError);
-                                    // 超时后淡出场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[串行模式] 语音播放超时，场景淡出');
-                                    }
                                     console.log('[串行模式] 语音播放超时（30秒）');
                                     TTS.stop();
                                     resolve();
@@ -1158,11 +1116,6 @@ const App = {
                                     console.log('[串行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                     if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
                                         clearInterval(checkInterval);
-                                        // 定时器检查触发时也淡出场景
-                                        if (parsed.hasScene) {
-                                            UI.hideScene();
-                                            console.log('[串行模式] 语音播放完成或被打断，场景淡出');
-                                        }
                                         console.log('[串行模式] 语音播放完成或被打断');
                                         resolve();
                                     }
@@ -1170,11 +1123,6 @@ const App = {
 
                                 setTimeout(() => {
                                     clearInterval(checkInterval);
-                                    // 超时后淡出场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[串行模式] 语音播放超时，场景淡出');
-                                    }
                                     console.log('[串行模式] 语音播放超时（30秒）');
                                     TTS.stop();
                                     resolve();
@@ -1182,8 +1130,14 @@ const App = {
                             }
                         });
                     } else {
-                        console.log('[串行模式] 没有语音，等待300ms');
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                        console.log('[串行模式] 没有语音');
+                        // 纯场景，显示足够时间后淡出
+                        if (parsed.hasScene) {
+                            await new Promise(resolve => setTimeout(resolve, 3000)); // 场景显示3秒
+                            UI.hideScene();
+                        } else {
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                        }
                     }
                 }
 
