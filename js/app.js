@@ -683,24 +683,78 @@ const App = {
                 if (this.useParallelSceneAndSpeech) {
                     console.log('[顺序播放] 使用并行模式');
                     
-                    // 1. 显示场景并立即开始播放语音
+                    // 1. 显示场景（如果有）
                     if (parsed.hasScene) {
                         UI.showScene(parsed.scene);
-                        console.log('[并行模式] 显示场景并立即开始播放语音');
+                        console.log('[并行模式] 显示场景');
                     }
 
                     // 2. 播放语音（如果有）
                     if (speechContent && speechContent.trim() !== '') {
-                        TTS.speak(speechContent, rate, msg.id);
                         console.log('[并行模式] 开始播放语音，长度:', speechContent.length, '内容:', speechContent.substring(0, 50));
-
-                        // 3. 300ms 后淡出场景（语音已开始，用户注意力转移到语音）
-                        if (parsed.hasScene) {
-                            await new Promise(resolve => setTimeout(resolve, 200));
-                            UI.hideScene();
-                            console.log('[并行模式] 200ms后淡出场景');
+                        
+                        // 直接使用TTS的内部方法，避免调用stop()中断当前播放
+                        const settings = Memory.getSettings();
+                        const speechContentOnly = Memory.getSpeechContent(speechContent);
+                        
+                        if (speechContentOnly && speechContentOnly.trim() !== '') {
+                            if (settings.ttsApiEnabled && settings.ttsProvider && settings.ttsProvider !== 'browser') {
+                                TTS.speakExternal(speechContentOnly);
+                            } else {
+                                // 直接创建utterance并播放，不调用stop()
+                                const utterance = new SpeechSynthesisUtterance(speechContentOnly);
+                                const emotionParams = TTS.getEmotionParams(speechContentOnly, settings);
+                                utterance.rate = rate || emotionParams.rate;
+                                utterance.pitch = emotionParams.pitch;
+                                utterance.lang = 'zh-CN';
+                                
+                                const voice = TTS.getSelectedVoice();
+                                if (voice) {
+                                    utterance.voice = voice;
+                                }
+                                
+                                utterance.onstart = () => {
+                                    TTS.isPlaying = true;
+                                    console.log('[TTS] 语音开始播放，isPlaying已设为true');
+                                };
+                                
+                                utterance.onend = () => {
+                                    console.log('[TTS] 语音播放结束，isPlaying已设为false');
+                                    TTS.isPlaying = false;
+                                    if (msg.id && typeof UI !== 'undefined') {
+                                        UI.setPlayingState(msg.id, false);
+                                    }
+                                    if (typeof UI !== 'undefined') {
+                                        UI.hideSubtitle();
+                                    }
+                                };
+                                
+                                utterance.onerror = (e) => {
+                                    console.error('[TTS] 播放错误:', e);
+                                    TTS.isPlaying = false;
+                                    if (msg.id && typeof UI !== 'undefined') {
+                                        UI.setPlayingState(msg.id, false);
+                                    }
+                                    if (typeof UI !== 'undefined') {
+                                        UI.hideSubtitle();
+                                    }
+                                };
+                                
+                                TTS.currentUtterance = utterance;
+                                TTS.isPlaying = true;
+                                TTS.synth.speak(utterance);
+                            }
                         }
 
+                        // 3. 场景文字快速显示后淡出，以语音为主
+                        if (parsed.hasScene) {
+                            // 场景文字显示固定的短时间（800ms），确保用户能看到但不影响语音播放
+                            console.log('[并行模式] 场景快速显示800ms后淡出，以语音为主');
+                            await new Promise(resolve => setTimeout(resolve, 800));
+                            UI.hideScene();
+                            console.log('[并行模式] 场景淡出');
+                        }
+                        
                         // 4. 等待语音播放完成
                         await new Promise(resolve => {
                             const checkInterval = setInterval(() => {
@@ -721,33 +775,85 @@ const App = {
                         });
                     } else {
                         console.log('[并行模式] 没有语音');
-                        // 纯场景，短暂显示后淡出
+                        // 纯场景，显示足够时间后淡出
                         if (parsed.hasScene) {
-                            await new Promise(resolve => setTimeout(resolve, 500));
+                            await new Promise(resolve => setTimeout(resolve, 1500));
                             UI.hideScene();
                         }
-                        // 纯语音消息，短暂等待
-                        await new Promise(resolve => setTimeout(resolve, 200));
+                        // 纯文本消息，短暂等待
+                        await new Promise(resolve => setTimeout(resolve, 300));
                     }
 
                 // === 原有串行逻辑（安全备份） ===
                 } else {
                     console.log('[顺序播放] 使用原有串行模式');
 
-                    // 1. 先显示场景（如果有），显示800ms后淡出
+                    // 1. 先显示场景（如果有），快速显示后淡出
                     if (parsed.hasScene) {
                         console.log('[串行模式] 显示场景:', parsed.scene);
                         UI.showScene(parsed.scene);
-                        console.log('[串行模式] 场景显示800ms');
-                        await new Promise(resolve => setTimeout(resolve, 800));
+                        console.log('[串行模式] 场景快速显示600ms');
+                        await new Promise(resolve => setTimeout(resolve, 600));
                         console.log('[串行模式] 场景淡出');
                         UI.hideScene();
                     }
 
-                    // 2. 播放语音（如果有）
+                    // 2. 播放语音（如果有）- 确保语音完整播放
                     if (speechContent && speechContent.trim() !== '') {
                         console.log('[串行模式] 开始播放语音，长度:', speechContent.length, '内容:', speechContent.substring(0, 50));
-                        TTS.speak(speechContent, rate, msg.id);
+                        
+                        // 直接使用TTS的内部方法，避免调用stop()中断当前播放
+                        const settings = Memory.getSettings();
+                        const speechContentOnly = Memory.getSpeechContent(speechContent);
+                        
+                        if (speechContentOnly && speechContentOnly.trim() !== '') {
+                            if (settings.ttsApiEnabled && settings.ttsProvider && settings.ttsProvider !== 'browser') {
+                                TTS.speakExternal(speechContentOnly);
+                            } else {
+                                // 直接创建utterance并播放，不调用stop()
+                                const utterance = new SpeechSynthesisUtterance(speechContentOnly);
+                                const emotionParams = TTS.getEmotionParams(speechContentOnly, settings);
+                                utterance.rate = rate || emotionParams.rate;
+                                utterance.pitch = emotionParams.pitch;
+                                utterance.lang = 'zh-CN';
+                                
+                                const voice = TTS.getSelectedVoice();
+                                if (voice) {
+                                    utterance.voice = voice;
+                                }
+                                
+                                utterance.onstart = () => {
+                                    TTS.isPlaying = true;
+                                    console.log('[TTS] 语音开始播放，isPlaying已设为true');
+                                };
+                                
+                                utterance.onend = () => {
+                                    console.log('[TTS] 语音播放结束，isPlaying已设为false');
+                                    TTS.isPlaying = false;
+                                    if (msg.id && typeof UI !== 'undefined') {
+                                        UI.setPlayingState(msg.id, false);
+                                    }
+                                    if (typeof UI !== 'undefined') {
+                                        UI.hideSubtitle();
+                                    }
+                                };
+                                
+                                utterance.onerror = (e) => {
+                                    console.error('[TTS] 播放错误:', e);
+                                    TTS.isPlaying = false;
+                                    if (msg.id && typeof UI !== 'undefined') {
+                                        UI.setPlayingState(msg.id, false);
+                                    }
+                                    if (typeof UI !== 'undefined') {
+                                        UI.hideSubtitle();
+                                    }
+                                };
+                                
+                                TTS.currentUtterance = utterance;
+                                TTS.isPlaying = true;
+                                TTS.synth.speak(utterance);
+                            }
+                        }
 
                         // 等待语音播放完成
                         await new Promise(resolve => {
