@@ -699,7 +699,85 @@ const App = {
                         
                         if (speechContentOnly && speechContentOnly.trim() !== '') {
                             if (settings.ttsApiEnabled && settings.ttsProvider && settings.ttsProvider !== 'browser') {
-                                TTS.speakExternal(speechContentOnly);
+                                // 直接使用TTSProvider.speak，避免调用TTS.speakExternal中的stop()
+                                if (typeof UI !== 'undefined') {
+                                    UI.showSubtitle(speechContentOnly);
+                                }
+                                
+                                try {
+                                    const result = await TTSProvider.speak(speechContentOnly, {
+                                        provider: settings.ttsProvider,
+                                        apiKey: settings.ttsApiKey,
+                                        voice: settings.ttsApiVoice,
+                                        appId: settings.ttsAppId,
+                                        secretId: settings.ttsSecretId,
+                                        secretKey: settings.ttsSecretKey,
+                                        token: settings.ttsToken,
+                                        region: settings.ttsRegion,
+                                        endpoint: settings.ttsEndpoint,
+                                        customHeaders: settings.ttsCustomHeaders,
+                                        customBody: settings.ttsCustomBody,
+                                        proxyUrl: settings.ttsProxyUrl || 'ws://localhost:3000'
+                                    });
+
+                                    if (result.success) {
+                                        TTS.currentAudio = result.audio;
+                                        TTS.isPlaying = true;
+                                        
+                                        result.audio.onended = () => {
+                                            TTS.isPlaying = false;
+                                            TTS.currentAudio = null;
+                                            if (msg.id && typeof UI !== 'undefined') {
+                                                UI.setPlayingState(msg.id, false);
+                                            }
+                                            if (typeof UI !== 'undefined') {
+                                                UI.hideSubtitle();
+                                            }
+                                        };
+                                        
+                                        result.audio.onerror = () => {
+                                            console.error('音频播放错误');
+                                            TTS.isPlaying = false;
+                                            TTS.currentAudio = null;
+                                            if (msg.id && typeof UI !== 'undefined') {
+                                                UI.setPlayingState(msg.id, false);
+                                            }
+                                            if (typeof UI !== 'undefined') {
+                                                UI.hideSubtitle();
+                                            }
+                                        };
+                                        
+                                        result.audio.play().catch(error => {
+                                            console.error('音频播放失败:', error);
+                                            TTS.isPlaying = false;
+                                            TTS.currentAudio = null;
+                                            if (msg.id && typeof UI !== 'undefined') {
+                                                UI.setPlayingState(msg.id, false);
+                                            }
+                                            if (typeof UI !== 'undefined') {
+                                                UI.hideSubtitle();
+                                            }
+                                        });
+                                    } else {
+                                        console.error('外部TTS调用失败:', result.error);
+                                        TTS.isPlaying = false;
+                                        if (msg.id && typeof UI !== 'undefined') {
+                                            UI.setPlayingState(msg.id, false);
+                                        }
+                                        if (typeof UI !== 'undefined') {
+                                            UI.hideSubtitle();
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('外部TTS异常:', error);
+                                    TTS.isPlaying = false;
+                                    if (msg.id && typeof UI !== 'undefined') {
+                                        UI.setPlayingState(msg.id, false);
+                                    }
+                                    if (typeof UI !== 'undefined') {
+                                        UI.hideSubtitle();
+                                    }
+                                }
                             } else {
                                 // 直接创建utterance并播放，不调用stop()
                                 const utterance = new SpeechSynthesisUtterance(speechContentOnly);
@@ -808,7 +886,85 @@ const App = {
                         
                         if (speechContentOnly && speechContentOnly.trim() !== '') {
                             if (settings.ttsApiEnabled && settings.ttsProvider && settings.ttsProvider !== 'browser') {
-                                TTS.speakExternal(speechContentOnly);
+                                // 直接使用TTSProvider.speak，避免调用TTS.speakExternal中的stop()
+                                if (typeof UI !== 'undefined') {
+                                    UI.showSubtitle(speechContentOnly);
+                                }
+                                
+                                try {
+                                    const result = await TTSProvider.speak(speechContentOnly, {
+                                        provider: settings.ttsProvider,
+                                        apiKey: settings.ttsApiKey,
+                                        voice: settings.ttsApiVoice,
+                                        appId: settings.ttsAppId,
+                                        secretId: settings.ttsSecretId,
+                                        secretKey: settings.ttsSecretKey,
+                                        token: settings.ttsToken,
+                                        region: settings.ttsRegion,
+                                        endpoint: settings.ttsEndpoint,
+                                        customHeaders: settings.ttsCustomHeaders,
+                                        customBody: settings.ttsCustomBody,
+                                        proxyUrl: settings.ttsProxyUrl || 'ws://localhost:3000'
+                                    });
+
+                                    if (result.success) {
+                                        TTS.currentAudio = result.audio;
+                                        TTS.isPlaying = true;
+                                        
+                                        result.audio.onended = () => {
+                                            TTS.isPlaying = false;
+                                            TTS.currentAudio = null;
+                                            if (msg.id && typeof UI !== 'undefined') {
+                                                UI.setPlayingState(msg.id, false);
+                                            }
+                                            if (typeof UI !== 'undefined') {
+                                                UI.hideSubtitle();
+                                            }
+                                        };
+                                        
+                                        result.audio.onerror = () => {
+                                            console.error('音频播放错误');
+                                            TTS.isPlaying = false;
+                                            TTS.currentAudio = null;
+                                            if (msg.id && typeof UI !== 'undefined') {
+                                                UI.setPlayingState(msg.id, false);
+                                            }
+                                            if (typeof UI !== 'undefined') {
+                                                UI.hideSubtitle();
+                                            }
+                                        };
+                                        
+                                        result.audio.play().catch(error => {
+                                            console.error('音频播放失败:', error);
+                                            TTS.isPlaying = false;
+                                            TTS.currentAudio = null;
+                                            if (msg.id && typeof UI !== 'undefined') {
+                                                UI.setPlayingState(msg.id, false);
+                                            }
+                                            if (typeof UI !== 'undefined') {
+                                                UI.hideSubtitle();
+                                            }
+                                        });
+                                    } else {
+                                        console.error('外部TTS调用失败:', result.error);
+                                        TTS.isPlaying = false;
+                                        if (msg.id && typeof UI !== 'undefined') {
+                                            UI.setPlayingState(msg.id, false);
+                                        }
+                                        if (typeof UI !== 'undefined') {
+                                            UI.hideSubtitle();
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('外部TTS异常:', error);
+                                    TTS.isPlaying = false;
+                                    if (msg.id && typeof UI !== 'undefined') {
+                                        UI.setPlayingState(msg.id, false);
+                                    }
+                                    if (typeof UI !== 'undefined') {
+                                        UI.hideSubtitle();
+                                    }
+                                }
                             } else {
                                 // 直接创建utterance并播放，不调用stop()
                                 const utterance = new SpeechSynthesisUtterance(speechContentOnly);
