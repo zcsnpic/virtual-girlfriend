@@ -36,7 +36,7 @@ const TTS_PRESETS = {
         authHeader: 'Ocp-Apim-Subscription-Key',
         authPrefix: '',
         headers: {
-            'Content-Type': 'application/ssml+xml',
+            'Content-Type': 'application/ssml/xml',
             'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3'
         },
         bodyTemplate: 'ssml',
@@ -140,8 +140,7 @@ const TTS_PRESETS = {
         ],
         extraConfig: [
             { key: 'appId', label: 'AppId', type: 'text' },
-            { key: 'token', label: 'Token', type: 'password' },
-            { key: 'proxyUrl', label: '代理服务器地址', type: 'text', default: 'ws://localhost:3000' }
+            { key: 'token', label: 'Token', type: 'password' }
         ]
     },
 
@@ -317,10 +316,6 @@ const TTSProvider = {
         if (preset.authType === 'header' && preset.authHeader) {
             const prefix = preset.authPrefix || '';
             headers[preset.authHeader] = prefix + (config.apiKey || '');
-        }
-
-        if (preset.authType === 'bearer') {
-            headers['Authorization'] = `Bearer ${config.token || config.apiKey}`;
         }
 
         if (preset.authType === 'token' && config.token) {
