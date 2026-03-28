@@ -250,6 +250,11 @@ const TTS = {
         // 在调用 speak 之前就设置 isPlaying = true，避免 app.js 的检查逻辑在 onstart 触发之前就检测到 isPlaying = false
         this.isPlaying = true;
         
+        // 创建Promise用于app.js等待播放完成
+        utterance.playbackPromise = new Promise(resolve => {
+            utterance.playbackResolve = resolve;
+        });
+        
         utterance.onstart = () => {
             console.log('[TTS] 语音开始播放，isPlaying已设为true');
         };
@@ -264,6 +269,10 @@ const TTS = {
             if (typeof UI !== 'undefined') {
                 UI.hideSubtitle();
             }
+            // 调用playbackResolve让等待的Promise完成
+            if (utterance.playbackResolve) {
+                utterance.playbackResolve();
+            }
         };
 
         utterance.onerror = (e) => {
@@ -276,6 +285,10 @@ const TTS = {
             // 场景隐藏由 app.js 控制，不在此处隐藏
             if (typeof UI !== 'undefined') {
                 UI.hideSubtitle();
+            }
+            // 调用playbackResolve让等待的Promise完成
+            if (utterance.playbackResolve) {
+                utterance.playbackResolve();
             }
         };
 

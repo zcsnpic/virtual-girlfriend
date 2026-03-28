@@ -934,33 +934,20 @@ const App = {
                                     resolve();
                                 }, 30000);
                             } else {
-                                // 对于浏览器原生TTS，使用定时器检查TTS.isPlaying
-                                console.log('[并行模式] 使用浏览器原生TTS，等待isPlaying变为false');
-                                const checkInterval = setInterval(() => {
-                                    console.log('[并行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
-                                    if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
-                                        clearInterval(checkInterval);
-                                        // 播放完成后隐藏场景
-                                        if (parsed.hasScene) {
-                                            UI.hideScene();
-                                            console.log('[并行模式] 语音播放完成，场景淡出');
-                                        }
-                                        console.log('[并行模式] 语音播放完成或被打断');
-                                        resolve();
-                                    }
-                                }, 100);
-
-                                setTimeout(() => {
-                                    clearInterval(checkInterval);
-                                    console.log('[并行模式] 语音播放超时（30秒）');
-                                    TTS.stop();
-                                    // 超时后隐藏场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[并行模式] 语音播放超时，场景淡出');
-                                    }
-                                    resolve();
-                                }, 30000);
+                                // 对于浏览器原生TTS，等待playbackPromise
+                                console.log('[并行模式] 使用浏览器原生TTS，等待playbackPromise');
+                                try {
+                                    await TTS.currentUtterance.playbackPromise;
+                                    console.log('[并行模式] 语音播放完成，playbackPromise已resolve');
+                                } catch (e) {
+                                    console.error('[并行模式] 语音播放出错:', e);
+                                }
+                                // 播放完成后隐藏场景
+                                if (parsed.hasScene) {
+                                    UI.hideScene();
+                                    console.log('[并行模式] 语音播放完成，场景淡出');
+                                }
+                                resolve();
                             }
                         });
                     } else {
@@ -1216,33 +1203,20 @@ const App = {
                                     resolve();
                                 }, 30000);
                             } else {
-                                // 对于浏览器原生TTS，使用定时器检查TTS.isPlaying
-                                console.log('[串行模式] 使用浏览器原生TTS，等待isPlaying变为false');
-                                const checkInterval = setInterval(() => {
-                                    console.log('[串行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
-                                    if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
-                                        clearInterval(checkInterval);
-                                        // 播放完成后隐藏场景
-                                        if (parsed.hasScene) {
-                                            UI.hideScene();
-                                            console.log('[串行模式] 语音播放完成，场景淡出');
-                                        }
-                                        console.log('[串行模式] 语音播放完成或被打断');
-                                        resolve();
-                                    }
-                                }, 100);
-
-                                setTimeout(() => {
-                                    clearInterval(checkInterval);
-                                    console.log('[串行模式] 语音播放超时（30秒）');
-                                    TTS.stop();
-                                    // 超时后隐藏场景
-                                    if (parsed.hasScene) {
-                                        UI.hideScene();
-                                        console.log('[串行模式] 语音播放超时，场景淡出');
-                                    }
-                                    resolve();
-                                }, 30000);
+                                // 对于浏览器原生TTS，等待playbackPromise
+                                console.log('[串行模式] 使用浏览器原生TTS，等待playbackPromise');
+                                try {
+                                    await TTS.currentUtterance.playbackPromise;
+                                    console.log('[串行模式] 语音播放完成，playbackPromise已resolve');
+                                } catch (e) {
+                                    console.error('[串行模式] 语音播放出错:', e);
+                                }
+                                // 播放完成后隐藏场景
+                                if (parsed.hasScene) {
+                                    UI.hideScene();
+                                    console.log('[串行模式] 语音播放完成，场景淡出');
+                                }
+                                resolve();
                             }
                         });
                     } else {
