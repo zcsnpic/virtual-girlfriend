@@ -208,7 +208,15 @@ const TTS = {
             return;
         }
 
-        this.stop();
+        this.currentUtterance = null;
+        if (this.synth.speaking) {
+            this.synth.cancel();
+        }
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio = null;
+        }
+        this.isPlaying = false;
 
         if (messageId && typeof UI !== 'undefined') {
             UI.setPlayingState(messageId, true);
@@ -236,6 +244,8 @@ const TTS = {
             console.log(`情感语音: ${emotionParams.emotionName} (${emotionParams.emotion})`);
         }
 
+        this.currentUtterance = utterance;
+        
         utterance.onstart = () => {
             this.isPlaying = true;
             console.log('[TTS] 语音开始播放，isPlaying已设为true');
@@ -267,8 +277,6 @@ const TTS = {
         };
 
         this.currentUtterance = utterance;
-        // 在 speak 之前就设置 isPlaying，确保调用者能立即检测到
-        this.isPlaying = true;
         this.synth.speak(utterance);
     },
 
