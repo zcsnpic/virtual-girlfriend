@@ -216,7 +216,9 @@ const TTS = {
             this.currentAudio.pause();
             this.currentAudio = null;
         }
-        this.isPlaying = false;
+        // 注意：不要在这里设置 isPlaying = false
+        // 让 onstart 事件来设置 isPlaying = true
+        // 这样可以避免 app.js 的检查逻辑在 onstart 触发之前就检测到 isPlaying = false
 
         if (messageId && typeof UI !== 'undefined') {
             UI.setPlayingState(messageId, true);
