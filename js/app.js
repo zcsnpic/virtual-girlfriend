@@ -831,10 +831,9 @@ const App = {
                                 }
                             } else {
                                 // 直接创建utterance并播放，不调用stop()
-                                // 不再显示语音文字在bar上
-                                // if (typeof UI !== 'undefined') {
-                                //     UI.showSubtitle(speechContentOnly);
-                                // }
+                                if (typeof UI !== 'undefined') {
+                                    UI.showSubtitle(speechContentOnly);
+                                }
                                 
                                 const utterance = new SpeechSynthesisUtterance(speechContentOnly);
                                 const emotionParams = TTS.getEmotionParams(speechContentOnly, settings);
@@ -1114,10 +1113,9 @@ const App = {
                                 }
                             } else {
                                 // 直接创建utterance并播放，不调用stop()
-                                // 不再显示语音文字在bar上
-                                // if (typeof UI !== 'undefined') {
-                                //     UI.showSubtitle(speechContentOnly);
-                                // }
+                                if (typeof UI !== 'undefined') {
+                                    UI.showSubtitle(speechContentOnly);
+                                }
                                 
                                 const utterance = new SpeechSynthesisUtterance(speechContentOnly);
                                 const emotionParams = TTS.getEmotionParams(speechContentOnly, settings);
