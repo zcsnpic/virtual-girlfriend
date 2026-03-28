@@ -311,9 +311,15 @@ const TTS = {
 
             if (result.success) {
                 this.currentAudio = result.audio;
-                this.isPlaying = true;
+                this.isPlaying = false; // 初始为false，等待onplay事件才认为开始播放
+                
+                result.audio.onplay = () => {
+                    console.log('[TTS] 外部音频开始播放，isPlaying设为true');
+                    this.isPlaying = true;
+                };
                 
                 result.audio.onended = () => {
+                    console.log('[TTS] 外部音频播放结束，isPlaying设为false');
                     this.isPlaying = false;
                     this.currentAudio = null;
                     // 场景隐藏由 app.js 控制，不在此处隐藏
@@ -333,7 +339,9 @@ const TTS = {
                 
                 result.audio.play().catch(error => {
                     console.error('音频播放失败:', error);
-                    this.isPlaying = false;
+                    // 注意：不要在这里设置isPlaying = false
+                    // 因为play()失败不一定意味着音频无法播放
+                    // 让onerror和onended来处理状态更新
                     this.currentAudio = null;
                     if (typeof UI !== 'undefined') {
                         UI.hideSubtitle();
