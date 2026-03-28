@@ -247,9 +247,10 @@ const TTS = {
         }
 
         this.currentUtterance = utterance;
+        // 在调用 speak 之前就设置 isPlaying = true，避免 app.js 的检查逻辑在 onstart 触发之前就检测到 isPlaying = false
+        this.isPlaying = true;
         
         utterance.onstart = () => {
-            this.isPlaying = true;
             console.log('[TTS] 语音开始播放，isPlaying已设为true');
         };
 
