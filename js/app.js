@@ -631,20 +631,30 @@ const App = {
                 }
                 
                 TTS.speak(msg.content, rate, msg.id);
-                await new Promise(resolve => {
-                    const checkInterval = setInterval(() => {
-                        if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
-                            clearInterval(checkInterval);
-                            resolve();
-                        }
-                    }, 25);
-                    
-                    setTimeout(() => {
-                        clearInterval(checkInterval);
-                        TTS.stop();
-                        resolve();
-                    }, 10000);
-                });
+                // 等待playbackPromise完成
+                try {
+                    if (TTS.currentUtterance && TTS.currentUtterance.playbackPromise) {
+                        await TTS.currentUtterance.playbackPromise;
+                    } else {
+                        // 兜底：如果没有playbackPromise，使用轮询
+                        await new Promise(resolve => {
+                            const checkInterval = setInterval(() => {
+                                if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
+                                    clearInterval(checkInterval);
+                                    resolve();
+                                }
+                            }, 25);
+                            
+                            setTimeout(() => {
+                                clearInterval(checkInterval);
+                                TTS.stop();
+                                resolve();
+                            }, 10000);
+                        });
+                    }
+                } catch (e) {
+                    console.error('语音播放出错:', e);
+                }
                 
                 if (sendId && this.currentSendId !== sendId) {
                     UI.hideScene();
