@@ -208,17 +208,7 @@ const TTS = {
             return;
         }
 
-        this.currentUtterance = null;
-        if (this.synth.speaking) {
-            this.synth.cancel();
-        }
-        if (this.currentAudio) {
-            this.currentAudio.pause();
-            this.currentAudio = null;
-        }
-        // 注意：不要在这里设置 isPlaying = false
-        // 让 onstart 事件来设置 isPlaying = true
-        // 这样可以避免 app.js 的检查逻辑在 onstart 触发之前就检测到 isPlaying = false
+        this.stop();
 
         if (messageId && typeof UI !== 'undefined') {
             UI.setPlayingState(messageId, true);
@@ -246,16 +236,8 @@ const TTS = {
             console.log(`情感语音: ${emotionParams.emotionName} (${emotionParams.emotion})`);
         }
 
-        this.currentUtterance = utterance;
-        // 在调用 speak 之前就设置 isPlaying = true，避免 app.js 的检查逻辑在 onstart 触发之前就检测到 isPlaying = false
-        this.isPlaying = true;
-        
-        // 创建Promise用于app.js等待播放完成
-        utterance.playbackPromise = new Promise(resolve => {
-            utterance.playbackResolve = resolve;
-        });
-        
         utterance.onstart = () => {
+            this.isPlaying = true;
             console.log('[TTS] 语音开始播放，isPlaying已设为true');
         };
 
@@ -268,10 +250,6 @@ const TTS = {
             // 场景隐藏由 app.js 控制，不在此处隐藏
             if (typeof UI !== 'undefined') {
                 UI.hideSubtitle();
-            }
-            // 调用playbackResolve让等待的Promise完成
-            if (utterance.playbackResolve) {
-                utterance.playbackResolve();
             }
         };
 
@@ -286,13 +264,11 @@ const TTS = {
             if (typeof UI !== 'undefined') {
                 UI.hideSubtitle();
             }
-            // 调用playbackResolve让等待的Promise完成
-            if (utterance.playbackResolve) {
-                utterance.playbackResolve();
-            }
         };
 
         this.currentUtterance = utterance;
+        // 在 speak 之前就设置 isPlaying，确保调用者能立即检测到
+        this.isPlaying = true;
         this.synth.speak(utterance);
     },
 
@@ -335,15 +311,9 @@ const TTS = {
 
             if (result.success) {
                 this.currentAudio = result.audio;
-                this.isPlaying = false; // 初始为false，等待onplay事件才认为开始播放
-                
-                result.audio.onplay = () => {
-                    console.log('[TTS] 外部音频开始播放，isPlaying设为true');
-                    this.isPlaying = true;
-                };
+                this.isPlaying = true;
                 
                 result.audio.onended = () => {
-                    console.log('[TTS] 外部音频播放结束，isPlaying设为false');
                     this.isPlaying = false;
                     this.currentAudio = null;
                     // 场景隐藏由 app.js 控制，不在此处隐藏
@@ -363,9 +333,7 @@ const TTS = {
                 
                 result.audio.play().catch(error => {
                     console.error('音频播放失败:', error);
-                    // 注意：不要在这里设置isPlaying = false
-                    // 因为play()失败不一定意味着音频无法播放
-                    // 让onerror和onended来处理状态更新
+                    this.isPlaying = false;
                     this.currentAudio = null;
                     if (typeof UI !== 'undefined') {
                         UI.hideSubtitle();
