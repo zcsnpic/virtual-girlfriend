@@ -936,8 +936,6 @@ const App = {
                             } else {
                                 // 对于浏览器原生TTS，使用定时器检查TTS.isPlaying
                                 console.log('[并行模式] 使用浏览器原生TTS，等待isPlaying变为false');
-                                // 添加短暂延迟，确保语音有时间开始播放
-                                await new Promise(resolve => setTimeout(resolve, 200));
                                 const checkInterval = setInterval(() => {
                                     console.log('[并行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                     if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
@@ -1220,8 +1218,6 @@ const App = {
                             } else {
                                 // 对于浏览器原生TTS，使用定时器检查TTS.isPlaying
                                 console.log('[串行模式] 使用浏览器原生TTS，等待isPlaying变为false');
-                                // 添加短暂延迟，确保语音有时间开始播放
-                                await new Promise(resolve => setTimeout(resolve, 200));
                                 const checkInterval = setInterval(() => {
                                     console.log('[串行模式] 等待中，TTS.isPlaying:', TTS.isPlaying);
                                     if (!TTS.isPlaying || (sendId && this.currentSendId !== sendId)) {
